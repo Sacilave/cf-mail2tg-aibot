@@ -71,6 +71,11 @@ import {
   deleteDynamicConfig,
   maskSecret,
   DYNAMIC_CONFIG_PREFIX,
+  isValidEmail,
+  getSetupSession,
+  setSetupSession,
+  clearSetupSession,
+  SETUP_SESSION_KEY,
 } from './router';
 import type {
   Env,
@@ -126,10 +131,16 @@ export {
   deleteDynamicConfig,
   maskSecret,
   DYNAMIC_CONFIG_PREFIX,
+  isValidEmail,
+  getSetupSession,
+  setSetupSession,
+  clearSetupSession,
+  SETUP_SESSION_KEY,
   classifyEmailWithMiniMax,
   sanitizeErrorMessage,
   extractVerificationCode,
   normalizeIntent,
+  BOT_COMMANDS,
 };
 
 export type {
@@ -154,6 +165,24 @@ export type {
 
 // In-memory Telegram 429 cooling circuit breaker
 let telegramCircuitBreakerUntil = 0;
+
+/**
+ * Standard Telegram Bot Commands definition for setMyCommands & Help Menu
+ */
+const BOT_COMMANDS = [
+  { command: 'setup', description: '一键极速配置向导 (1分钟分步引导)' },
+  { command: 'config', description: '查看密钥绑定状态与配置中枢' },
+  { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
+  { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
+  { command: 'cancel', description: '退出当前向导或交互会话' },
+  { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
+  { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
+  { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
+  { command: 'routes', description: '查看当前所有域名路由映射与规则' },
+  { command: 'add', description: '添加自定义路由规则: add 标签 前缀 [转发目标]' },
+  { command: 'del', description: '删除自定义路由规则: del 前缀' },
+  { command: 'help', description: '查看网关操作帮助与状态' },
+];
 
 /**
  * Telegram API interactive helper functions
@@ -238,18 +267,7 @@ export default {
       const webhookUrl = `${url.origin}/`;
       try {
         const commandsPayload = {
-          commands: [
-            { command: 'config', description: '查看密钥绑定状态与配置中枢' },
-            { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
-            { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
-            { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
-            { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
-            { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
-            { command: 'routes', description: '查看当前所有域名路由映射与规则' },
-            { command: 'add', description: '添加自定义路由规则: add 标签 前缀 [转发目标]' },
-            { command: 'del', description: '删除自定义路由规则: del 前缀' },
-            { command: 'help', description: '查看网关操作帮助与状态' },
-          ],
+          commands: BOT_COMMANDS,
         };
 
         const cmdRes = await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
@@ -383,13 +401,189 @@ export default {
       const isReply = Boolean(update.message.reply_to_message);
       const replyText = update.message.reply_to_message?.text || '';
 
-      const text = rawText.startsWith('/') ? rawText.slice(1).trim() : rawText;
+      const isCommand = rawText.startsWith('/');
+      const text = isCommand ? rawText.slice(1).trim() : rawText;
       const parts = text.split(/\s+/).filter(Boolean);
       const command = (parts[0] || '').toLowerCase();
 
       // Check if replying directly to marketing keywords list
       const isKeywordReply =
         isReply && (replyText.includes('营销推广拦截关键词') || replyText.includes('营销关键词'));
+
+      // Command: setup (交互式极速配置向导)
+      if (command === 'setup') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库，无法启动向导。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        await setSetupSession(env.MAIL_ROUTES_KV, 1);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (1/2) 】</b>\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `欢迎使用极速配置向导！本向导将分 2 步带您完成核心凭证绑定。\n` +
+            `💡 <i>输入 <code>skip</code> 可跳过当前步骤，随时发送 <code>/cancel</code> 可退出向导。</i>\n\n` +
+            `<b>第 1 步: 配置备份转发邮箱 (Forward Email)</b>\n` +
+            `用于将入站邮件无损双轨转发至您的主力邮箱（如 Gmail）。\n` +
+            `⚠️ <i>注意: 请确保该邮箱已在 Cloudflare 仪表盘的「Email Routing ➔ Destination addresses」中完成验证！</i>\n\n` +
+            `👉 <b>请直接回复您的目标接收邮箱</b> (如 <code>yourname@gmail.com</code>)，或发送 <code>skip</code> 跳过:`
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: cancel (退出当前向导或会话)
+      if (command === 'cancel') {
+        if (env?.MAIL_ROUTES_KV) {
+          await clearSetupSession(env.MAIL_ROUTES_KV);
+        }
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `❌ <b>已退出配置向导</b>\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `当前向导会话已重置，未完成的配置保持原状。您可随时发送 <code>/setup</code> 重新开始。`
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // If user enters any standard slash command during setup wizard, gracefully exit wizard session
+      if (isCommand && env?.MAIL_ROUTES_KV) {
+        const activeStep = await getSetupSession(env.MAIL_ROUTES_KV);
+        if (activeStep !== null) {
+          await clearSetupSession(env.MAIL_ROUTES_KV);
+        }
+      }
+
+      // Handle interactive wizard text replies (when message is NOT a command and NOT a keyword reply)
+      if (!isCommand && !isKeywordReply && env?.MAIL_ROUTES_KV) {
+        const setupStep = await getSetupSession(env.MAIL_ROUTES_KV);
+
+        // Step 1: Backup Forward Email
+        if (setupStep === 1) {
+          if (rawText.toLowerCase() === 'skip') {
+            await setSetupSession(env.MAIL_ROUTES_KV, 2);
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `⏭️ <b>已跳过备份邮箱配置。</b>\n\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (2/2) 】</b>\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
+                `用于对来信进行大模型智能意图审信（验证码、账单、营销、告警等）与验证码自动提取。\n` +
+                `💡 <i>若暂未获取，输入 <code>skip</code> 可跳过，系统将自动使用高性能本地正则进行兜底处理。</i>\n\n` +
+                `👉 <b>请直接回复您的 MiniMax API Key</b>，或发送 <code>skip</code> 跳过:`
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (!isValidEmail(rawText)) {
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `❌ <b>邮箱格式不合法！</b>\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `您输入的内容为: <code>${escapeHtml(rawText)}</code>\n` +
+                `请输入合法的邮箱格式（例如: <code>mymail@gmail.com</code>），或发送 <code>skip</code> 跳过当前步骤:`
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          const emailToSave = rawText.trim();
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email', emailToSave);
+          await setSetupSession(env.MAIL_ROUTES_KV, 2);
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `✅ <b>备份邮箱绑定成功！</b>\n` +
+              `已保存目标地址: <code>${escapeHtml(emailToSave)}</code>\n\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (2/2) 】</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
+              `用于对来信进行大模型智能意图审信（验证码、账单、营销、告警等）与验证码自动提取。\n` +
+              `💡 <i>若暂未获取，输入 <code>skip</code> 可跳过，系统将自动使用高性能本地正则进行兜底处理。</i>\n\n` +
+              `👉 <b>请直接回复您的 MiniMax API Key</b>，或发送 <code>skip</code> 跳过:`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        // Step 2: MiniMax API Key
+        if (setupStep === 2) {
+          if (rawText.toLowerCase() === 'skip') {
+            await clearSetupSession(env.MAIL_ROUTES_KV);
+            const curFwd =
+              (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) ||
+              env.FORWARD_TO_EMAIL?.trim() ||
+              '';
+            const curMmx =
+              (await getDynamicConfig(env.MAIL_ROUTES_KV, 'minimax_api_key')) ||
+              env.MINIMAX_API_KEY?.trim() ||
+              '';
+            const fwdText = curFwd ? `<code>${escapeHtml(curFwd)}</code>` : '⚪ 未配置 (纯TG单轨模式)';
+            const mmxText = curMmx
+              ? `✅ 已就绪 (<code>${escapeHtml(maskSecret(curMmx))}</code>)`
+              : '⚪ 未配置 (本地正则兜底)';
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `⏭️ <b>已跳过大模型 API Key 配置。</b>\n\n` +
+                `🎉 <b>【 恭喜！配置流程已顺利完成 】</b>\n` +
+                `━━━━━━━━━━━━━━━━━━\n` +
+                `系统核心组件状态:\n` +
+                `• 备份转发邮箱: ${fwdText}\n` +
+                `• 大模型审信: ${mmxText}\n\n` +
+                `💡 <b>后续建议:</b>\n` +
+                `• 发送 <code>/config</code> 查看全局配置中枢与脱敏密钥\n` +
+                `• 发送 <code>/routes</code> 查看当前生效的收信画像规则\n` +
+                `• 随时发送 <code>/setkey</code> 可单独热更新各项密钥`
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          const cleanKey = rawText.trim().replace(/^['"]|['"]$/g, '');
+          if (cleanKey.length === 0) {
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `❌ <b>API Key 不能为空！</b>\n请回复有效的 API Key，或发送 <code>skip</code> 跳过:`
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'minimax_api_key', cleanKey);
+          await clearSetupSession(env.MAIL_ROUTES_KV);
+          const curFwd =
+            (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) ||
+            env.FORWARD_TO_EMAIL?.trim() ||
+            '';
+          const fwdText = curFwd ? `<code>${escapeHtml(curFwd)}</code>` : '⚪ 未配置 (纯TG单轨模式)';
+
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `✅ <b>大模型 API Key 绑定成功！</b>\n` +
+              `已保存至 KV，脱敏预览: <code>${escapeHtml(maskSecret(cleanKey))}</code>\n\n` +
+              `🎉 <b>【 恭喜！极速配置流程已全部完成 】</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `您的 cf-mail2tg-aibot 邮件网关已全面就绪！\n` +
+              `• 备份转发邮箱: ${fwdText}\n` +
+              `• 大模型审信: ✅ 已就绪 (<code>${escapeHtml(maskSecret(cleanKey))}</code>)\n\n` +
+              `💡 <b>后续建议:</b>\n` +
+              `• 发送 <code>/config</code> 查看全局配置中枢与脱敏密钥\n` +
+              `• 发送 <code>/routes</code> 查看收信画像与域名规则\n` +
+              `• 任何新邮件到达时，网关将全自动进行 AI 意图分析并实时推送！`
+          );
+          return new Response('OK', { status: 200 });
+        }
+      }
 
       // Command: config / keys / status (查看当前密钥配置与网关就绪状态)
       if (command === 'config' || command === 'keys' || command === 'status') {
@@ -832,20 +1026,7 @@ export default {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              commands: [
-                { command: 'config', description: '查看密钥绑定状态与配置中枢' },
-                { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
-                { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
-                { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
-                { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
-                { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
-                { command: 'routes', description: '查看当前所有域名路由映射与规则' },
-                { command: 'add', description: '添加自定义路由规则' },
-                { command: 'del', description: '删除自定义路由规则' },
-                { command: 'help', description: '查看网关安全指南与操作帮助' },
-              ],
-            }),
+            body: JSON.stringify({ commands: BOT_COMMANDS }),
           });
         } catch {}
 
@@ -855,6 +1036,8 @@ export default {
           `👋 <b>【 cf-mail2tg-aibot 邮件网关已就绪 】</b>\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
             `⚡ <b>高效 3 步初始化指引:</b>\n\n` +
+            `🚀 <b>【首推】一键极速配置向导 (1分钟完成)</b>\n` +
+            `   发送 <code>/setup</code> 启动交互向导，分步指引配置备份邮箱与大模型密钥！\n\n` +
             `1️⃣ <b>查验就绪状态</b>\n` +
             `   发送 <code>/config</code> 查看大模型、备份邮箱与 KV 数据库连接状态。\n\n` +
             `2️⃣ <b>手机端热更新密钥 (可选)</b>\n` +
@@ -865,6 +1048,7 @@ export default {
             `   • 添加专属分流规则: <code>/add 商业支持 help</code> (支持多域名)\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
             `💡 <b>日常快捷指令:</b>\n` +
+            `• <code>/setup</code> - 交互式极速分步向导\n` +
             `• <code>/config</code> - 查看当前配置与脱敏密钥\n` +
             `• <code>/keywords</code> - 营销拦截词库管理 (回复即改)\n` +
             `• <code>/help</code> - 查看全量控制面板与详细参数说明\n\n` +
@@ -879,20 +1063,7 @@ export default {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              commands: [
-                { command: 'config', description: '查看密钥绑定状态与配置中枢' },
-                { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
-                { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
-                { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
-                { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
-                { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
-                { command: 'routes', description: '查看当前所有域名路由映射与规则' },
-                { command: 'add', description: '添加自定义路由规则' },
-                { command: 'del', description: '删除自定义路由规则' },
-                { command: 'help', description: '查看网关安全指南与操作帮助' },
-              ],
-            }),
+            body: JSON.stringify({ commands: BOT_COMMANDS }),
           });
         } catch {}
 
@@ -903,6 +1074,8 @@ export default {
             `━━━━━━━━━━━━━━━━━━\n` +
             `您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：\n\n` +
             `🔑 <b>密钥与运行状态指令:</b>\n` +
+            `• <code>/setup</code> - 启动交互式一键分步配置向导 (1分钟分步引导)\n` +
+            `• <code>/cancel</code> - 随时退出当前向导或交互会话\n` +
             `• <code>/config</code> - 查看密钥绑定状态与配置中枢 (带脱敏掩码)\n` +
             `• <code>/setkey minimax &lt;key&gt;</code> - 手机端热更新大模型密钥\n` +
             `• <code>/setkey forward &lt;email&gt;</code> - 手机端热更新备份邮箱\n` +

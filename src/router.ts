@@ -287,3 +287,48 @@ export async function deleteDynamicConfig(kv: any, key: string): Promise<boolean
   }
 }
 
+// ======================== KV Wizard Session Management ========================
+
+export const SETUP_SESSION_KEY = 'session:setup_step';
+
+export function isValidEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const clean = email.trim();
+  // Basic robust email syntax check
+  return /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(
+    clean
+  );
+}
+
+export async function getSetupSession(kv: any): Promise<number | null> {
+  if (!kv || typeof kv.get !== 'function') return null;
+  try {
+    const raw = await kv.get(SETUP_SESSION_KEY);
+    if (!raw) return null;
+    const num = parseInt(raw, 10);
+    return isNaN(num) ? null : num;
+  } catch {
+    return null;
+  }
+}
+
+export async function setSetupSession(kv: any, step: number): Promise<void> {
+  if (!kv || typeof kv.put !== 'function') return;
+  try {
+    // 300 seconds TTL (5 minutes timeout)
+    await kv.put(SETUP_SESSION_KEY, String(step), { expirationTtl: 300 });
+  } catch (err) {
+    console.error('[EmailRouter] Error saving setup session:', err);
+  }
+}
+
+export async function clearSetupSession(kv: any): Promise<void> {
+  if (!kv || typeof kv.delete !== 'function') return;
+  try {
+    await kv.delete(SETUP_SESSION_KEY);
+  } catch (err) {
+    console.error('[EmailRouter] Error clearing setup session:', err);
+  }
+}
+
+

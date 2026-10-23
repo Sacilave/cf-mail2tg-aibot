@@ -531,5 +531,219 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     expect(body.text).toContain('全量控制面板');
     expect(body.text).toContain('密钥与运行状态指令');
   });
+
+  describe('交互式配置向导 (/setup & /cancel) 自动化测试', () => {
+    it('发送 /setup 应启动向导，设置 session 步数为 1 并发送第 1 步提示卡片', async () => {
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/setup',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.get('session:setup_step')).toBe('1');
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('交互式配置向导 (1/2)');
+      expect(body.text).toContain('配置备份转发邮箱');
+      expect(body.text).toContain('skip');
+    });
+
+    it('未配置 MAIL_ROUTES_KV 时发送 /setup 应提示系统错误', async () => {
+      const customEnv = { ...env, MAIL_ROUTES_KV: null };
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/setup',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, customEnv as any);
+      expect(res.status).toBe(200);
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('未绑定 MAIL_ROUTES_KV 数据库');
+    });
+
+    it('向导第 1 步: 输入非法邮箱格式应报错并保持在第 1 步', async () => {
+      store.set('session:setup_step', '1');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: 'not-an-email',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.get('session:setup_step')).toBe('1');
+      expect(store.has('config:sys:forward_to_email')).toBe(false);
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('邮箱格式不合法');
+      expect(body.text).toContain('not-an-email');
+    });
+
+    it('向导第 1 步: 输入合法邮箱应存入 KV 并进入第 2 步', async () => {
+      store.set('session:setup_step', '1');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: 'my-inbox@gmail.com',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.get('config:sys:forward_to_email')).toBe('my-inbox@gmail.com');
+      expect(store.get('session:setup_step')).toBe('2');
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('备份邮箱绑定成功');
+      expect(body.text).toContain('my-inbox@gmail.com');
+      expect(body.text).toContain('交互式配置向导 (2/2)');
+      expect(body.text).toContain('配置 MiniMax 大模型 API Key');
+    });
+
+    it('向导第 1 步: 输入 skip 应跳过邮箱设置并进入第 2 步', async () => {
+      store.set('session:setup_step', '1');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: 'skip',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.has('config:sys:forward_to_email')).toBe(false);
+      expect(store.get('session:setup_step')).toBe('2');
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('已跳过备份邮箱配置');
+      expect(body.text).toContain('交互式配置向导 (2/2)');
+    });
+
+    it('向导第 2 步: 输入 MiniMax API Key 应存入 KV、清除会话并返回完成总结卡片', async () => {
+      store.set('session:setup_step', '2');
+      store.set('config:sys:forward_to_email', 'primary@example.com');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: 'sk-minimax-super-secret-key-999',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.get('config:sys:minimax_api_key')).toBe('sk-minimax-super-secret-key-999');
+      expect(store.has('session:setup_step')).toBe(false);
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('大模型 API Key 绑定成功');
+      expect(body.text).toContain('sk-***-999');
+      expect(body.text).toContain('极速配置流程已全部完成');
+      expect(body.text).toContain('primary@example.com');
+    });
+
+    it('向导第 2 步: 输入 skip 应清除会话并返回完成总结卡片', async () => {
+      store.set('session:setup_step', '2');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: 'skip',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.has('config:sys:minimax_api_key')).toBe(false);
+      expect(store.has('session:setup_step')).toBe(false);
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('已跳过大模型 API Key 配置');
+      expect(body.text).toContain('配置流程已顺利完成');
+    });
+
+    it('向导进行中发送 /cancel 应立即清除会话并返回退出确认', async () => {
+      store.set('session:setup_step', '1');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/cancel',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      expect(store.has('session:setup_step')).toBe(false);
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('已退出配置向导');
+      expect(body.text).toContain('/setup');
+    });
+
+    it('向导进行中发送其他标准指令 (如 /config) 应自动退出向导并正常执行该指令', async () => {
+      store.set('session:setup_step', '1');
+
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/config',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, env);
+      expect(res.status).toBe(200);
+      // Session should have been cleared
+      expect(store.has('session:setup_step')).toBe(false);
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      expect(body.text).toContain('配置与密钥中枢');
+    });
+  });
 });
 

@@ -9,7 +9,7 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-70%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-85%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本与免费配额保证)
 
 <p align="center">
@@ -94,6 +94,7 @@ flowchart TD
 - **Telegram 429 断路器**：遭遇 TG 频控时自动进入 30 秒熔断冷却期，防止请求堆积。
 
 ### 4. 🎛️ 手机端 Telegram 交互式控制面板与密钥中枢
+- **交互向导 (`/setup`)**：专为移动端打造的 1 分钟交互式分步引导，按提示一步步输入备份邮箱与大模型 Key，输入 `skip` 可跳过当前项，支持随时 `/cancel` 退出；
 - **发送 `/config`**：一键调出网关全局就绪状态卡片，**敏感 Key 强制脱敏掩码显示**（如 `min***a8f9`），防止窥屏泄露；
 - **免电脑热更新 Key (`/setkey`)**：直接在手机私聊发送 `/setkey minimax <新Key>` 或 `/setkey forward <新邮箱>`，立刻持久化到 Cloudflare KV 并在边缘端实时生效，告别电脑敲命令行；
 - **重置动态配置 (`/resetkey`)**：一键清除 KV 动态覆盖项，优雅回退至环境变量初始值；
@@ -181,6 +182,8 @@ npm install
 
 | 指令 | 参数格式 | 功能描述 |
 | :--- | :--- | :--- |
+| `/setup` | - | 启动交互式分步极速配置向导 (1 分钟带你完成核心凭证绑定) |
+| `/cancel` | - | 退出当前向导或会话，重置交互状态 |
 | `/config` | - | 查看网关就绪状态与密钥绑定情况 (带安全脱敏掩码，仅管理员可阅) |
 | `/setkey` | `<minimax\|forward> <值>` | 手机端热更新大模型密钥或备份转发邮箱，即刻持久化保存至 KV |
 | `/resetkey` | `<minimax\|forward>` | 清除 KV 动态覆盖项，一键恢复至部署时绑定的初始环境变量 |
