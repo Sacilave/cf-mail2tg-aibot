@@ -486,5 +486,50 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.text).toContain('已重置 minimax 动态配置');
   });
+
+  it('发送 /start 应返回精简不废话的高效 3 步初始化指引', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: 'start',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2); // 1. setMyCommands, 2. sendMessage
+
+    const body = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(body.text).toContain('高效 3 步初始化指引');
+    expect(body.text).toContain('1️⃣ <b>查验就绪状态</b>');
+    expect(body.text).toContain('2️⃣ <b>手机端热更新密钥 (可选)</b>');
+    expect(body.text).toContain('3️⃣ <b>配置域名收信画像</b>');
+    expect(body.text).toContain('/config');
+    expect(body.text).toContain('/setkey');
+  });
+
+  it('发送 /help 应返回全量控制面板', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: 'help',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+
+    const body = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(body.text).toContain('全量控制面板');
+    expect(body.text).toContain('密钥与运行状态指令');
+  });
 });
 

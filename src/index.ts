@@ -826,8 +826,8 @@ export default {
         return new Response('OK', { status: 200 });
       }
 
-      // Command: menu / help / start
-      if (command === 'menu' || command === 'help' || command === 'start') {
+      // Command: start (精简高效分步骤就绪指引)
+      if (command === 'start') {
         try {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
             method: 'POST',
@@ -852,9 +852,56 @@ export default {
         await sendTelegramMessage(
           botToken,
           adminChatId,
-          `🎛️ <b>【 cf-mail2tg-aibot 控制面板 】</b>\n` +
+          `👋 <b>【 cf-mail2tg-aibot 邮件网关已就绪 】</b>\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
-            `欢迎使用智能邮件网关！您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：\n\n` +
+            `⚡ <b>高效 3 步初始化指引:</b>\n\n` +
+            `1️⃣ <b>查验就绪状态</b>\n` +
+            `   发送 <code>/config</code> 查看大模型、备份邮箱与 KV 数据库连接状态。\n\n` +
+            `2️⃣ <b>手机端热更新密钥 (可选)</b>\n` +
+            `   • 开启 AI 审信与提码: <code>/setkey minimax &lt;API_KEY&gt;</code>\n` +
+            `   • 设置/更换 Gmail 备份: <code>/setkey forward &lt;接收邮箱&gt;</code>\n\n` +
+            `3️⃣ <b>配置域名收信画像</b>\n` +
+            `   • 查看生效画像规则: <code>/routes</code>\n` +
+            `   • 添加专属分流规则: <code>/add 商业支持 help</code> (支持多域名)\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `💡 <b>日常快捷指令:</b>\n` +
+            `• <code>/config</code> - 查看当前配置与脱敏密钥\n` +
+            `• <code>/keywords</code> - 营销拦截词库管理 (回复即改)\n` +
+            `• <code>/help</code> - 查看全量控制面板与详细参数说明\n\n` +
+            `<i>左下角 [Menu] 菜单按钮已同步激活，点击即可快捷调用。</i>`
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: menu / help (完整控制面板与指令字典)
+      if (command === 'menu' || command === 'help') {
+        try {
+          await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              commands: [
+                { command: 'config', description: '查看密钥绑定状态与配置中枢' },
+                { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
+                { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
+                { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
+                { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
+                { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
+                { command: 'routes', description: '查看当前所有域名路由映射与规则' },
+                { command: 'add', description: '添加自定义路由规则' },
+                { command: 'del', description: '删除自定义路由规则' },
+                { command: 'help', description: '查看网关安全指南与操作帮助' },
+              ],
+            }),
+          });
+        } catch {}
+
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🎛️ <b>【 cf-mail2tg-aibot 全量控制面板 】</b>\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：\n\n` +
             `🔑 <b>密钥与运行状态指令:</b>\n` +
             `• <code>/config</code> - 查看密钥绑定状态与配置中枢 (带脱敏掩码)\n` +
             `• <code>/setkey minimax &lt;key&gt;</code> - 手机端热更新大模型密钥\n` +
