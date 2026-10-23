@@ -1,0 +1,40 @@
+{
+  "name": "cf-mail2tg-aibot",
+  "version": "1.0.0",
+  "description": "Production-grade, zero-cost, self-hosted Email to Telegram AI Bot powered by Cloudflare Workers & LLM. Features dual-track delivery, quota defense, and verification code extraction.",
+  "type": "module",
+  "main": "src/index.ts",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail cf-mail2tg-aibot"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "email-to-telegram",
+    "mail2tg",
+    "telegram-bot",
+    "self-hosted",
+    "email-routing",
+    "llm",
+    "ai-agent",
+    "spam-filter",
+    "zero-drop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "postal-mime": "^4.0.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260804.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7",
+    "wrangler": "^4.120.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cf-mail2tg-aibot",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "MAIL_ROUTES_KV",
+      // Execute `npx wrangler kv namespace create MAIL_ROUTES_KV` and replace with your ID
+      "id": "YOUR_KV_NAMESPACE_ID"
+    }
+  ],
+  "vars": {
+    // Delivery & Alias Settings (Optional: Set in secrets or here)
+    "ENABLE_GMAIL_ALIASES": "false",
+    
+    // Security Armor: Block all attachments by default (Zero-Attachment Policy SMTP 550)
+    "BLOCK_ALL_ATTACHMENTS": "true",
+    
+    // Size Cap: Reject emails larger than 5MB (SMTP 552) to prevent memory & quota exhaustion
+    "MAX_EMAIL_SIZE_BYTES": "5242880",
+    
+    // LLM Model Config (Default: MiniMax-Text-01)
+    "MINIMAX_MODEL": "MiniMax-Text-01"
+  }
+}
