@@ -396,4 +396,95 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     const saved = JSON.parse(store.get('config:marketing_keywords') || '[]');
     expect(saved).toEqual(['退订', 'unsubscribe', 'appranker', 'extensionbooster']);
   });
+
+  it('发送 /config 应返回包含脱敏密钥、备份邮箱与状态的诊断卡片', async () => {
+    store.set('config:sys:minimax_api_key', 'minimax-custom-secret-key-123456');
+
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: 'config',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.text).toContain('配置与密钥中枢');
+    expect(body.text).toContain('大模型审信 (LLM)');
+    expect(body.text).toContain('min***3456'); // 验证脱敏掩码
+    expect(body.text).not.toContain('minimax-custom-secret-key-123456'); // 绝不能泄露明文！
+    expect(body.text).toContain('零丢信备份轨');
+    expect(body.text).toContain('KV 数据库 (MAIL_ROUTES_KV)');
+  });
+
+  it('使用 /setkey minimax 换新密钥应成功持久化存入 KV 并回显脱敏掩码', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: '/setkey minimax new-secret-minimax-key-999',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.text).toContain('大模型 API 密钥已成功热更新');
+    expect(body.text).toContain('new***-999');
+    expect(body.text).not.toContain('new-secret-minimax-key-999'); // 响应卡片不泄漏完整明文
+
+    expect(store.get('config:sys:minimax_api_key')).toBe('new-secret-minimax-key-999');
+  });
+
+  it('使用 /setkey forward 换备份邮箱应成功更新 KV', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: '/setkey forward updated-inbox@gmail.com',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+    expect(store.get('config:sys:forward_to_email')).toBe('updated-inbox@gmail.com');
+  });
+
+  it('发送 /resetkey minimax 应删除 KV 动态覆盖', async () => {
+    store.set('config:sys:minimax_api_key', 'some-key');
+
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: '/resetkey minimax',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+    expect(store.has('config:sys:minimax_api_key')).toBe(false);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.text).toContain('已重置 minimax 动态配置');
+  });
 });
+

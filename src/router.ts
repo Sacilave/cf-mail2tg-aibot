@@ -236,3 +236,54 @@ export async function resetMarketingKeywords(kv: any): Promise<boolean> {
     return false;
   }
 }
+
+// ======================== KV Dynamic Config & Secret Masking ========================
+
+export const DYNAMIC_CONFIG_PREFIX = 'config:sys:';
+
+/**
+ * Mask sensitive secrets for safe display in Telegram cards
+ * e.g. "minimax-123456789" => "min***6789"
+ */
+export function maskSecret(secret?: string | null): string {
+  if (!secret || !secret.trim()) return '⚪ 未配置';
+  const clean = secret.trim();
+  if (clean.length <= 6) return '******';
+  const prefix = clean.slice(0, 3);
+  const suffix = clean.slice(-4);
+  return `${prefix}***${suffix}`;
+}
+
+export async function getDynamicConfig(kv: any, key: string): Promise<string | null> {
+  if (!kv || typeof kv.get !== 'function') return null;
+  try {
+    const val = await kv.get(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`);
+    return val ? String(val).trim() : null;
+  } catch (err) {
+    console.error(`[EmailRouter] Error getting dynamic config for ${key}:`, err);
+    return null;
+  }
+}
+
+export async function setDynamicConfig(kv: any, key: string, value: string): Promise<boolean> {
+  if (!kv || typeof kv.put !== 'function') return false;
+  try {
+    await kv.put(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`, value.trim());
+    return true;
+  } catch (err) {
+    console.error(`[EmailRouter] Error setting dynamic config for ${key}:`, err);
+    return false;
+  }
+}
+
+export async function deleteDynamicConfig(kv: any, key: string): Promise<boolean> {
+  if (!kv || typeof kv.delete !== 'function') return false;
+  try {
+    await kv.delete(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`);
+    return true;
+  } catch (err) {
+    console.error(`[EmailRouter] Error deleting dynamic config for ${key}:`, err);
+    return false;
+  }
+}
+

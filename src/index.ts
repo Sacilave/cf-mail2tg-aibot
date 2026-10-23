@@ -66,6 +66,11 @@ import {
   appendMarketingKeywords,
   resetMarketingKeywords,
   MARKETING_KEYWORDS_KV_KEY,
+  getDynamicConfig,
+  setDynamicConfig,
+  deleteDynamicConfig,
+  maskSecret,
+  DYNAMIC_CONFIG_PREFIX,
 } from './router';
 import type {
   Env,
@@ -116,6 +121,11 @@ export {
   appendMarketingKeywords,
   resetMarketingKeywords,
   MARKETING_KEYWORDS_KV_KEY,
+  getDynamicConfig,
+  setDynamicConfig,
+  deleteDynamicConfig,
+  maskSecret,
+  DYNAMIC_CONFIG_PREFIX,
   classifyEmailWithMiniMax,
   sanitizeErrorMessage,
   extractVerificationCode,
@@ -229,6 +239,9 @@ export default {
       try {
         const commandsPayload = {
           commands: [
+            { command: 'config', description: '查看密钥绑定状态与配置中枢' },
+            { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
+            { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
             { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
             { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
             { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
@@ -377,6 +390,153 @@ export default {
       // Check if replying directly to marketing keywords list
       const isKeywordReply =
         isReply && (replyText.includes('营销推广拦截关键词') || replyText.includes('营销关键词'));
+
+      // Command: config / keys / status (查看当前密钥配置与网关就绪状态)
+      if (command === 'config' || command === 'keys' || command === 'status') {
+        const dynamicMinimax = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'minimax_api_key');
+        const effectiveMinimax = dynamicMinimax || env?.MINIMAX_API_KEY?.trim() || '';
+        const minimaxSource = dynamicMinimax ? '(动态KV覆盖)' : env?.MINIMAX_API_KEY ? '(环境默认)' : '';
+
+        const dynamicForward = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'forward_to_email');
+        const effectiveForward = dynamicForward || env?.FORWARD_TO_EMAIL?.trim() || '';
+        const forwardSource = dynamicForward ? '(动态KV覆盖)' : env?.FORWARD_TO_EMAIL ? '(环境默认)' : '';
+
+        const keywords = await getMarketingKeywords(env?.MAIL_ROUTES_KV);
+        const customRules = await listCustomRules(env?.MAIL_ROUTES_KV);
+
+        const hasKv = Boolean(env?.MAIL_ROUTES_KV);
+        const blockAll =
+          env?.BLOCK_ALL_ATTACHMENTS === true ||
+          String(env?.BLOCK_ALL_ATTACHMENTS || '').toLowerCase() === 'true';
+        const maxSizeBytes = Number(env?.MAX_EMAIL_SIZE_BYTES) || 5 * 1024 * 1024;
+        const marketingPolicy = env?.MARKETING_TG_POLICY || 'silent';
+
+        const configCard = [
+          `🎛️ <b>【 cf-mail2tg-aibot 配置与密钥中枢 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `🤖 <b>大模型审信 (LLM):</b>`,
+          `  • 绑定状态: ${effectiveMinimax ? `✅ 已就绪 ${escapeHtml(minimaxSource)}` : `⚪ 未配置 (当前使用本地正则嗅探)`}`,
+          effectiveMinimax ? `  • 密钥脱敏: <code>${escapeHtml(maskSecret(effectiveMinimax))}</code>` : '',
+          `  • 运行模型: <code>${escapeHtml(env?.MINIMAX_MODEL || 'MiniMax-Text-01')}</code>`,
+          ``,
+          `📥 <b>零丢信备份轨 (Forward):</b>`,
+          `  • 目标邮箱: ${effectiveForward ? `<code>${escapeHtml(effectiveForward)}</code> ${escapeHtml(forwardSource)}` : `⚪ 未配置 (纯TG单轨模式)`}`,
+          `  • 别名分流: ${String(env?.ENABLE_GMAIL_ALIASES || '').toLowerCase() === 'true' ? '✅ 已激活 (自动+标签)' : '⚪ 已停用 (直转主邮箱)'}`,
+          ``,
+          `🗄️ <b>KV 数据库 (MAIL_ROUTES_KV):</b>`,
+          `  • 连接状态: ${hasKv ? '✅ 已绑定生效' : '❌ 未连接'}`,
+          `  • 活跃营销关键词: <b>${keywords.length}</b> 个`,
+          `  • 自定义路由规则: <b>${customRules.length}</b> 条`,
+          ``,
+          `🛡️ <b>边缘装甲与安全策略:</b>`,
+          `  • 零附件拦截策略: ${blockAll ? '🔴 全量拒信 (SMTP 550)' : '🟢 仅拦截高危格式'}`,
+          `  • 邮件体积熔断上限: <b>${formatBytes(maxSizeBytes)}</b> (SMTP 552)`,
+          `  • 营销推送策略: <code>${marketingPolicy === 'mute' ? '完全不推TG (mute)' : '静默不响铃 (silent)'}</code>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `💡 <b>快捷更新指令:</b>`,
+          `• <code>/setkey minimax &lt;API_KEY&gt;</code> - 热更新大模型密钥`,
+          `• <code>/setkey forward &lt;邮箱地址&gt;</code> - 热更新备份邮箱`,
+          `• <code>/resetkey minimax</code> - 清除密钥动态覆盖并回退`,
+          `• <code>/resetkey forward</code> - 清除备份邮箱动态覆盖`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await sendTelegramMessage(botToken, adminChatId, configCard);
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: setkey (热更新密钥或备份邮箱)
+      if (command === 'setkey') {
+        const subType = (parts[1] || '').toLowerCase();
+        const subVal = parts.slice(2).join(' ').trim();
+
+        if (!subType || !subVal) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `💡 <b>【热更新密钥/配置说明】</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `<b>格式:</b> <code>/setkey &lt;类型&gt; &lt;值&gt;</code>\n\n` +
+              `• <b>更新大模型密钥:</b>\n` +
+              `  <code>/setkey minimax sk-your-api-key</code>\n\n` +
+              `• <b>更新备份邮箱:</b>\n` +
+              `  <code>/setkey forward your-inbox@gmail.com</code>\n\n` +
+              `💡 <i>更新后即刻保存在 KV 并在边缘端实时生效。</i>`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(botToken, adminChatId, `❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。`);
+          return new Response('OK', { status: 200 });
+        }
+
+        if (subType === 'minimax') {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'minimax_api_key', subVal);
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `✅ <b>大模型 API 密钥已成功热更新！</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `新密钥已保存至 KV，脱敏预览: <code>${escapeHtml(maskSecret(subVal))}</code>\n` +
+              `后续来信将即刻使用新密钥进行 LLM 意图识别。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        if (subType === 'forward') {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email', subVal);
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `✅ <b>备份转发邮箱已成功热更新！</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `新目标地址: <code>${escapeHtml(subVal)}</code>\n` +
+              `⚠️ <i>请务必确保该邮箱已在 Cloudflare Email Routing 中完成验证！</i>`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `❌ <b>不支持的配置类型:</b> 「<code>${escapeHtml(subType)}</code>」\n目前仅支持 <code>minimax</code> 或 <code>forward</code>。`
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: resetkey (重置动态密钥并回退)
+      if (command === 'resetkey') {
+        const subType = (parts[1] || '').toLowerCase();
+        if (!subType || (subType !== 'minimax' && subType !== 'forward')) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `💡 <b>【重置密钥指令说明】</b>\n` +
+              `━━━━━━━━━━━━━━━━━━\n` +
+              `<b>格式:</b> <code>/resetkey &lt;minimax|forward&gt;</code>\n\n` +
+              `删除 KV 中的动态覆盖项，恢复使用环境变量中的初始默认值。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(botToken, adminChatId, `❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。`);
+          return new Response('OK', { status: 200 });
+        }
+
+        const configKey = subType === 'minimax' ? 'minimax_api_key' : 'forward_to_email';
+        await deleteDynamicConfig(env.MAIL_ROUTES_KV, configKey);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🔄 <b>已重置 ${subType} 动态配置！</b>\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `已清除 KV 动态覆盖，系统已自动回退至环境变量中的初始默认配置。`
+        );
+        return new Response('OK', { status: 200 });
+      }
 
       // Command: keywords / kw
       if (command === 'keywords' || command === 'kw') {
@@ -674,6 +834,9 @@ export default {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               commands: [
+                { command: 'config', description: '查看密钥绑定状态与配置中枢' },
+                { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
+                { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
                 { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
                 { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
                 { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
@@ -692,6 +855,11 @@ export default {
           `🎛️ <b>【 cf-mail2tg-aibot 控制面板 】</b>\n` +
             `━━━━━━━━━━━━━━━━━━\n` +
             `欢迎使用智能邮件网关！您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：\n\n` +
+            `🔑 <b>密钥与运行状态指令:</b>\n` +
+            `• <code>/config</code> - 查看密钥绑定状态与配置中枢 (带脱敏掩码)\n` +
+            `• <code>/setkey minimax &lt;key&gt;</code> - 手机端热更新大模型密钥\n` +
+            `• <code>/setkey forward &lt;email&gt;</code> - 手机端热更新备份邮箱\n` +
+            `• <code>/resetkey &lt;minimax|forward&gt;</code> - 重置动态覆盖回退默认值\n\n` +
             `📋 <b>营销关键词与防垃圾指令:</b>\n` +
             `• <code>/keywords</code> - 查看并一键复制全部营销关键词\n` +
             `• <code>/addkeywords</code> - 增量安全追加关键词（绝不覆盖已有词）\n` +
@@ -718,7 +886,8 @@ export default {
     const handleEmail = async () => {
       const botToken = env.TELEGRAM_BOT_TOKEN?.trim();
       const adminChatId = env.TELEGRAM_ADMIN_CHAT_ID?.trim();
-      const baseForwardTarget = env.FORWARD_TO_EMAIL?.trim() || '';
+      const dynamicForward = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'forward_to_email');
+      const baseForwardTarget = dynamicForward || env.FORWARD_TO_EMAIL?.trim() || '';
 
       const to = message.to || '';
       const targetDomain = extractDomain(to);
@@ -1024,7 +1193,9 @@ export default {
       let aiBadge = '';
       let disableNotification = false;
 
-      const hasMiniMax = Boolean(env.MINIMAX_API_KEY?.trim());
+      const dynamicMinimaxKey = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'minimax_api_key');
+      const effectiveMinimaxKey = dynamicMinimaxKey || env.MINIMAX_API_KEY?.trim() || '';
+      const hasMiniMax = Boolean(effectiveMinimaxKey);
 
       // 1. Level 1: Protocol short-circuit (RFC 8058 / RFC 2369)
       const getHeader = (name: string): string => {
@@ -1061,7 +1232,7 @@ export default {
         } else if (hasMiniMax) {
           // 3. Level 3: LLM Intent Classification
           const miniMaxResult = await classifyEmailWithMiniMax({
-            apiKey: env.MINIMAX_API_KEY!,
+            apiKey: effectiveMinimaxKey,
             groupId: env.MINIMAX_GROUP_ID,
             model: env.MINIMAX_MODEL || 'MiniMax-Text-01',
             apiUrl: env.MINIMAX_API_URL,
