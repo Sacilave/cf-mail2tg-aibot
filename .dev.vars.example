@@ -10,6 +10,10 @@ TELEGRAM_BOT_TOKEN="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
 # [REQUIRED] Telegram Admin Chat ID obtained from @userinfobot (authorized user ID)
 TELEGRAM_ADMIN_CHAT_ID="123456789"
 
+# [RECOMMENDED] Webhook Secret Token for cryptographic request authentication
+# Protects your Worker from spoofed Telegram webhook requests (1-256 chars, A-Za-z0-9_-)
+TELEGRAM_WEBHOOK_SECRET=""
+
 # [OPTIONAL] Backup email address for Zero-Drop guarantee (e.g. Gmail)
 # Must be verified in Cloudflare Email Routing -> Destination addresses first.
 # If omitted, gateway operates in single-track mode (Telegram instant notifications only).
@@ -26,6 +30,9 @@ MAX_EMAIL_SIZE_BYTES="5242880"
 
 # [OPTIONAL] Telegram marketing notification policy: 'silent' (no vibration/sound) | 'mute' (do not send to TG)
 MARKETING_TG_POLICY="silent"
+
+# [OPTIONAL] Default display language ('zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE', default: zh-CN)
+DEFAULT_LANGUAGE="zh-CN"
 
 # [OPTIONAL] MiniMax API Key for LLM-powered email classification & intent triage
 MINIMAX_API_KEY=""

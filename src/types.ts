@@ -7,6 +7,8 @@
 export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_ADMIN_CHAT_ID: string;
+  /** Secret token to authenticate Telegram Webhook requests (X-Telegram-Bot-Api-Secret-Token) */
+  TELEGRAM_WEBHOOK_SECRET?: string;
   FORWARD_TO_EMAIL?: string;
   ENABLE_GMAIL_ALIASES?: string | boolean;
   /** Whether to block all attachments (SMTP 550 reject) */
@@ -29,6 +31,8 @@ export interface Env {
   MINIMAX_MODEL?: string;
   /** MiniMax Custom API Endpoint (optional) */
   MINIMAX_API_URL?: string;
+  /** Default display language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE' */
+  DEFAULT_LANGUAGE?: string;
 }
 
 export interface MarketingDetectionResult {

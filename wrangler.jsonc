@@ -25,6 +25,9 @@
     "MAX_EMAIL_SIZE_BYTES": "5242880",
     
     // LLM Model Config (Default: MiniMax-Text-01)
-    "MINIMAX_MODEL": "MiniMax-Text-01"
+    "MINIMAX_MODEL": "MiniMax-Text-01",
+    
+    // Default system language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE'
+    "DEFAULT_LANGUAGE": "zh-CN"
   }
 }

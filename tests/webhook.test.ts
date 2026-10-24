@@ -745,5 +745,96 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(body.text).toContain('配置与密钥中枢');
     });
   });
+
+  describe('Webhook Secret 签名防护与鉴权测试 (P0 安全防御)', () => {
+    const secureEnv = {
+      ...env,
+      TELEGRAM_WEBHOOK_SECRET: 'my_ultra_secret_webhook_token_123',
+    };
+
+    it('配置 TELEGRAM_WEBHOOK_SECRET 时，缺失 Header 请求应返回 401 Unauthorized', async () => {
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/config',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, secureEnv);
+      expect(res.status).toBe(401);
+      const errText = await res.text();
+      expect(errText).toContain('Invalid Telegram Webhook Secret Token');
+    });
+
+    it('配置 TELEGRAM_WEBHOOK_SECRET 时，Header 伪造或不匹配应被 401 拒之门外', async () => {
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'wrong_attacker_token',
+        },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/config',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, secureEnv);
+      expect(res.status).toBe(401);
+    });
+
+    it('携带合法 Secret Token Header 时应成功通过并执行指令', async () => {
+      const req = new Request('https://worker.dev/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-telegram-bot-api-secret-token': 'my_ultra_secret_webhook_token_123',
+        },
+        body: JSON.stringify({
+          message: {
+            from: { id: 987654321 },
+            text: '/help',
+          },
+        }),
+      });
+
+      const res = await worker.fetch(req, secureEnv);
+      expect(res.status).toBe(200);
+      expect(fetchMock).toHaveBeenCalled();
+    });
+
+    it('/setup-webhook 在配置 Secret 时，若缺少 ?secret= 应被 403 拒绝', async () => {
+      const req = new Request('https://worker.dev/setup-webhook', { method: 'GET' });
+      const res = await worker.fetch(req, secureEnv);
+      expect(res.status).toBe(403);
+      const data = (await res.json()) as any;
+      expect(data.ok).toBe(false);
+      expect(data.error).toContain('Invalid or missing setup secret');
+    });
+
+    it('/setup-webhook 携带正确的 ?secret= 参数应顺利注册且包含 secret_token', async () => {
+      const req = new Request(
+        'https://worker.dev/setup-webhook?secret=my_ultra_secret_webhook_token_123',
+        { method: 'GET' }
+      );
+      const res = await worker.fetch(req, secureEnv);
+      expect(res.status).toBe(200);
+      const data = (await res.json()) as any;
+      expect(data.ok).toBe(true);
+
+      // Verify secret_token was passed in fetch URL to Telegram setWebhook API
+      const setWebhookCall = fetchMock.mock.calls.find((call: any[]) =>
+        String(call[0]).includes('setWebhook')
+      );
+      expect(setWebhookCall).toBeDefined();
+      expect(String(setWebhookCall[0])).toContain('secret_token=my_ultra_secret_webhook_token_123');
+    });
+  });
 });
 

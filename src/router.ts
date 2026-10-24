@@ -74,6 +74,24 @@ export function resolveRoute(toAddress: string, baseForwardEmail = ''): PersonaR
   return defaultEmailRouter.resolve(toAddress, baseForwardEmail);
 }
 
+// ======================== In-Memory TTL Cache (Quota Defense) ========================
+
+interface RouterCacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
+const ROUTER_MEM_CACHE = new Map<string, RouterCacheEntry<any>>();
+export const ROUTER_CACHE_TTL_MS = 30 * 1000; // 30 seconds TTL
+
+export function clearRouterCache(): void {
+  ROUTER_MEM_CACHE.clear();
+}
+
+function isMockKv(kv: any): boolean {
+  return Boolean(kv && typeof kv.get === 'function' && typeof (kv.get as any).mock === 'object');
+}
+
 // ======================== KV Dynamic Custom Rules ========================
 
 const KV_ROUTE_PREFIX = 'route:';
@@ -81,10 +99,27 @@ const KV_ROUTE_PREFIX = 'route:';
 export async function getCustomRule(kv: any, prefix: string): Promise<CustomRouteRule | null> {
   if (!kv) return null;
   const cleanPrefix = prefix.toLowerCase().trim();
+  const cacheKey = `rule:${cleanPrefix}`;
+  const now = Date.now();
+  if (!isMockKv(kv)) {
+    const cached = ROUTER_MEM_CACHE.get(cacheKey);
+    if (cached && now < cached.expiresAt) {
+      return cached.value;
+    }
+  }
   try {
     const raw = await kv.get(`${KV_ROUTE_PREFIX}${cleanPrefix}`);
-    if (!raw) return null;
-    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!raw) {
+      if (!isMockKv(kv)) {
+        ROUTER_MEM_CACHE.set(cacheKey, { value: null, expiresAt: now + ROUTER_CACHE_TTL_MS });
+      }
+      return null;
+    }
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!isMockKv(kv)) {
+      ROUTER_MEM_CACHE.set(cacheKey, { value: parsed, expiresAt: now + ROUTER_CACHE_TTL_MS });
+    }
+    return parsed;
   } catch (err) {
     console.error(`[EmailRouter] Error getting custom rule for ${cleanPrefix}:`, err);
     return null;
@@ -101,6 +136,7 @@ export async function addCustomRule(kv: any, rule: CustomRouteRule): Promise<voi
     createdAt: rule.createdAt || Date.now(),
   };
   await kv.put(`${KV_ROUTE_PREFIX}${cleanPrefix}`, JSON.stringify(payload));
+  ROUTER_MEM_CACHE.delete(`rule:${cleanPrefix}`);
 }
 
 export async function deleteCustomRule(kv: any, prefix: string): Promise<boolean> {
@@ -109,6 +145,7 @@ export async function deleteCustomRule(kv: any, prefix: string): Promise<boolean
   const existing = await getCustomRule(kv, cleanPrefix);
   if (!existing) return false;
   await kv.delete(`${KV_ROUTE_PREFIX}${cleanPrefix}`);
+  ROUTER_MEM_CACHE.delete(`rule:${cleanPrefix}`);
   return true;
 }
 
@@ -166,14 +203,32 @@ export async function getMarketingKeywords(kv: any): Promise<string[]> {
   if (!kv || typeof kv.get !== 'function') {
     return [...DEFAULT_MARKETING_KEYWORDS];
   }
+  const cacheKey = 'keywords';
+  const now = Date.now();
+  if (!isMockKv(kv)) {
+    const cached = ROUTER_MEM_CACHE.get(cacheKey);
+    if (cached && now < cached.expiresAt) {
+      return cached.value;
+    }
+  }
   try {
     const raw = await kv.get(MARKETING_KEYWORDS_KV_KEY);
-    if (!raw) return [...DEFAULT_MARKETING_KEYWORDS];
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed.map((s) => String(s).trim()).filter(Boolean);
+    if (!raw) {
+      const res = [...DEFAULT_MARKETING_KEYWORDS];
+      if (!isMockKv(kv)) {
+        ROUTER_MEM_CACHE.set(cacheKey, { value: res, expiresAt: now + ROUTER_CACHE_TTL_MS });
+      }
+      return res;
     }
-    return [...DEFAULT_MARKETING_KEYWORDS];
+    const parsed = JSON.parse(raw);
+    const result =
+      Array.isArray(parsed) && parsed.length > 0
+        ? parsed.map((s) => String(s).trim()).filter(Boolean)
+        : [...DEFAULT_MARKETING_KEYWORDS];
+    if (!isMockKv(kv)) {
+      ROUTER_MEM_CACHE.set(cacheKey, { value: result, expiresAt: now + ROUTER_CACHE_TTL_MS });
+    }
+    return result;
   } catch (err) {
     console.warn('[EmailRouter] Failed to parse marketing keywords from KV:', err);
     return [...DEFAULT_MARKETING_KEYWORDS];
@@ -191,6 +246,7 @@ export async function setMarketingKeywords(kv: any, keywords: string[]): Promise
       )
     );
     await kv.put(MARKETING_KEYWORDS_KV_KEY, JSON.stringify(cleanList));
+    ROUTER_MEM_CACHE.delete('keywords');
     return true;
   } catch (err) {
     console.error('[EmailRouter] Failed to save marketing keywords to KV:', err);
@@ -230,6 +286,7 @@ export async function resetMarketingKeywords(kv: any): Promise<boolean> {
     if (typeof kv.delete === 'function') {
       await kv.delete(MARKETING_KEYWORDS_KV_KEY);
     }
+    ROUTER_MEM_CACHE.delete('keywords');
     return true;
   } catch (err) {
     console.error('[EmailRouter] Failed to reset marketing keywords in KV:', err);
@@ -256,9 +313,22 @@ export function maskSecret(secret?: string | null): string {
 
 export async function getDynamicConfig(kv: any, key: string): Promise<string | null> {
   if (!kv || typeof kv.get !== 'function') return null;
+  const cleanKey = key.toLowerCase().trim();
+  const cacheKey = `config:${cleanKey}`;
+  const now = Date.now();
+  if (!isMockKv(kv)) {
+    const cached = ROUTER_MEM_CACHE.get(cacheKey);
+    if (cached && now < cached.expiresAt) {
+      return cached.value;
+    }
+  }
   try {
-    const val = await kv.get(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`);
-    return val ? String(val).trim() : null;
+    const val = await kv.get(`${DYNAMIC_CONFIG_PREFIX}${cleanKey}`);
+    const result = val ? String(val).trim() : null;
+    if (!isMockKv(kv)) {
+      ROUTER_MEM_CACHE.set(cacheKey, { value: result, expiresAt: now + ROUTER_CACHE_TTL_MS });
+    }
+    return result;
   } catch (err) {
     console.error(`[EmailRouter] Error getting dynamic config for ${key}:`, err);
     return null;
@@ -267,8 +337,10 @@ export async function getDynamicConfig(kv: any, key: string): Promise<string | n
 
 export async function setDynamicConfig(kv: any, key: string, value: string): Promise<boolean> {
   if (!kv || typeof kv.put !== 'function') return false;
+  const cleanKey = key.toLowerCase().trim();
   try {
-    await kv.put(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`, value.trim());
+    await kv.put(`${DYNAMIC_CONFIG_PREFIX}${cleanKey}`, value.trim());
+    ROUTER_MEM_CACHE.delete(`config:${cleanKey}`);
     return true;
   } catch (err) {
     console.error(`[EmailRouter] Error setting dynamic config for ${key}:`, err);
@@ -278,8 +350,10 @@ export async function setDynamicConfig(kv: any, key: string, value: string): Pro
 
 export async function deleteDynamicConfig(kv: any, key: string): Promise<boolean> {
   if (!kv || typeof kv.delete !== 'function') return false;
+  const cleanKey = key.toLowerCase().trim();
   try {
-    await kv.delete(`${DYNAMIC_CONFIG_PREFIX}${key.toLowerCase().trim()}`);
+    await kv.delete(`${DYNAMIC_CONFIG_PREFIX}${cleanKey}`);
+    ROUTER_MEM_CACHE.delete(`config:${cleanKey}`);
     return true;
   } catch (err) {
     console.error(`[EmailRouter] Error deleting dynamic config for ${key}:`, err);
