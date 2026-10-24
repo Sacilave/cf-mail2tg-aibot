@@ -1,7 +1,26 @@
+# Dependencies
 node_modules/
 dist/
+
+# Cloudflare Wrangler
 .wrangler/
+
+# Local Environment Variables & Secrets (CRITICAL: NEVER COMMIT)
+.env
+.env.*
 .dev.vars
+.dev.vars.*
+.dev.vars.local
+
+# Local Dev Runner Storage & Cache (CRITICAL: NEVER COMMIT)
+.local-kv.json
+.local-kv.*
+*.local.json
+
+# Logs & Diagnostics
 *.log
+npm-debug.log*
+
+# OS Files
 .DS_Store
 Thumbs.db

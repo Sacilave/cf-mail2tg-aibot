@@ -185,7 +185,7 @@ describe('EmailForwarder - 邮件清洗与编码鲁棒性测试', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.text).toContain('【新邮件 · 业务 · support】');
-    expect(body.text).toContain('业务类型:</b> <code>商业支持</code>');
+    expect(body.text).toContain('业务类型:</b> <code>客服</code>');
     expect(body.text).toContain('已同步投递至备份邮箱');
 
     vi.unstubAllGlobals();
@@ -516,16 +516,22 @@ describe('Anti-Marketing & Long Email - 营销过滤与长邮件体验增强测�
   it('detectMarketingEmail 应根据主题或正文中的营销关键字精准识别', () => {
     const headers = new Map<string, string>();
 
-    const res1 = detectMarketingEmail(headers, '您的账户已获得 50 元优惠券', '请在有效期内使用');
+    const res1 = detectMarketingEmail(headers, 'Your account received a coupon', 'Please check your balance');
     expect(res1.isMarketing).toBe(true);
-    expect(res1.matchedKeyword).toBe('优惠券');
+    expect(res1.matchedKeyword).toBe('coupon');
 
-    const res2 = detectMarketingEmail(headers, '月度报告', '如不想再收到此信件，请点击退订链接');
+    const res2 = detectMarketingEmail(headers, 'Monthly Newsletter', 'Click here to unsubscribe');
     expect(res2.isMarketing).toBe(true);
-    expect(res2.matchedKeyword).toBe('退订');
+    expect(res2.matchedKeyword).toBe('unsubscribe');
 
     const res3 = detectMarketingEmail(headers, '技术架构评审会议通知', '请查阅附录中的架构图并在下周一准时参会');
     expect(res3.isMarketing).toBe(false);
+
+    // 验证传入本地化多语言词库时的命中逻辑
+    const zhKeywords = ['优惠券', '退订'];
+    const resZh = detectMarketingEmail(headers, '您的账户已获得 50 元优惠券', '请在有效期内使用', zhKeywords);
+    expect(resZh.isMarketing).toBe(true);
+    expect(resZh.matchedKeyword).toBe('优惠券');
   });
 
   it('营销邮件应自动分流至备份邮箱营销别名且 TG 卡片静默推送 (disable_notification=true)', async () => {

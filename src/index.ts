@@ -34,10 +34,14 @@ import {
 } from './sanitizer';
 import type { MarketingCheckResult } from './sanitizer';
 import {
+  classifyEmail,
   classifyEmailWithMiniMax,
   sanitizeErrorMessage,
   extractVerificationCode,
   normalizeIntent,
+  findProvider,
+  SUPPORTED_PROVIDERS,
+  getRecommendedModel,
 } from './ai';
 import type { MiniMaxClassifyResult, MiniMaxClassifyOptions } from './ai';
 import {
@@ -65,6 +69,11 @@ import {
   setMarketingKeywords,
   appendMarketingKeywords,
   resetMarketingKeywords,
+  ensureLanguageKeywords,
+  getCustomTags,
+  getAllActiveTags,
+  addCustomTag,
+  deleteCustomTag,
   MARKETING_KEYWORDS_KV_KEY,
   getDynamicConfig,
   setDynamicConfig,
@@ -76,6 +85,10 @@ import {
   setSetupSession,
   clearSetupSession,
   SETUP_SESSION_KEY,
+  getInteractiveSession,
+  setInteractiveSession,
+  clearInteractiveSession,
+  getEffectiveAiConfig,
 } from './router';
 import type {
   Env,
@@ -107,6 +120,19 @@ import {
   renderAttachmentRejectCard,
   renderEmailCardHtml,
   renderEmailCardPlainText,
+  renderMasterDashboardHtml,
+  getMasterMenuKeyboard,
+  renderStartCardHtml,
+  getStartKeyboard,
+  renderUsageGuideHtml,
+  getUsageGuideKeyboard,
+  getTagsMenuKeyboard,
+  getAiMenuKeyboard,
+  getModelsMenuKeyboard,
+  getRoutesMenuKeyboard,
+  getRouteTagSelectionKeyboard,
+  getKeywordsMenuKeyboard,
+  getForwardMenuKeyboard,
 } from './card-renderer';
 
 // Export core functions and types for external test suites
@@ -146,6 +172,11 @@ export {
   setMarketingKeywords,
   appendMarketingKeywords,
   resetMarketingKeywords,
+  ensureLanguageKeywords,
+  getCustomTags,
+  getAllActiveTags,
+  addCustomTag,
+  deleteCustomTag,
   MARKETING_KEYWORDS_KV_KEY,
   getDynamicConfig,
   setDynamicConfig,
@@ -202,19 +233,15 @@ let telegramCircuitBreakerUntil = 0;
  * Standard Telegram Bot Commands definition for setMyCommands & Help Menu
  */
 const BOT_COMMANDS = [
+  { command: 'start', description: '网关状态总览与快速入口' },
+  { command: 'menu', description: '打开网关设置控制面板' },
+  { command: 'guide', description: '查看详细使用指南' },
   { command: 'lang', description: '切换显示语言 / Switch language' },
-  { command: 'setup', description: '一键极速配置向导 (1分钟分步引导)' },
   { command: 'config', description: '查看密钥绑定状态与配置中枢' },
+  { command: 'routes', description: '查看并管理邮箱业务路由规则' },
+  { command: 'keywords', description: '查看并管理营销垃圾拦截词库' },
   { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
-  { command: 'resetkey', description: '重置动态密钥并回退至默认配置' },
-  { command: 'cancel', description: '退出当前向导或交互会话' },
-  { command: 'keywords', description: '查看并复制全部营销拦截关键词' },
-  { command: 'addkeywords', description: '增量安全追加营销关键词 (不覆盖)' },
-  { command: 'resetkeywords', description: '重置营销关键词为系统默认基线' },
-  { command: 'routes', description: '查看当前所有域名路由映射与规则' },
-  { command: 'add', description: '添加自定义路由规则: add 标签 前缀 [转发目标]' },
-  { command: 'del', description: '删除自定义路由规则: del 前缀' },
-  { command: 'help', description: '查看网关操作帮助与状态' },
+  { command: 'help', description: '查看指令面板与帮助' },
 ];
 
 /**
@@ -266,18 +293,28 @@ async function answerCallbackQuery(botToken: string, callbackQueryId: string, te
   }
 }
 
-async function editMessageText(botToken: string, chatId: string | number, messageId: number, text: string): Promise<boolean> {
+async function editMessageText(
+  botToken: string,
+  chatId: string | number,
+  messageId: number,
+  text: string,
+  replyMarkup?: any
+): Promise<boolean> {
   const url = `https://api.telegram.org/bot${botToken}/editMessageText`;
   try {
+    const payload: any = {
+      chat_id: chatId,
+      message_id: messageId,
+      text,
+      parse_mode: 'HTML',
+    };
+    if (replyMarkup) {
+      payload.reply_markup = replyMarkup;
+    }
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        message_id: messageId,
-        text,
-        parse_mode: 'HTML',
-      }),
+      body: JSON.stringify(payload),
     });
     return res.ok;
   } catch {
@@ -421,6 +458,615 @@ export default {
       );
       const cbDict = getTranslation(cbLang);
 
+      // 0. Start Overview Menu
+      if (callbackData === 'm:start') {
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const fwd = (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesEnabled = String((await getDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+
+        const startCard = renderStartCardHtml({
+          dict: cbDict,
+          provider: effectiveAi.provider,
+          model: effectiveAi.model,
+          forwardEmail: fwd,
+          gmailAliasesEnabled: aliasesEnabled,
+        });
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, startCard, {
+            inline_keyboard: getStartKeyboard(cbDict),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.1 Usage Detailed Guide
+      if (callbackData === 'm:guide') {
+        const guideCard = renderUsageGuideHtml(cbDict);
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, guideCard, {
+            inline_keyboard: getUsageGuideKeyboard(cbDict),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.2 Quick Setup Wizard
+      if (callbackData === 'm:setup') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.setupCommand.kvRequiredError);
+          return new Response('OK', { status: 200 });
+        }
+        await setSetupSession(env.MAIL_ROUTES_KV, 1);
+        await answerCallbackQuery(botToken, callbackId);
+        await sendTelegramMessage(botToken, adminChatId, cbDict.setupCommand.startWizardText, {
+          inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.3 Cancel Active Wizard or Session
+      if (callbackData === 'm:cancel') {
+        if (env?.MAIL_ROUTES_KV) {
+          await clearSetupSession(env.MAIL_ROUTES_KV);
+          await clearInteractiveSession(env.MAIL_ROUTES_KV);
+        }
+        await answerCallbackQuery(botToken, callbackId, cbDict.setupCommand.cancelSuccess);
+        await sendTelegramMessage(botToken, adminChatId, cbDict.setupCommand.cancelSuccess, {
+          inline_keyboard: [[{ text: cbDict.startCommand.btnOpenMenu, callback_data: 'm:main' }]],
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 1. Dashboard Master Menu & Refresh
+      if (callbackData === 'm:main' || callbackData === 'm:refresh') {
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const fwd = (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesEnabled = String((await getDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+        const rules = await listCustomRules(env.MAIL_ROUTES_KV);
+        const kws = await getMarketingKeywords(env.MAIL_ROUTES_KV);
+
+        const card = renderMasterDashboardHtml({
+          dict: cbDict,
+          provider: effectiveAi.provider,
+          model: effectiveAi.model,
+          keyConfigured: Boolean(effectiveAi.apiKey || effectiveAi.provider === 'workers-ai'),
+          forwardEmail: fwd,
+          gmailAliasesEnabled: aliasesEnabled,
+          customRulesCount: rules.length,
+          keywordsCount: kws.length,
+          langName: cbDict.langName,
+        });
+
+        await answerCallbackQuery(botToken, callbackId, callbackData === 'm:refresh' ? cbDict.dashboard.toastUpdated : undefined);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getMasterMenuKeyboard(cbDict),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 2. AI Menu
+      if (callbackData === 'm:ai') {
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const card = [
+          `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `• 当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>`,
+          `• 运行模型: <code>${escapeHtml(effectiveAi.model)}</code>`,
+          `• 密钥状态: ${effectiveAi.apiKey ? '🟢 已配置' : (effectiveAi.provider === 'workers-ai' ? '🟢 免密运行' : '⚪ 未绑定')}`,
+          ``,
+          `💡 <i>轻触下方厂商按钮立即秒切，或点击【切换具体模型】挑选版本：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getAiMenuKeyboard(cbDict, effectiveAi.provider, effectiveAi.model),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 3. Provider Switch (p:<providerId>)
+      if (callbackData.startsWith('p:')) {
+        const providerId = callbackData.slice('p:'.length);
+        const providerMeta = findProvider(providerId);
+        if (providerMeta && env.MAIL_ROUTES_KV) {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_provider', providerMeta.id);
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', providerMeta.defaultModel);
+          await answerCallbackQuery(botToken, callbackId, `已切换至 ${providerMeta.name}`);
+
+          const card = [
+            `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+            `━━━━━━━━━━━━━━━━━━`,
+            `• 当前厂商: <b>${escapeHtml(providerMeta.name)}</b>`,
+            `• 运行模型: <code>${escapeHtml(providerMeta.defaultModel)}</code>`,
+            `• 厂商特性: <i>${escapeHtml(providerMeta.badge)}</i>`,
+            ``,
+            `✅ <b>厂商切换成功！</b>`,
+          ].join('\n');
+
+          if (messageId) {
+            await editMessageText(botToken, adminChatId, messageId, card, {
+              inline_keyboard: getAiMenuKeyboard(cbDict, providerMeta.id, providerMeta.defaultModel),
+            });
+          }
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 4. Model Selection Menu (m:models)
+      if (callbackData === 'm:models') {
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const card = [
+          cbDict.modelCommand.title(effectiveAi.provider),
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.modelCommand.current(effectiveAi.model),
+          ``,
+          `<i>💡 轻触下方按钮直接切换至推荐模型：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getModelsMenuKeyboard(cbDict, effectiveAi.provider, effectiveAi.model),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 5. Model Switch (mod:<modelId>)
+      if (callbackData.startsWith('mod:')) {
+        const chosenModel = callbackData.slice('mod:'.length);
+        if (env.MAIL_ROUTES_KV) {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', chosenModel);
+        }
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        await answerCallbackQuery(botToken, callbackId, `已切换为 ${chosenModel}`);
+
+        const card = [
+          cbDict.modelCommand.title(effectiveAi.provider),
+          `━━━━━━━━━━━━━━━━━━`,
+          `✅ <b>模型已更新为:</b> <code>${escapeHtml(chosenModel)}</code>`,
+          ``,
+          `<i>💡 轻触下方按钮可继续挑选其他推荐模型：</i>`,
+        ].join('\n');
+
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getModelsMenuKeyboard(cbDict, effectiveAi.provider, chosenModel),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 5.1 Set AI API Key (ai:setkey)
+      if (callbackData === 'ai:setkey') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.providerCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'set_ai_key',
+          step: 1,
+          provider: effectiveAi.provider,
+          createdAt: Date.now(),
+        });
+        await answerCallbackQuery(botToken, callbackId);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🔑 <b>【 绑定大模型 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>\n\n请直接回复您的 API Key（如 <code>sk-...</code>）：\n<i>（注：Workers AI 免密运行，无需配置 Key）</i>`,
+          {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // 5.2 Reset AI API Key (ai:resetkey)
+      if (callbackData === 'ai:resetkey') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.providerCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'ai_api_key');
+        await answerCallbackQuery(botToken, callbackId, '已清除自定义 API Key');
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const card = [
+          `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `• 当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>`,
+          `• 运行模型: <code>${escapeHtml(effectiveAi.model)}</code>`,
+          `• 密钥状态: ${effectiveAi.apiKey ? '🟢 已配置' : (effectiveAi.provider === 'workers-ai' ? '🟢 免密运行' : '⚪ 未绑定')}`,
+          ``,
+          `✅ <b>已清除自定义 API Key，已恢复初始设置！</b>`,
+        ].join('\n');
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getAiMenuKeyboard(cbDict, effectiveAi.provider, effectiveAi.model),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 6. Routes Menu (m:routes)
+      if (callbackData === 'm:routes') {
+        const rules = await listCustomRules(env.MAIL_ROUTES_KV);
+        const customLines = rules.length > 0
+          ? rules.map(r => `• <code>${escapeHtml(r.prefix)}</code> ➜ <b>${escapeHtml(cbDict.emailCard.personaTags[r.tag] || r.tag)}</b> <i>(${escapeHtml(r.forwardEmail || '默认备份')})</i>`).join('\n')
+          : `<i>${cbDict.routesCommand.noCustomRules}</i>`;
+
+        const card = [
+          cbDict.dashboard.routesTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          `<b>自定义业务规则 (优先匹配):</b>`,
+          customLines,
+          ``,
+          `<b>系统默认基线:</b>`,
+          `• <code>support/help/service</code> ➜ <b>客服</b>`,
+          `• <code>sales/billing/business</code> ➜ <b>商务</b>`,
+          `• <code>admin/me/i/hi/blog</code> ➜ <b>个人</b>`,
+          `• <code>product/feedback/app</code> ➜ <b>产品</b>`,
+          `• <i>其他未定义前缀</i> ➜ <b>通用</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `<i>💡 点击【➕ 添加分流规则】或下方【🗑️ 删除】按钮快捷管理：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getRoutesMenuKeyboard(cbDict, rules),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 6.1 Tags Management Menu (m:tags)
+      if (callbackData === 'm:tags') {
+        const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
+        const card = [
+          cbDict.dashboard.tagsTitle || '🏷️ <b>【 业务分类标签管理 】</b>',
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.dashboard.tagsPrompt || '在此管理您的自定义业务分类标签。这些标签可在添加前缀分流规则时使用：',
+          ``,
+          `• <b>系统默认基准:</b> <code>个人</code> · <code>客服</code> · <code>商务</code> · <code>产品</code> · <code>通用</code>`,
+          `• <b>自定义扩展标签:</b> ${customTags.length > 0 ? customTags.map(t => `<code>${escapeHtml(t)}</code>`).join(' · ') : `<i>${cbDict.dashboard.tagsEmpty || '暂无自定义标签'}</i>`}`,
+          ``,
+          `<i>💡 点击【➕ 新增标签】添加专属标签，或点击下方【🗑️ 删除】移除自定义标签：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getTagsMenuKeyboard(cbDict, customTags),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 6.2 Add Tag Prompt (ta:start)
+      if (callbackData === 'ta:start') {
+        if (env.MAIL_ROUTES_KV) {
+          await setInteractiveSession(env.MAIL_ROUTES_KV, {
+            type: 'add_custom_tag',
+          });
+        }
+        const card = [
+          cbDict.dashboard.tagsAddPrompt ||
+            '🏷️ <b>【 添加自定义标签 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要创建的业务标签名称（例如：<code>财务</code>、<code>监控</code>、<code>内部</code>，10字以内）：',
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:tags' }]],
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 6.3 Delete Tag (td:<tag>)
+      if (callbackData.startsWith('td:')) {
+        const tag = callbackData.slice('td:'.length);
+        await deleteCustomTag(env.MAIL_ROUTES_KV, tag);
+        await answerCallbackQuery(botToken, callbackId, `已删除标签: ${tag}`);
+        const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
+        const card = [
+          cbDict.dashboard.tagsTitle || '🏷️ <b>【 业务分类标签管理 】</b>',
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.dashboard.tagsDeleteSuccess ? cbDict.dashboard.tagsDeleteSuccess(escapeHtml(tag)) : `✅ 已删除自定义标签: <b>【${escapeHtml(tag)}】</b>！`,
+          ``,
+          `• <b>系统默认基准:</b> <code>个人</code> · <code>客服</code> · <code>商务</code> · <code>产品</code> · <code>通用</code>`,
+          `• <b>自定义扩展标签:</b> ${customTags.length > 0 ? customTags.map(t => `<code>${escapeHtml(t)}</code>`).join(' · ') : `<i>${cbDict.dashboard.tagsEmpty || '暂无自定义标签'}</i>`}`,
+        ].join('\n');
+
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getTagsMenuKeyboard(cbDict, customTags),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 7. Route Add Step 1 (ra:start)
+      if (callbackData === 'ra:start') {
+        const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
+        const card = [
+          `➕ <b>【 添加新路由规则 · 第一步 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.dashboard.routesSelectTagPrompt,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getRouteTagSelectionKeyboard(cbDict, customTags),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 8. Route Add Step 2 (ra:tag:<tag>)
+      if (callbackData.startsWith('ra:tag:')) {
+        const tag = callbackData.slice('ra:tag:'.length);
+        if (env.MAIL_ROUTES_KV) {
+          await setInteractiveSession(env.MAIL_ROUTES_KV, {
+            type: 'add_route_prefix',
+            tag,
+          });
+        }
+        const localizedTag = cbDict.emailCard.personaTags[tag] || tag;
+        const card = [
+          `➕ <b>【 添加新路由规则 · 第二步 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.dashboard.routesInputPrefixPrompt(localizedTag),
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId, `已选分类: ${localizedTag}`);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:routes' }]],
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 9. Route Direct Delete (rd:<prefix>)
+      if (callbackData.startsWith('rd:')) {
+        const prefix = callbackData.slice('rd:'.length);
+        const deleted = await deleteCustomRule(env.MAIL_ROUTES_KV, prefix);
+        await answerCallbackQuery(botToken, callbackId, deleted ? cbDict.routesCommand.delAlertDeleted : cbDict.routesCommand.delAlertNotFound);
+        const rules = await listCustomRules(env.MAIL_ROUTES_KV);
+
+        const customLines = rules.length > 0
+          ? rules.map(r => `• <code>${escapeHtml(r.prefix)}</code> ➜ <b>${escapeHtml(cbDict.emailCard.personaTags[r.tag] || r.tag)}</b> <i>(${escapeHtml(r.forwardEmail || '默认备份')})</i>`).join('\n')
+          : `<i>${cbDict.routesCommand.noCustomRules}</i>`;
+
+        const card = [
+          cbDict.dashboard.routesTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.dashboard.routesDeletedSuccess(escapeHtml(prefix)),
+          ``,
+          `<b>自定义业务规则 (优先匹配):</b>`,
+          customLines,
+        ].join('\n');
+
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getRoutesMenuKeyboard(cbDict, rules),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 10. Keywords Menu (m:kw)
+      if (callbackData === 'm:kw') {
+        const kws = await getMarketingKeywords(env.MAIL_ROUTES_KV);
+        const card = [
+          cbDict.dashboard.kwTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          cbDict.keywordsCommand.countDesc(kws.length),
+          ``,
+          `<b>词库预览 (前15个):</b>`,
+          `<code>${escapeHtml(kws.slice(0, 15).join('、'))}${kws.length > 15 ? ' ...' : ''}</code>`,
+          ``,
+          `<i>💡 发送 <code>/addkw 词1 词2</code> 可追加新词；或点击下方按钮重置：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getKeywordsMenuKeyboard(cbDict),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 11. Keywords Full View (kw:view)
+      if (callbackData === 'kw:view') {
+        const kws = await getMarketingKeywords(env.MAIL_ROUTES_KV);
+        const card = [
+          `📋 <b>【 营销拦截词库完整列表 (共 ${kws.length} 个) 】</b>`,
+          `━━━━━━━━━━━━━━━━━━`,
+          `<code>${escapeHtml(kws.join('、'))}</code>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnBackMain, callback_data: 'm:kw' }]],
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 12. Keywords Reset (kw:reset_confirm)
+      if (callbackData === 'kw:reset_confirm') {
+        await resetMarketingKeywords(env.MAIL_ROUTES_KV);
+        const kws = await getMarketingKeywords(env.MAIL_ROUTES_KV);
+        await answerCallbackQuery(botToken, callbackId, '已恢复系统默认词库');
+
+        const card = [
+          cbDict.dashboard.kwTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          `✅ <b>已重置为默认拦截词库！</b>`,
+          cbDict.keywordsCommand.countDesc(kws.length),
+          ``,
+          `<b>词库预览 (前15个):</b>`,
+          `<code>${escapeHtml(kws.slice(0, 15).join('、'))}${kws.length > 15 ? ' ...' : ''}</code>`,
+        ].join('\n');
+
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getKeywordsMenuKeyboard(cbDict),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 12.3 Add Marketing Keywords (kw:add_start)
+      if (callbackData === 'kw:add_start') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.keywordsCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'add_keywords',
+          step: 1,
+          createdAt: Date.now(),
+        });
+        await answerCallbackQuery(botToken, callbackId);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🚫 <b>【 追加营销拦截词 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要追加的关键词（一行一个，或以逗号/空格分隔）：`,
+          {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // 13. Forwarding Menu (m:fwd)
+      if (callbackData === 'm:fwd') {
+        const fwd = (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesActive = String((await getDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+
+        const card = [
+          cbDict.dashboard.fwdTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          `• 备份转发目标: ${fwd ? `<code>${escapeHtml(fwd)}</code>` : '⚪ 纯TG模式 (未设置)'}`,
+          `• Gmail 别名路由 (+tag): ${aliasesActive ? '🟢 已启用' : '⚪ 已停用'}`,
+          ``,
+          `<i>💡 如需修改转发邮箱，可发送 <code>/setkey forward &lt;email&gt;</code>；轻触下方按钮可直接切换 Gmail 别名：</i>`,
+        ].join('\n');
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getForwardMenuKeyboard(cbDict, aliasesActive),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 14. Forwarding Toggle Alias (fwd:toggle_alias)
+      if (callbackData === 'fwd:toggle_alias') {
+        const cur = String((await getDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+        const next = !cur;
+        if (env.MAIL_ROUTES_KV) {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases', String(next));
+        }
+        await answerCallbackQuery(botToken, callbackId, next ? '已开启 Gmail 别名 (+tag)' : '已停用 Gmail 别名');
+
+        const fwd = (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const card = [
+          cbDict.dashboard.fwdTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          `• 备份转发目标: ${fwd ? `<code>${escapeHtml(fwd)}</code>` : '⚪ 纯TG模式 (未设置)'}`,
+          `• Gmail 别名路由 (+tag): ${next ? '🟢 已启用' : '⚪ 已停用'}`,
+          ``,
+          `<i>💡 如需修改转发邮箱，可发送 <code>/setkey forward &lt;email&gt;</code>；轻触下方按钮可直接切换 Gmail 别名：</i>`,
+        ].join('\n');
+
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getForwardMenuKeyboard(cbDict, next),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 14.1 Set Forward Email (fwd:set_start)
+      if (callbackData === 'fwd:set_start') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.setkeyCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'set_forward_email',
+          step: 1,
+          createdAt: Date.now(),
+        });
+        await answerCallbackQuery(botToken, callbackId);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `📬 <b>【 修改备份转发邮箱 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您的新目标邮箱（例如: <code>yourname@gmail.com</code>）：\n<i>（⚠️ 注意: 请确保该邮箱已在 Cloudflare Email Routing 中完成验证）</i>`,
+          {
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // 14.2 Reset Forward Email (fwd:reset_confirm)
+      if (callbackData === 'fwd:reset_confirm') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, cbDict.setkeyCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email');
+        await answerCallbackQuery(botToken, callbackId, '已清除备份邮箱，已回退为单轨纯TG模式');
+        const fwd = (await getDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesActive = String((await getDynamicConfig(env.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+        const card = [
+          cbDict.dashboard.fwdTitle,
+          `━━━━━━━━━━━━━━━━━━`,
+          `• 备份转发目标: ${fwd ? `<code>${escapeHtml(fwd)}</code>` : '⚪ 纯TG模式 (未设置)'}`,
+          `• Gmail 别名路由 (+tag): ${aliasesActive ? '🟢 已启用' : '⚪ 已停用'}`,
+          ``,
+          `✅ <b>已清除自定义备份邮箱！</b>`,
+        ].join('\n');
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, card, {
+            inline_keyboard: getForwardMenuKeyboard(cbDict, aliasesActive),
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 15. Language Menu (m:lang)
+      if (callbackData === 'm:lang') {
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(
+            botToken,
+            adminChatId,
+            messageId,
+            `${cbDict.langCommand.selectPrompt}${cbDict.langCommand.currentLang(cbDict.langName)}`,
+            { inline_keyboard: getLanguageKeyboard(cbLang, true, cbDict.dashboard.btnBackMain) }
+          );
+        }
+        return new Response('OK', { status: 200 });
+      }
+
       // Handle language switching buttons
       if (callbackData.startsWith('lang:')) {
         const targetLang = callbackData.slice('lang:'.length);
@@ -428,6 +1074,7 @@ export default {
         if (normalized) {
           if (env.MAIL_ROUTES_KV) {
             await setDynamicConfig(env.MAIL_ROUTES_KV, 'system_language', normalized);
+            await ensureLanguageKeywords(env.MAIL_ROUTES_KV, normalized);
           }
           const newDict = getTranslation(normalized);
           await answerCallbackQuery(botToken, callbackId, newDict.langCommand.successAlert(newDict.langName));
@@ -436,7 +1083,8 @@ export default {
               botToken,
               adminChatId,
               messageId,
-              newDict.langCommand.successCard(newDict.langName)
+              newDict.langCommand.successCard(newDict.langName),
+              { inline_keyboard: [[{ text: newDict.dashboard.btnBackMain, callback_data: 'm:main' }]] }
             );
           }
           try {
@@ -538,6 +1186,7 @@ export default {
 
         if (env?.MAIL_ROUTES_KV) {
           await setDynamicConfig(env.MAIL_ROUTES_KV, 'system_language', normalized);
+          await ensureLanguageKeywords(env.MAIL_ROUTES_KV, normalized);
         }
         const newDict = getTranslation(normalized);
         try {
@@ -567,7 +1216,10 @@ export default {
         await sendTelegramMessage(
           botToken,
           adminChatId,
-          dict.setupCommand.startWizardText
+          dict.setupCommand.startWizardText,
+          {
+            inline_keyboard: [[{ text: dict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+          }
         );
         return new Response('OK', { status: 200 });
       }
@@ -576,6 +1228,7 @@ export default {
       if (command === 'cancel') {
         if (env?.MAIL_ROUTES_KV) {
           await clearSetupSession(env.MAIL_ROUTES_KV);
+          await clearInteractiveSession(env.MAIL_ROUTES_KV);
         }
         await sendTelegramMessage(
           botToken,
@@ -585,16 +1238,353 @@ export default {
         return new Response('OK', { status: 200 });
       }
 
-      // If user enters any standard slash command during setup wizard, gracefully exit wizard session
+      // Command: provider / ai (选择大模型厂商)
+      if (command === 'provider' || command === 'ai') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(botToken, adminChatId, dict.providerCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const currentMeta = findProvider(effectiveAi.provider);
+        const currentProviderName = currentMeta?.name || effectiveAi.provider;
+        const currentModelName = effectiveAi.model || currentMeta?.defaultModel || 'default';
+
+        // Check if user passed arguments directly (e.g. /provider 2 or /provider deepseek)
+        const directArg = parts.slice(1).join(' ').trim();
+        if (directArg) {
+          const matched = findProvider(directArg);
+          if (!matched) {
+            await sendTelegramMessage(botToken, adminChatId, dict.providerCommand.invalidOption);
+            return new Response('OK', { status: 200 });
+          }
+
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_provider', matched.id);
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', matched.defaultModel);
+          await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+          const note = matched.isFreeOrNoKey
+            ? '• 运行状态: 🟢 原生免密钥就绪 (完全免费)'
+            : dict.providerCommand.tipSetKey;
+
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.providerCommand.success(matched.name, matched.defaultModel, note)
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        // Interactive numbered prompt (1 to 9)
+        const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
+        const listLines = SUPPORTED_PROVIDERS.map((p, idx) => {
+          const emoji = numberEmojis[idx] || `[${p.index}]`;
+          const activeMark = p.id === effectiveAi.provider ? ' ✓ [当前]' : '';
+          return `${emoji} <b>${escapeHtml(p.name)}</b> ${p.badge}${activeMark}`;
+        }).join('\n');
+
+        const card = [
+          dict.providerCommand.title,
+          dict.providerCommand.current(escapeHtml(currentProviderName), escapeHtml(currentModelName)),
+          `━━━━━━━━━━━━━━━━━━`,
+          dict.providerCommand.prompt,
+          ``,
+          listLines,
+          ``,
+          `💡 <i>直接回复数字 <b>1~9</b> 即可完成切换，发送 /cancel 退出。</i>`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, { type: 'select_provider' });
+        await sendTelegramMessage(botToken, adminChatId, card);
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: model / setmodel (选择模型版本)
+      if (command === 'model' || command === 'setmodel') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(botToken, adminChatId, dict.modelCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        const currentMeta = findProvider(effectiveAi.provider);
+        const currentProviderName = currentMeta?.name || effectiveAi.provider;
+        const currentModelName = effectiveAi.model || currentMeta?.defaultModel || 'default';
+
+        // Check direct argument (e.g. /model 1 or /model deepseek-chat)
+        const directArg = parts.slice(1).join(' ').trim();
+        if (directArg) {
+          let chosenModel = directArg;
+          const num = parseInt(directArg, 10);
+          if (!isNaN(num) && currentMeta && num >= 1 && num <= currentMeta.models.length) {
+            chosenModel = currentMeta.models[num - 1].id;
+          }
+
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', chosenModel);
+          await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.modelCommand.success(escapeHtml(chosenModel))
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        // Interactive model options for current provider
+        const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣'];
+        const isZh = dict.langCode.startsWith('zh');
+        const modelsList = (currentMeta?.models || []).map((m, idx) => {
+          const emoji = numberEmojis[idx] || `[${idx + 1}]`;
+          const star = m.isRecommended ? ' ⭐ [推荐]' : '';
+          const active = m.id === currentModelName ? ' ✓ [当前]' : '';
+          const desc = isZh ? m.descriptionZh : m.descriptionEn;
+          return `${emoji} <code>${escapeHtml(m.id)}</code>${star}${active}\n   • <i>${escapeHtml(desc)}</i>`;
+        }).join('\n\n');
+
+        const card = [
+          dict.modelCommand.title(escapeHtml(currentProviderName)),
+          dict.modelCommand.current(escapeHtml(currentModelName)),
+          `━━━━━━━━━━━━━━━━━━`,
+          dict.modelCommand.prompt,
+          ``,
+          modelsList || `(暂无预设列表，请直接回复模型名称)`,
+          ``,
+          `💡 <i>直接回复数字 <b>1~${currentMeta?.models.length || 1}</b> 或输入自定义模型名，发送 /cancel 退出。</i>`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'select_model',
+          provider: effectiveAi.provider,
+        });
+        await sendTelegramMessage(botToken, adminChatId, card);
+        return new Response('OK', { status: 200 });
+      }
+
+      // If user enters any standard slash command during setup wizard or interactive session, gracefully exit
       if (isCommand && env?.MAIL_ROUTES_KV) {
         const activeStep = await getSetupSession(env.MAIL_ROUTES_KV);
         if (activeStep !== null) {
           await clearSetupSession(env.MAIL_ROUTES_KV);
         }
+        const activeSession = await getInteractiveSession(env.MAIL_ROUTES_KV);
+        if (activeSession !== null) {
+          await clearInteractiveSession(env.MAIL_ROUTES_KV);
+        }
       }
 
-      // Handle interactive wizard text replies (when message is NOT a command and NOT a keyword reply)
+      // Handle interactive text replies (when message is NOT a command and NOT a keyword reply)
       if (!isCommand && !isKeywordReply && env?.MAIL_ROUTES_KV) {
+        // 1. General Interactive Session (Provider / Model selection)
+        const interactiveSession = await getInteractiveSession(env.MAIL_ROUTES_KV);
+        if (interactiveSession) {
+          if (interactiveSession.type === 'select_provider') {
+            const rawChoice = rawText.trim();
+            const matchedProvider = findProvider(rawChoice);
+            if (!matchedProvider) {
+              await sendTelegramMessage(botToken, adminChatId, dict.providerCommand.invalidOption);
+              return new Response('OK', { status: 200 });
+            }
+
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_provider', matchedProvider.id);
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', matchedProvider.defaultModel);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            const note = matchedProvider.isFreeOrNoKey
+              ? '• 运行状态: 🟢 原生免密钥就绪 (完全免费)'
+              : dict.providerCommand.tipSetKey;
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              dict.providerCommand.success(matchedProvider.name, matchedProvider.defaultModel, note)
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'select_model') {
+            const rawChoice = rawText.trim();
+            const providerMeta = findProvider(interactiveSession.provider || 'deepseek');
+            let chosenModel = rawChoice;
+
+            const num = parseInt(rawChoice, 10);
+            if (!isNaN(num) && providerMeta && num >= 1 && num <= providerMeta.models.length) {
+              chosenModel = providerMeta.models[num - 1].id;
+            }
+
+            if (!chosenModel) {
+              await sendTelegramMessage(botToken, adminChatId, dict.modelCommand.invalidOption);
+              return new Response('OK', { status: 200 });
+            }
+
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model', chosenModel);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              dict.modelCommand.success(chosenModel)
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'add_route_prefix') {
+            const chosenTag = interactiveSession.tag || '通用';
+            const inputParts = rawText.trim().split(/\s+/).filter(Boolean);
+            const prefix = (inputParts[0] || '').toLowerCase().replace(/^@+/, '');
+            const forwardEmail = inputParts[1] || '';
+
+            if (!prefix || !/^[a-zA-Z0-9._-]+$/.test(prefix)) {
+              await sendTelegramMessage(botToken, adminChatId, dict.routesCommand.addInvalidPrefix(escapeHtml(rawText)));
+              return new Response('OK', { status: 200 });
+            }
+
+            await addCustomRule(env.MAIL_ROUTES_KV, {
+              prefix,
+              tag: chosenTag,
+              forwardEmail,
+            });
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            const localizedTag = dict.emailCard.personaTags[chosenTag] || chosenTag;
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              dict.dashboard.routesAddSuccess(escapeHtml(prefix), escapeHtml(localizedTag), escapeHtml(forwardEmail || '默认备份邮箱')),
+              {
+                inline_keyboard: [[{ text: dict.dashboard.btnRoutes, callback_data: 'm:routes' }]],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'add_custom_tag') {
+            const tagInput = rawText.trim().replace(/[#\s]/g, '');
+            if (!tagInput || tagInput.length > 10) {
+              await sendTelegramMessage(
+                botToken,
+                adminChatId,
+                dict.dashboard.tagsInvalid || '❌ 标签名称无效或已存在（必须为1-10个字符且不含空格）。'
+              );
+              return new Response('OK', { status: 200 });
+            }
+
+            await addCustomTag(env.MAIL_ROUTES_KV, tagInput);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            const successMsg = dict.dashboard.tagsAddSuccess
+              ? dict.dashboard.tagsAddSuccess(escapeHtml(tagInput))
+              : `✅ 成功添加自定义标签: <b>【${escapeHtml(tagInput)}】</b>！`;
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              successMsg,
+              {
+                inline_keyboard: [
+                  [
+                    { text: dict.dashboard.btnTags || '🏷️ 标签管理', callback_data: 'm:tags' },
+                    { text: dict.dashboard.btnAddRoute, callback_data: 'ra:start' },
+                  ],
+                ],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'set_ai_key') {
+            const cleanKey = rawText.trim().replace(/^['"]|['"]$/g, '');
+            if (!cleanKey) {
+              await sendTelegramMessage(botToken, adminChatId, '❌ Key 不能为空，请重新回复有效的 API Key:');
+              return new Response('OK', { status: 200 });
+            }
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_api_key', cleanKey);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `✅ <b>大模型 API Key 绑定成功！</b>\n━━━━━━━━━━━━━━━━━━\n已持久化保存至 KV，脱敏预览: <code>${escapeHtml(maskSecret(cleanKey))}</code>\n后续审信将即刻使用新密钥。`,
+              {
+                inline_keyboard: [
+                  [
+                    { text: dict.dashboard.btnAi, callback_data: 'm:ai' },
+                    { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                  ],
+                ],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'add_keywords') {
+            const lines = rawText
+              .split(/\r?\n|[\s,，]+/)
+              .map((s: string) => s.trim())
+              .filter((s: string) => s.length > 0 && !s.startsWith('#'));
+
+            if (lines.length === 0) {
+              await sendTelegramMessage(botToken, adminChatId, dict.keywordsCommand.emptyError);
+              return new Response('OK', { status: 200 });
+            }
+
+            const appendResult = await appendMarketingKeywords(env.MAIL_ROUTES_KV, lines);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              dict.keywordsCommand.successAppend(
+                appendResult.addedCount,
+                appendResult.totalCount,
+                escapeHtml(lines.join('\n'))
+              ),
+              {
+                inline_keyboard: [
+                  [
+                    { text: dict.dashboard.btnKeywords, callback_data: 'm:kw' },
+                    { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                  ],
+                ],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'set_forward_email') {
+            const targetEmail = rawText.trim();
+            if (!isValidEmail(targetEmail)) {
+              await sendTelegramMessage(
+                botToken,
+                adminChatId,
+                dict.setupCommand.formatErrorStep1(escapeHtml(targetEmail))
+              );
+              return new Response('OK', { status: 200 });
+            }
+
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email', targetEmail);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `✅ <b>备份转发邮箱设置成功！</b>\n━━━━━━━━━━━━━━━━━━\n目标地址: <code>${escapeHtml(targetEmail)}</code>\n来信将自动通过保底轨双轨转递。`,
+              {
+                inline_keyboard: [
+                  [
+                    { text: dict.dashboard.btnForward, callback_data: 'm:fwd' },
+                    { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                  ],
+                ],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+        }
+
         const setupStep = await getSetupSession(env.MAIL_ROUTES_KV);
 
         // Step 1: Backup Forward Email
@@ -683,13 +1673,23 @@ export default {
 
       // Command: config / keys / status (查看当前密钥配置与网关就绪状态)
       if (command === 'config' || command === 'keys' || command === 'status') {
-        const dynamicMinimax = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'minimax_api_key');
-        const effectiveMinimax = dynamicMinimax || env?.MINIMAX_API_KEY?.trim() || '';
-        const minimaxSource = dynamicMinimax
+        const effectiveAi = await getEffectiveAiConfig(env, env?.MAIL_ROUTES_KV);
+        const meta = findProvider(effectiveAi.provider);
+        const providerName = meta?.name || effectiveAi.provider;
+        const modelName = effectiveAi.model || meta?.defaultModel || 'gpt-4o-mini';
+
+        const aiSourceText = effectiveAi.source === 'kv'
           ? dict.sources.kvOverride
-          : env?.MINIMAX_API_KEY
+          : effectiveAi.source === 'env'
             ? dict.sources.envDefault
             : '';
+
+        let llmStatusText = dict.configCommand.llmNotConfigured;
+        if (effectiveAi.isFreeOrNoKey) {
+          llmStatusText = dict.configCommand.llmReady('(边缘免密·就绪)');
+        } else if (effectiveAi.isConfigured) {
+          llmStatusText = dict.configCommand.llmReady(escapeHtml(aiSourceText));
+        }
 
         const dynamicForward = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'forward_to_email');
         const effectiveForward = dynamicForward || env?.FORWARD_TO_EMAIL?.trim() || '';
@@ -720,11 +1720,10 @@ export default {
           `🎛️ <b>【 ${dict.configCommand.title} 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           dict.configCommand.llmTitle,
-          effectiveMinimax
-            ? dict.configCommand.llmReady(escapeHtml(minimaxSource))
-            : dict.configCommand.llmNotConfigured,
-          effectiveMinimax ? dict.configCommand.llmMaskedKey(escapeHtml(maskSecret(effectiveMinimax))) : '',
-          dict.configCommand.llmModel(escapeHtml(env?.MINIMAX_MODEL || 'MiniMax-Text-01')),
+          dict.configCommand.llmProvider ? dict.configCommand.llmProvider(escapeHtml(providerName)) : `  • 模型厂商: <b>${escapeHtml(providerName)}</b>`,
+          llmStatusText,
+          effectiveAi.apiKey ? dict.configCommand.llmMaskedKey(escapeHtml(maskSecret(effectiveAi.apiKey))) : '',
+          dict.configCommand.llmModel(escapeHtml(modelName)),
           ``,
           dict.configCommand.forwardTitle,
           effectiveForward
@@ -748,6 +1747,8 @@ export default {
           dict.configCommand.systemLangDesc(dict.langName, escapeHtml(langSource)),
           `━━━━━━━━━━━━━━━━━━`,
           dict.configCommand.shortcutsTitle,
+          dict.configCommand.shortcutProvider || '• <code>/provider</code> - 交互式切换大模型厂商',
+          dict.configCommand.shortcutModel || '• <code>/model</code> - 交互式切换大模型版本',
           dict.configCommand.shortcutSetkeyMinimax,
           dict.configCommand.shortcutSetkeyForward,
           dict.configCommand.shortcutResetkeyMinimax,
@@ -767,12 +1768,14 @@ export default {
         const subVal = parts.slice(2).join(' ').trim();
 
         if (!subType || !subVal) {
+          const aiHelp = dict.setkeyCommand.helpAi || '• <b>更新通用大模型密钥:</b>\n  <code>/setkey ai sk-your-api-key</code>';
           await sendTelegramMessage(
             botToken,
             adminChatId,
             `${dict.setkeyCommand.helpTitle}\n` +
               `━━━━━━━━━━━━━━━━━━\n` +
               `${dict.setkeyCommand.helpUsage}\n\n` +
+              `${aiHelp}\n\n` +
               `${dict.setkeyCommand.helpMinimax}\n\n` +
               `${dict.setkeyCommand.helpForward}\n\n` +
               `${dict.setkeyCommand.helpTip}`
@@ -782,6 +1785,15 @@ export default {
 
         if (!env?.MAIL_ROUTES_KV) {
           await sendTelegramMessage(botToken, adminChatId, dict.setkeyCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+
+        if (subType === 'ai') {
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'ai_api_key', subVal);
+          const successMsg = dict.setkeyCommand.successAi
+            ? dict.setkeyCommand.successAi(escapeHtml(maskSecret(subVal)))
+            : dict.setkeyCommand.successMinimax(escapeHtml(maskSecret(subVal)));
+          await sendTelegramMessage(botToken, adminChatId, successMsg);
           return new Response('OK', { status: 200 });
         }
 
@@ -816,7 +1828,8 @@ export default {
       // Command: resetkey (重置动态密钥并回退)
       if (command === 'resetkey') {
         const subType = (parts[1] || '').toLowerCase();
-        if (!subType || (subType !== 'minimax' && subType !== 'forward')) {
+        const validTypes = ['minimax', 'forward', 'ai', 'provider', 'model'];
+        if (!subType || !validTypes.includes(subType)) {
           await sendTelegramMessage(
             botToken,
             adminChatId,
@@ -833,8 +1846,19 @@ export default {
           return new Response('OK', { status: 200 });
         }
 
-        const configKey = subType === 'minimax' ? 'minimax_api_key' : 'forward_to_email';
-        await deleteDynamicConfig(env.MAIL_ROUTES_KV, configKey);
+        if (subType === 'ai') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'ai_api_key');
+        } else if (subType === 'provider') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'ai_provider');
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model');
+        } else if (subType === 'model') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'ai_model');
+        } else if (subType === 'minimax') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'minimax_api_key');
+        } else if (subType === 'forward') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email');
+        }
+
         await sendTelegramMessage(
           botToken,
           adminChatId,
@@ -1097,12 +2121,24 @@ export default {
             `${presetText}\n` +
             `${dict.routesCommand.fallbackGeneric}\n\n` +
             `${dict.routesCommand.customRulesTitle}\n` +
-            `${customText}`
+            `${customText}`,
+          {
+            inline_keyboard: getRoutesMenuKeyboard(dict, customRules),
+          }
         );
         return new Response('OK', { status: 200 });
       }
 
-      // Command: start (精简高效分步骤就绪指引)
+      // Command: guide (详细使用指南)
+      if (command === 'guide') {
+        const guideCard = renderUsageGuideHtml(dict);
+        await sendTelegramMessage(botToken, adminChatId, guideCard, {
+          inline_keyboard: getUsageGuideKeyboard(dict),
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: start (绝对精简、实用主义与完整状态欢迎卡片)
       if (command === 'start') {
         try {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
@@ -1112,34 +2148,60 @@ export default {
           });
         } catch {}
 
-        await sendTelegramMessage(
-          botToken,
-          adminChatId,
-          `${dict.startCommand.title}\n` +
-            `━━━━━━━━━━━━━━━━━━\n` +
-            `${dict.startCommand.stepGuideTitle}\n\n` +
-            `${dict.startCommand.step1Title}\n` +
-            `${dict.startCommand.step1Desc}\n\n` +
-            `${dict.startCommand.step2Title}\n` +
-            `${dict.startCommand.step2Desc1}\n` +
-            `${dict.startCommand.step2Desc2}\n\n` +
-            `${dict.startCommand.step3Title}\n` +
-            `${dict.startCommand.step3Desc1}\n` +
-            `${dict.startCommand.step3Desc2}\n` +
-            `━━━━━━━━━━━━━━━━━━\n` +
-            `${dict.startCommand.shortcutsTitle}\n` +
-            `${dict.startCommand.shortcutSetup}\n` +
-            `${dict.startCommand.shortcutConfig}\n` +
-            `${dict.startCommand.shortcutKeywords}\n` +
-            `${dict.startCommand.shortcutLang}\n` +
-            `${dict.startCommand.shortcutHelp}\n\n` +
-            `${dict.startCommand.menuActivatedNote}`
-        );
+        const effectiveAi = await getEffectiveAiConfig(env, env?.MAIL_ROUTES_KV);
+        const fwd = (await getDynamicConfig(env?.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesEnabled = String((await getDynamicConfig(env?.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+
+        const startCard = renderStartCardHtml({
+          dict,
+          provider: effectiveAi.provider,
+          model: effectiveAi.model,
+          forwardEmail: fwd,
+          gmailAliasesEnabled: aliasesEnabled,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, startCard, {
+          inline_keyboard: getStartKeyboard(dict),
+        });
         return new Response('OK', { status: 200 });
       }
 
-      // Command: menu / help (完整控制面板与指令字典)
-      if (command === 'menu' || command === 'help') {
+      // Command: menu / settings / dashboard (交互控制中枢)
+      if (command === 'menu' || command === 'settings' || command === 'dashboard') {
+        try {
+          await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(getCommandsPayload(currentLang)),
+          });
+        } catch {}
+
+        const effectiveAi = await getEffectiveAiConfig(env, env?.MAIL_ROUTES_KV);
+        const fwd = (await getDynamicConfig(env?.MAIL_ROUTES_KV, 'forward_to_email')) || env.FORWARD_TO_EMAIL || '';
+        const aliasesEnabled = String((await getDynamicConfig(env?.MAIL_ROUTES_KV, 'enable_gmail_aliases')) ?? env.ENABLE_GMAIL_ALIASES ?? 'true').toLowerCase() === 'true';
+        const rules = await listCustomRules(env?.MAIL_ROUTES_KV);
+        const kws = await getMarketingKeywords(env?.MAIL_ROUTES_KV);
+
+        const card = renderMasterDashboardHtml({
+          dict,
+          provider: effectiveAi.provider,
+          model: effectiveAi.model,
+          keyConfigured: Boolean(effectiveAi.apiKey || effectiveAi.provider === 'workers-ai'),
+          forwardEmail: fwd,
+          gmailAliasesEnabled: aliasesEnabled,
+          customRulesCount: rules.length,
+          keywordsCount: kws.length,
+          langName: dict.langName,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, card, {
+          inline_keyboard: getMasterMenuKeyboard(dict),
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: help (完整控制面板与指令字典)
+      if (command === 'help') {
         try {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
             method: 'POST',
@@ -1171,7 +2233,10 @@ export default {
             `${dict.helpCommand.delDesc}\n\n` +
             `${dict.helpCommand.langSectionTitle}\n` +
             `${dict.helpCommand.langDesc}\n\n` +
-            `${dict.helpCommand.footerTip}`
+            `${dict.helpCommand.footerTip}`,
+          {
+            inline_keyboard: getMasterMenuKeyboard(dict),
+          }
         );
         return new Response('OK', { status: 200 });
       }
@@ -1490,9 +2555,8 @@ export default {
       let aiBadge = '';
       let disableNotification = false;
 
-      const dynamicMinimaxKey = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'minimax_api_key');
-      const effectiveMinimaxKey = dynamicMinimaxKey || env.MINIMAX_API_KEY?.trim() || '';
-      const hasMiniMax = Boolean(effectiveMinimaxKey);
+      const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+      const hasAI = effectiveAi.isConfigured;
 
       // 1. Level 1: Protocol short-circuit (RFC 8058 / RFC 2369)
       const getHeader = (name: string): string => {
@@ -1526,22 +2590,24 @@ export default {
             localResult.matchedKeyword || '营销特征'
           ));
           disableNotification = true;
-        } else if (hasMiniMax) {
-          // 3. Level 3: LLM Intent Classification
-          const miniMaxResult = await classifyEmailWithMiniMax({
-            apiKey: effectiveMinimaxKey,
+        } else if (hasAI) {
+          // 3. Level 3: Multi-Provider LLM Intent Classification
+          const aiResult = await classifyEmail({
+            provider: effectiveAi.provider,
+            apiKey: effectiveAi.apiKey,
+            model: effectiveAi.model,
+            baseUrl: effectiveAi.baseUrl,
             groupId: env.MINIMAX_GROUP_ID,
-            model: env.MINIMAX_MODEL || 'MiniMax-Text-01',
-            apiUrl: env.MINIMAX_API_URL,
             subject,
             from,
-            bodySnippet: snippet,
+            bodySnippet: snippet.slice(0, 800),
+            cfAi: env.AI,
           });
 
-          if (miniMaxResult.success) {
-            intentTag = miniMaxResult.intent || '业务';
-            isMarketing = miniMaxResult.isMarketing;
-            extractedCode = miniMaxResult.extractedCode;
+          if (aiResult.success) {
+            intentTag = aiResult.intent || '业务';
+            isMarketing = aiResult.isMarketing;
+            extractedCode = aiResult.extractedCode;
 
             if (intentTag === '营销') {
               aiBadge = dict.emailCard.aiMarketing;
@@ -1565,7 +2631,7 @@ export default {
           } else {
             intentTag = '业务';
             isMarketing = false;
-            const errDetail = miniMaxResult.error || '连接异常';
+            const errDetail = aiResult.error || '连接异常';
             aiBadge = dict.emailCard.aiErrorFallback(escapeHtml(errDetail));
             disableNotification = false;
           }

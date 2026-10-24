@@ -115,9 +115,13 @@ export async function resolveLanguage(
 /**
  * Build 4x2 Telegram inline keyboard for language switching.
  */
-export function getLanguageKeyboard(activeLang?: string | null): Array<Array<{ text: string; callback_data: string }>> {
+export function getLanguageKeyboard(
+  activeLang?: string | null,
+  includeBackToMain?: boolean,
+  backText = '🔙 Back / 返回'
+): Array<Array<{ text: string; callback_data: string }>> {
   const norm = activeLang ? normalizeLanguage(activeLang) : null;
-  return [
+  const rows = [
     [
       { text: `🇨🇳 简体中文${norm === 'zh-CN' ? ' ✓' : ''}`, callback_data: 'lang:zh-CN' },
       { text: `🇺🇸 English${norm === 'en-US' ? ' ✓' : ''}`, callback_data: 'lang:en-US' },
@@ -135,6 +139,12 @@ export function getLanguageKeyboard(activeLang?: string | null): Array<Array<{ t
       { text: `🇩🇪 Deutsch${norm === 'de-DE' ? ' ✓' : ''}`, callback_data: 'lang:de-DE' },
     ],
   ];
+
+  if (includeBackToMain) {
+    rows.push([{ text: backText, callback_data: 'm:main' }]);
+  }
+
+  return rows;
 }
 
 /**
@@ -144,18 +154,23 @@ export function getCommandsPayload(lang: SupportedLang): { commands: Array<{ com
   const dict = getTranslation(lang);
   return {
     commands: [
-      { command: 'lang', description: dict.commandDesc.lang },
+      { command: 'start', description: dict.commandDesc.start },
+      { command: 'menu', description: dict.commandDesc.menu },
+      { command: 'guide', description: dict.commandDesc.guide },
       { command: 'setup', description: dict.commandDesc.setup },
+      { command: 'lang', description: dict.commandDesc.lang },
       { command: 'config', description: dict.commandDesc.config },
-      { command: 'setkey', description: dict.commandDesc.setkey },
-      { command: 'resetkey', description: dict.commandDesc.resetkey },
-      { command: 'cancel', description: dict.commandDesc.cancel },
+      { command: 'provider', description: dict.commandDesc.provider },
+      { command: 'model', description: dict.commandDesc.model },
+      { command: 'routes', description: dict.commandDesc.routes },
       { command: 'keywords', description: dict.commandDesc.keywords },
       { command: 'addkeywords', description: dict.commandDesc.addkeywords },
       { command: 'resetkeywords', description: dict.commandDesc.resetkeywords },
-      { command: 'routes', description: dict.commandDesc.routes },
       { command: 'add', description: dict.commandDesc.add },
       { command: 'del', description: dict.commandDesc.del },
+      { command: 'setkey', description: dict.commandDesc.setkey },
+      { command: 'resetkey', description: dict.commandDesc.resetkey },
+      { command: 'cancel', description: dict.commandDesc.cancel },
       { command: 'help', description: dict.commandDesc.help },
     ],
   };

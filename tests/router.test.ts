@@ -57,19 +57,19 @@ describe('EmailRouter - 产品标签与智能分流增强测试', () => {
     });
   });
 
-  describe('商业支持来信 (Commercial - Support)', () => {
-    it('support@example.com 映射至商业支持标签与 support 别名', () => {
+  describe('客户服务与商务来信 (Support & Business Persona)', () => {
+    it('support@example.com 映射至客服标签与 support 别名', () => {
       const route = resolveRoute('support@example.com', 'backup@example.com');
       expect(route.category).toBe('commercial');
-      expect(route.tag).toBe('商业支持');
+      expect(route.tag).toBe('客服');
       expect(route.forwardEmail).toBe('backup+support@example.com');
     });
 
-    it('billing / sales 等商务前缀也命中商业画像', () => {
+    it('billing / sales 等商务前缀命中商务画像', () => {
       const route = resolveRoute('billing@example.com', 'backup@example.com');
       expect(route.category).toBe('commercial');
-      expect(route.tag).toBe('商业支持');
-      expect(route.forwardEmail).toBe('backup+support@example.com');
+      expect(route.tag).toBe('商务');
+      expect(route.forwardEmail).toBe('backup+business@example.com');
     });
   });
 
@@ -123,6 +123,9 @@ describe('EmailRouter - 产品标签与智能分流增强测试', () => {
     it('isValidTag 应限定为合法标签', async () => {
       const { isValidTag } = await import('../src/router');
       expect(isValidTag('个人')).toBe(true);
+      expect(isValidTag('客服')).toBe(true);
+      expect(isValidTag('商务')).toBe(true);
+      expect(isValidTag('产品')).toBe(true);
       expect(isValidTag('通用')).toBe(true);
       expect(isValidTag('免费产品')).toBe(true);
       expect(isValidTag('付费产品')).toBe(true);
@@ -228,6 +231,80 @@ describe('EmailRouter - 产品标签与智能分流增强测试', () => {
       await resetMarketingKeywords(mockKv);
       const afterReset = await getMarketingKeywords(mockKv);
       expect(afterReset).toContain('unsubscribe');
+    });
+
+    it('ensureLanguageKeywords 应自动将特定语言地道词库增量合并，且重复调用时跳过写入', async () => {
+      const { ensureLanguageKeywords, getMarketingKeywords } = await import('../src/router');
+      const store = new Map<string, string>();
+      let putCallCount = 0;
+      const mockKv = {
+        async get(key: string) {
+          return store.get(key) || null;
+        },
+        async put(key: string, val: string) {
+          putCallCount++;
+          store.set(key, val);
+        },
+      };
+
+      // 1. 首次为 zh-CN 注入词库
+      const res1 = await ensureLanguageKeywords(mockKv, 'zh-CN');
+      expect(res1.success).toBe(true);
+      expect(res1.addedCount).toBeGreaterThan(15);
+      expect(putCallCount).toBe(1);
+
+      const kws1 = await getMarketingKeywords(mockKv);
+      expect(kws1).toContain('退订');
+      expect(kws1).toContain('优惠券');
+      expect(kws1).toContain('unsubscribe');
+
+      // 2. 再次调用同一语言，触发额度防御，跳过 kv.put 写入
+      const res2 = await ensureLanguageKeywords(mockKv, 'zh-CN');
+      expect(res2.success).toBe(true);
+      expect(res2.addedCount).toBe(0);
+      expect(putCallCount).toBe(1); // 未额外增加写入操作！
+    });
+
+    it('自定义标签管理 (addCustomTag, getCustomTags, deleteCustomTag, isValidTag) 正常运作', async () => {
+      const {
+        getCustomTags,
+        getAllActiveTags,
+        addCustomTag,
+        deleteCustomTag,
+        isValidTag,
+      } = await import('../src/router');
+
+      const store = new Map<string, string>();
+      const mockKv = {
+        async get(key: string) {
+          return store.get(key) || null;
+        },
+        async put(key: string, val: string) {
+          store.set(key, val);
+        },
+      };
+
+      expect(await getCustomTags(mockKv)).toEqual([]);
+
+      // 1. 添加自定义标签
+      await addCustomTag(mockKv, '财务');
+      await addCustomTag(mockKv, '监控');
+      const tags = await getCustomTags(mockKv);
+      expect(tags).toEqual(['财务', '监控']);
+
+      // 2. 验证有效性校验支持自定义标签
+      expect(isValidTag('财务', tags)).toBe(true);
+      expect(isValidTag('未知标签', tags)).toBe(false);
+
+      // 3. 全量标签列表包含基线与自定义标签
+      const allTags = await getAllActiveTags(mockKv);
+      expect(allTags).toContain('个人');
+      expect(allTags).toContain('财务');
+      expect(allTags).toContain('监控');
+
+      // 4. 删除自定义标签
+      await deleteCustomTag(mockKv, '财务');
+      expect(await getCustomTags(mockKv)).toEqual(['监控']);
     });
   });
 });

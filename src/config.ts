@@ -6,18 +6,24 @@
  * =============================================================================
  */
 
+import { ALLOWED_TAGS } from './types';
 import type { PersonaCategory, AllowedTag } from './types';
 
-export const ALLOWED_TAGS: readonly AllowedTag[] = [
+export { ALLOWED_TAGS };
+
+/** Primary tags displayed in quick-select buttons */
+export const PRIMARY_TAGS: readonly AllowedTag[] = [
   '个人',
+  '客服',
+  '商务',
+  '产品',
   '通用',
-  '免费产品',
-  '付费产品',
-  '商业支持',
 ] as const;
 
-export function isValidTag(tag: string): tag is AllowedTag {
-  return (ALLOWED_TAGS as readonly string[]).includes(tag);
+export function isValidTag(tag: string, customTags?: string[]): boolean {
+  if ((ALLOWED_TAGS as readonly string[]).includes(tag)) return true;
+  if (customTags && customTags.includes(tag)) return true;
+  return false;
 }
 
 export interface RouteRule {
@@ -49,16 +55,42 @@ export const DEFAULT_PRESET_RULES: RouteRule[] = [
     },
   },
 
-  // 2. Customer support & Commercial persona
+  // 2. Customer support persona
   {
     id: 'persona-support',
     name: 'Customer Support',
     category: 'commercial',
-    tag: '商业支持',
+    tag: '客服',
     aliasTag: 'support',
     match: (_, __, username) => {
-      const supportPrefixes = ['support', 'help', 'service', 'billing', 'sales', 'contact'];
+      const supportPrefixes = ['support', 'help', 'service', 'cs'];
       return supportPrefixes.includes(username);
+    },
+  },
+
+  // 3. Business & Sales persona
+  {
+    id: 'persona-business',
+    name: 'Business & Sales',
+    category: 'commercial',
+    tag: '商务',
+    aliasTag: 'business',
+    match: (_, __, username) => {
+      const businessPrefixes = ['sales', 'billing', 'business', 'bd', 'cooperation'];
+      return businessPrefixes.includes(username);
+    },
+  },
+
+  // 4. Product & Feedback persona
+  {
+    id: 'persona-product',
+    name: 'Product & Feedback',
+    category: 'commercial',
+    tag: '产品',
+    aliasTag: 'product',
+    match: (_, __, username) => {
+      const productPrefixes = ['product', 'feedback', 'app', 'dev'];
+      return productPrefixes.includes(username);
     },
   },
 ];

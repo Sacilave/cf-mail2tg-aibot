@@ -428,3 +428,208 @@ describe('MiniMax AI - 端到端邮件转发与静默/响铃策略集成测试',
     });
   });
 });
+
+describe('Multi-Provider AI Classification Engine - 增强型多大模型矩阵测试', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('Provider 元数据注册表完整性检验: 1~9 编号排序与推荐模型健全', async () => {
+    const { SUPPORTED_PROVIDERS, findProvider, getRecommendedModel } = await import('../src/ai');
+    expect(SUPPORTED_PROVIDERS.length).toBe(9);
+
+    // Verify indexing 1 to 9
+    for (let i = 1; i <= 9; i++) {
+      const p = findProvider(i);
+      expect(p).toBeDefined();
+      expect(p!.index).toBe(i);
+    }
+
+    // Verify specific provider lookups
+    expect(findProvider('deepseek')?.id).toBe('deepseek');
+    expect(findProvider('workers-ai')?.isFreeOrNoKey).toBe(true);
+    expect(findProvider('groq')?.defaultModel).toBe('llama-3.3-70b-versatile');
+    expect(findProvider('openai')?.defaultModel).toBe('gpt-4o-mini');
+    expect(findProvider('claude')?.defaultModel).toBe('claude-3-5-haiku-20241022');
+    expect(findProvider('gemini')?.defaultModel).toBe('gemini-2.0-flash');
+
+    expect(getRecommendedModel('deepseek')).toBe('deepseek-chat');
+    expect(getRecommendedModel('workers-ai')).toBe('@cf/meta/llama-3.1-8b-instruct');
+  });
+
+  it('Cloudflare Workers AI: 通过原生 env.AI 绑定执行零密钥边缘推理并提取验证码', async () => {
+    const { classifyEmail } = await import('../src/ai');
+    const mockRun = vi.fn().mockResolvedValue({
+      response: JSON.stringify({
+        intent: '验证',
+        code: '839201',
+        reason: 'GitHub 2FA 登录验证',
+      }),
+    });
+
+    const result = await classifyEmail({
+      provider: 'workers-ai',
+      cfAi: { run: mockRun },
+      subject: 'Your GitHub verification code',
+      from: 'noreply@github.com',
+      bodySnippet: 'Here is your OTP code 839201',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.provider).toBe('workers-ai');
+    expect(result.model).toBe('@cf/meta/llama-3.1-8b-instruct');
+    expect(result.intent).toBe('验证');
+    expect(result.extractedCode).toBe('839201');
+    expect(mockRun).toHaveBeenCalledTimes(1);
+    expect(mockRun.mock.calls[0][0]).toBe('@cf/meta/llama-3.1-8b-instruct');
+  });
+
+  it('DeepSeek: 遵循 OpenAI 协议并携带 response_format: json_object 请求头', async () => {
+    const { classifyEmail } = await import('../src/ai');
+    let capturedBody: any = null;
+    let capturedHeaders: any = null;
+
+    const fetchMock = vi.fn().mockImplementation(async (_url, opts) => {
+      capturedHeaders = opts.headers;
+      capturedBody = JSON.parse(opts.body);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  intent: '营销',
+                  code: null,
+                  reason: 'SaaS 黑五全场折扣邮件',
+                }),
+              },
+            },
+          ],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await classifyEmail({
+      provider: 'deepseek',
+      apiKey: 'sk-deepseek-test-key-123456',
+      subject: 'Black Friday 50% Off SaaS Subscription',
+      from: 'deals@saas.com',
+      bodySnippet: 'Huge sale this week only!',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.provider).toBe('deepseek');
+    expect(result.intent).toBe('营销');
+    expect(result.isMarketing).toBe(true);
+    expect(capturedHeaders.Authorization).toBe('Bearer sk-deepseek-test-key-123456');
+    expect(capturedBody.response_format).toEqual({ type: 'json_object' });
+    expect(capturedBody.model).toBe('deepseek-chat');
+  });
+
+  it('Anthropic Claude: 严格包含 x-api-key 与 anthropic-version: 2023-06-01 规范头', async () => {
+    const { classifyEmail } = await import('../src/ai');
+    let capturedHeaders: any = null;
+
+    const fetchMock = vi.fn().mockImplementation(async (_url, opts) => {
+      capturedHeaders = opts.headers;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          content: [
+            {
+              text: JSON.stringify({
+                intent: '告警',
+                code: null,
+                reason: 'AWS 生产集群负载超限告警',
+              }),
+            },
+          ],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await classifyEmail({
+      provider: 'claude',
+      apiKey: 'sk-ant-api03-test-secret',
+      subject: 'ALARM: Production CPU Utilization High',
+      from: 'no-reply-aws@amazon.com',
+      bodySnippet: 'CPU exceeded 95% threshold',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.provider).toBe('claude');
+    expect(result.intent).toBe('告警');
+    expect(capturedHeaders['x-api-key']).toBe('sk-ant-api03-test-secret');
+    expect(capturedHeaders['anthropic-version']).toBe('2023-06-01');
+  });
+
+  it('OpenAI 兼容端点容错: 当第三方或本地模型不支持 response_format 时自动降级重试并成功解析', async () => {
+    const { classifyEmail } = await import('../src/ai');
+    let callCount = 0;
+
+    const fetchMock = vi.fn().mockImplementation(async (_url, opts) => {
+      callCount++;
+      const body = JSON.parse(opts.body);
+      if (body.response_format) {
+        return {
+          ok: false,
+          status: 400,
+          text: async () => '{"error": {"message": "unrecognized parameter: response_format"}}',
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: '{"intent": "业务", "code": null, "reason": "商业合作探讨"}',
+              },
+            },
+          ],
+        }),
+      };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await classifyEmail({
+      provider: 'custom',
+      apiKey: 'sk-custom-key',
+      baseUrl: 'http://localhost:11434/v1',
+      model: 'qwen2.5:7b',
+      subject: '合作洽谈',
+      from: 'business@partner.com',
+      bodySnippet: '期待与贵司合作',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.intent).toBe('业务');
+    expect(callCount).toBe(2); // 首次被拒后自动重试成功
+  });
+
+  it('多厂商密钥安全脱敏: 自动抹除 OpenAI、Claude、Groq、Google 等敏感 Token', async () => {
+    const { sanitizeErrorMessage } = await import('../src/ai');
+
+    const raw =
+      'Errors: OpenAI sk-abcdef123456789012345678, Anthropic sk-ant-api03-99998888777766665555, ' +
+      'Groq gsk_11112222333344445555, Google AIzaSyD123456789012345678, Bearer eyJhbGciOi';
+
+    const cleaned = sanitizeErrorMessage(raw);
+    expect(cleaned).not.toContain('abcdef123456789012345678');
+    expect(cleaned).not.toContain('99998888777766665555');
+    expect(cleaned).not.toContain('11112222333344445555');
+    expect(cleaned).not.toContain('AIzaSyD123456789012345678');
+    expect(cleaned).toContain('sk-***');
+    expect(cleaned).toContain('sk-ant-***');
+    expect(cleaned).toContain('gsk_***');
+    expect(cleaned).toContain('AIza***');
+    expect(cleaned).toContain('Bearer ***');
+  });
+});
+

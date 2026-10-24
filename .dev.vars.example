@@ -34,7 +34,23 @@ MARKETING_TG_POLICY="silent"
 # [OPTIONAL] Default display language ('zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE', default: zh-CN)
 DEFAULT_LANGUAGE="zh-CN"
 
-# [OPTIONAL] MiniMax API Key for LLM-powered email classification & intent triage
+# [OPTIONAL] Multi-Provider AI Triage & Verification Code Extraction Settings
+# Supported providers: workers-ai | deepseek | groq | openai | gemini | claude | openrouter | minimax | custom
+# Note: workers-ai runs natively on Cloudflare Workers edge without any external API Key (100% Free)!
+AI_PROVIDER="deepseek"
+AI_API_KEY=""
+AI_MODEL="deepseek-chat"
+AI_BASE_URL=""
+
+# [OPTIONAL] Provider-specific API Keys (for auto-detection if AI_PROVIDER is omitted)
+DEEPSEEK_API_KEY=""
+OPENAI_API_KEY=""
+GROQ_API_KEY=""
+GEMINI_API_KEY=""
+ANTHROPIC_API_KEY=""
+OPENROUTER_API_KEY=""
+
+# [OPTIONAL - BACKWARD COMPATIBILITY] MiniMax Legacy Config
 MINIMAX_API_KEY=""
 MINIMAX_GROUP_ID=""
 MINIMAX_MODEL="MiniMax-Text-01"

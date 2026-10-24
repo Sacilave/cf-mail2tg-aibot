@@ -6,19 +6,103 @@ export const jaJP: TranslationDict = {
   flag: '🇯🇵',
 
   commandDesc: {
-    lang: '言語を切り替える / Switch language',
-    setup: 'セットアップウィザード (1分で完了)',
-    config: '設定と認証情報のステータス確認',
-    setkey: 'APIキーや転送先の更新: setkey <種類> <値>',
-    resetkey: '動的設定をリセットして環境変数に戻す',
-    cancel: '現在の対話型セッションを終了',
-    keywords: '迷惑・プロモーション遮断キーワード一覧',
-    addkeywords: 'キーワードを安全に追加 (上書きなし)',
-    resetkeywords: 'キーワードを初期状態に戻す',
-    routes: 'ルーティング設定とペルソナ一覧',
-    add: 'カスタムルーティング追加: add <タグ> <接頭辞> [転送先]',
-    del: 'カスタムルーティング削除: del <接頭辞>',
-    help: 'ヘルプとコマンドマニュアルの表示',
+    start: 'ステータス概要を表示',
+    menu: '設定パネルを開く',
+    guide: '利用ガイドを表示',
+    setup: '初期設定ウィザードを開始',
+    lang: '表示言語の切り替え (Switch language)',
+    config: '稼働状況とキー詳細を確認',
+    provider: 'AIプロバイダーを切り替え',
+    model: '実行モデルを切り替え',
+    routes: 'ルーティングとタグを管理',
+    keywords: '迷惑メールキーワードを表示',
+    addkeywords: '遮断キーワードを追加',
+    resetkeywords: 'キーワードを初期化',
+    add: 'ルール追加 (add <タグ> <接頭辞> [転送先])',
+    del: 'ルール削除 (del <接頭辞>)',
+    setkey: 'キーや転送先を設定 (setkey <種別> <値>)',
+    resetkey: '動的設定をリセット',
+    cancel: '操作またはセッションを中止',
+    help: 'コマンドヘルプを表示',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 設定 】</b>',
+    desc: '下のボタンをタップして、AIプロバイダーの切り替え、ルーティング管理、スパム対策、言語設定を簡単に行えます：',
+    btnAi: '🤖 AI モデル',
+    btnRoutes: '📂 ルーティング',
+    btnKeywords: '🚫 スパム対策',
+    btnForward: '📬 メール転送',
+    btnLang: '🌐 言語 / Language',
+    btnRefresh: '🔄 最新情報に更新',
+    btnBackMain: '🔙 メインメニュー',
+    btnBackAi: '🔙 AI設定に戻る',
+    btnBackRoutes: '🔙 ルーティングに戻る',
+    btnManageModels: '🎯 モデル切り替え',
+    btnSetKey: '🔑 APIキー設定',
+    btnSetAiKey: '🔑 APIキー設定',
+    btnResetAiKey: '🔄 APIキー初期化',
+    btnAddRoute: '➕ ルール追加',
+    btnTags: '🏷️ タグ管理',
+    btnAddKw: '➕ 単語を追加',
+    btnSetForward: '📬 転送先を変更',
+    btnResetForward: '🗑️ 転送先を解除',
+    btnSetup: '⚡ 初期設定ウィザード',
+    btnCancel: '❌ キャンセル',
+    routesTitle: '📂 <b>【 ペルソナルーティング設定 】</b>',
+    routesSelectTagPrompt: '新しいルールの<b>ビジネス分類タグ</b>を選択してください（ボタンをタップ）：',
+    routesInputPrefixPrompt: (tag: string) =>
+      `選択されたタグ：<b>【${tag}】</b>\n\n` +
+      `紐付ける<b>メール接頭辞</b>を返信してください（例: <code>vip</code> または <code>support</code>）：\n` +
+      `<i>（💡 個別の転送先を指定する場合は: 接頭辞 メールアドレス、例: vip user@example.com）</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>ルーティングルールを追加しました！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 接頭辞: <code>${prefix}</code>\n` +
+      `• ペルソナ: <b>${tag}</b>\n` +
+      `• 転送先: <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ 接頭辞 <code>${prefix}</code> のルールを削除しました！`,
+    tagsTitle: '🏷️ <b>【 カスタムタグ管理 】</b>',
+    tagsPrompt: 'カスタムタグを管理します。これらのタグはルーティングルールの作成時に選択できます：',
+    tagsEmpty: 'カスタムタグはありません。現在デフォルト分類（個人、サポート、ビジネス、プロダクト、汎用）を使用しています。',
+    tagsAddSuccess: (tag: string) => `✅ カスタムタグを追加しました: <b>【${tag}】</b>！`,
+    tagsDeleteSuccess: (tag: string) => `✅ カスタムタグを削除しました: <b>【${tag}】</b>！`,
+    tagsAddPrompt:
+      '🏷️ <b>【 カスタムタグの追加 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      '作成するタグ名を返信してください（例: <code>財務</code>、<code>監視</code>、<code>開発</code>、10文字以内）：',
+    tagsInvalid: '❌ タグ名が無効または既に存在します（1〜10文字、スペース不可）。',
+    kwTitle: '🚫 <b>【 スパム・プロモーション遮断キーワード 】</b>',
+    fwdTitle: '📬 <b>【 バックアップ転送設定 】</b>',
+    toastUpdated: '設定を更新しました！',
+    toastCancelled: '操作をキャンセルしました',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 AIプロバイダーの選択 】</b>',
+    current: (provider: string, model: string) => `現在のプロバイダー: <b>${provider}</b> (モデル: <code>${model}</code>)`,
+    prompt: '対応する番号を返信してください（5分間有効）：',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>AIプロバイダーの切り替えが完了しました！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 現在のプロバイダー: <b>${provider}</b>\n` +
+      `• 実行モデル: <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ 無効な番号です。1から9の数字を入力してください。キャンセルは /cancel です。',
+    kvError: '❌ 設定を保存できません: MAIL_ROUTES_KV がバインドされていません。',
+    tipSetKey: '💡 ヒント: APIキーが必要な場合は <code>/setkey ai &lt;キー&gt;</code> を送信してください。モデルの変更は <code>/model</code> です。',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 ${provider} のモデル選択 】</b>`,
+    current: (model: string) => `現在のモデル: <code>${model}</code>`,
+    prompt: '番号またはカスタムモデル名を入力してください（5分間有効）：',
+    success: (model: string) =>
+      `✅ <b>モデルが正常に更新されました！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `現在の有効モデル: <code>${model}</code>`,
+    invalidOption: '❌ 無効なモデル指定です。終了するには /cancel を送信してください。',
+    kvError: '❌ 設定を保存できません: MAIL_ROUTES_KV がバインドされていません。',
   },
 
   langCommand: {
@@ -42,30 +126,65 @@ export const jaJP: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot メールゲートウェイ準備完了 】</b>',
-    stepGuideTitle: '⚡ <b>クイック初期設定ガイド (3ステップ):</b>',
-    step1Title: '1️⃣ <b>動作状態の確認</b>',
-    step1Desc: '   <code>/config</code> を送信して、AIモデル、バックアップ転送先、KV接続を確認します。',
-    step2Title: '2️⃣ <b>APIキーの更新 (任意)</b>',
-    step2Desc1: '   • AI分類と認証コード抽出を有効化: <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • 転送先メールアドレスを設定/変更: <code>/setkey forward &lt;email&gt;</code>',
-    step3Title: '3️⃣ <b>ドメインルーティングの設定</b>',
-    step3Desc1: '   • 現在のルールを確認: <code>/routes</code>',
-    step3Desc2: '   • 新規ルールを追加: <code>/add 商業支援 help</code> (複数ドメイン対応)',
-    shortcutsTitle: '💡 <b>よく使うコマンド:</b>',
-    shortcutSetup: '• <code>/setup</code> - クイック初期設定ウィザード',
-    shortcutConfig: '• <code>/config</code> - 設定とマスク済みキーの確認',
-    shortcutKeywords: '• <code>/keywords</code> - スパムキーワード管理 (返信で編集)',
-    shortcutLang: '• <code>/lang</code> - 表示言語の切り替え (8言語対応)',
-    shortcutHelp: '• <code>/help</code> - 完全なコントロールパネルとマニュアルの表示',
-    menuActivatedNote: '<i>左下の [Menu] ボタンからもいつでも呼び出せます。</i>',
+    title: '👋 <b>【 cf-mail2tg-aibot メールゲートウェイ 】</b>',
+    subtitle: 'Cloudflare メール転送＆AI審査ボットが稼働しています。すべての受信メールは自動で安全に解析され、本チャットに転送されます。',
+    statusSectionTitle: '📊 <b>ゲートウェイ稼働サマリー:</b>',
+    statusRunningLabel: 'ステータス',
+    statusRunningValue: 'オンライン (Online)',
+    statusEngineLabel: 'AIエンジン',
+    statusForwardLabel: 'バックアップ転送',
+    statusNoForward: 'TG専用モード (未設定)',
+    statusAliasOn: 'Gmail エイリアス有効',
+    statusAliasOff: 'ダイレクト転送',
+    statusDefenseLabel: 'エッジ防御',
+    statusDefenseValue: '添付ファイル遮断 (550) · 5MB 容量制限',
+    guideTip: '下の【設定】で各種構成、【利用ガイド】で詳細解説、【🌐 言語 / Language】で多言語の切り替えが可能です。',
+    btnOpenMenu: '⚙️ 設定',
+    btnGuide: '📖 利用ガイド',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 cf-mail2tg-aibot 利用ガイド 】</b>',
+    subtitle: 'ゲートウェイの基本機能と設定手順：',
+    principlesTitle: '⚙️ <b>1. 処理フロー</b>',
+    principlesContent:
+      '• <b>メール受信</b>: ドメインメールを受信し、Worker スクリプトでフィルタリングと構造化解析を行います。\n' +
+      '• <b>基本防御</b>: 5MB超過メールや危険な添付ファイルを遮断し、スパムの流入を防ぎます。\n' +
+      '• <b>デュアル配送</b>: 本文テキストと認証コードを Telegram へ転送し、同時にバックアップ受信箱へ転送します。',
+    tagsTitle: '🏷️ <b>2. メール分類と認証コード</b>',
+    tagsContent:
+      '• <b>意図タイプ</b>: <code>認証</code> · <code>プロモ</code> · <code>警告</code> · <code>請求</code> · <code>業務</code> · <code>通知</code>\n' +
+      '• <b>認証コード</b>: ログインや登録コードを上部に表示し、タップでコピーできます。\n' +
+      '• <b>送信元検証</b>: SPF / DKIM / DMARC 認証状態を確認し、なりすましを識別します。',
+    antiSpamTitle: '🛡️ <b>3. スパム遮断と通知消音</b>',
+    antiSpamContent:
+      '• <b>ルール判定</b>: RFC 8058 配信停止ヘッダーや遮断キーワードに一致したメールをプロモとして処理します。\n' +
+      '• <b>消音配信</b>: プロモメールは通知音を鳴らさず、AI モデルの消費を抑えます。\n' +
+      '• <b>キーワード</b>: システム言語に応じた辞書を読み込み、<code>/addkeywords</code> で拡張可能です。',
+    routesTitle: '📂 <b>4. 接頭辞ルーティングとエイリアス</b>',
+    routesContent:
+      '• <b>アドレス仕分け</b>: メール接頭辞に応じて分類（例: <code>support@</code> ➜ サポート、<code>admin@</code> ➜ 個人）。\n' +
+      '• <b>エイリアス</b>: 転送時に <code>+tag</code> エイリアスを自動付与し、受信トレイでの仕分けを容易にします。',
+    commandsTitle: '⚡ <b>5. コマンド一覧</b>',
+    commandsContent:
+      '• <code>/start</code> - 状態概要とクイックアクセス\n' +
+      '• <code>/menu</code> - 設定を開く (⚙️ 設定)\n' +
+      '• <code>/guide</code> - 利用ガイドを表示\n' +
+      '• <code>/routes</code> - ルーティングルールとカスタムタグを管理\n' +
+      '• <code>/keywords</code> - 遮断キーワードの管理\n' +
+      '• <code>/ai</code> - AI プロバイダーとモデルを変更\n' +
+      '• <code>/lang</code> - 表示言語を変更',
+    footerTip: '画面下のインラインボタンで各操作を直感的に実行できます。',
+    btnBackStart: '🔙 概要に戻る',
+    btnBackDashboard: '⚙️ 設定',
+    btnViewDocs: '🌐 GitHub で詳細ドキュメントを見る',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot コントロールパネル 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot コマンドヘルプ 】</b>',
     menuHint: '左下の <b>[Menu]</b> を押すか、以下のコマンドを送信してください：',
-    keysSectionTitle: '🔑 <b>認証情報と稼働ステータス:</b>',
-    configDesc: '• <code>/config</code> - 認証情報と設定ハブの確認 (マスキング済み)',
+    keysSectionTitle: '🔑 <b>状態と設定コマンド:</b>',
+    configDesc: '• <code>/config</code> - 稼働状況と認証情報の詳細確認 (マスキング済み)',
     setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - AIのAPIキーをオンライン更新',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - 転送先メールアドレスを更新',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - 設定をリセットして環境変数に戻す',
@@ -86,7 +205,7 @@ export const jaJP: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot 設定と認証情報ハブ 】</b>',
+    title: '⚙️ <b>【 設定と認証情報ステータス 】</b>',
     llmTitle: '🤖 <b>AIメール自動判定 (LLM):</b>',
     llmReady: (source: string) => `  • 状態: ✅ 準備完了 ${source}`,
     llmNotConfigured: '  • 状態: ⚪ 未設定 (ローカル正規表現スニッファーで動作中)',
@@ -326,6 +445,9 @@ export const jaJP: TranslationDict = {
     },
     personaTags: {
       个人: '個人',
+      客服: 'カスタマーサポート',
+      商务: 'ビジネス・営業',
+      产品: 'プロダクト',
       通用: '汎用',
       免费产品: '無料プロダクト',
       付费产品: '有料プロダクト',

@@ -6,19 +6,103 @@ export const esES: TranslationDict = {
   flag: '🇪🇸',
 
   commandDesc: {
-    lang: 'Cambiar idioma / Switch language',
-    setup: 'Asistente de configuración rápida (1 minuto paso a paso)',
-    config: 'Ver credenciales, estado de rutas y centro de control',
-    setkey: 'Actualizar claves API o correo: setkey <tipo> <valor>',
-    resetkey: 'Restablecer claves dinámicas a valores predeterminados',
-    cancel: 'Salir del asistente o de la sesión interactiva',
-    keywords: 'Ver y copiar palabras clave de bloqueo publicitario',
-    addkeywords: 'Agregar palabras clave de forma segura (sin sobrescribir)',
-    resetkeywords: 'Restablecer palabras clave a la base predeterminada',
-    routes: 'Ver reglas activas de enrutamiento y perfiles de dominio',
-    add: 'Añadir regla personalizada: add <etiqueta> <prefijo> [correo]',
-    del: 'Eliminar regla personalizada: del <prefijo>',
-    help: 'Ver manual de operaciones y lista de comandos',
+    start: 'Ver resumen del estado',
+    menu: 'Abrir panel de ajustes',
+    guide: 'Ver guía detallada',
+    setup: 'Iniciar asistente de config.',
+    lang: 'Cambiar idioma (Switch language)',
+    config: 'Ver estado del sistema y claves',
+    provider: 'Cambiar proveedor de IA',
+    model: 'Cambiar versión de modelo IA',
+    routes: 'Gestionar rutas y etiquetas',
+    keywords: 'Ver lista de palabras spam',
+    addkeywords: 'Añadir palabras spam',
+    resetkeywords: 'Restablecer palabras spam',
+    add: 'Añadir regla (add <etiq> <prefijo>)',
+    del: 'Eliminar regla (del <prefijo>)',
+    setkey: 'Configurar clave o buzón (setkey)',
+    resetkey: 'Restablecer clave dinámica',
+    cancel: 'Cancelar sesión o asistente',
+    help: 'Manual de comandos y ayuda',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 Ajustes 】</b>',
+    desc: 'Toque los botones siguientes para cambiar de IA, gestionar reglas de ruta, configurar antispam o cambiar el idioma:',
+    btnAi: '🤖 Modelos IA',
+    btnRoutes: '📂 Enrutamiento',
+    btnKeywords: '🚫 Filtro Spam',
+    btnForward: '📬 Reenvío',
+    btnLang: '🌐 Idioma / Language',
+    btnRefresh: '🔄 Actualizar',
+    btnBackMain: '🔙 Menú Principal',
+    btnBackAi: '🔙 Volver a IA',
+    btnBackRoutes: '🔙 Volver a Rutas',
+    btnManageModels: '🎯 Cambiar Modelo',
+    btnSetKey: '🔑 Configurar API Key',
+    btnSetAiKey: '🔑 Vincular API Key',
+    btnResetAiKey: '🔄 Borrar API Key',
+    btnAddRoute: '➕ Añadir Regla',
+    btnTags: '🏷️ Gestión de Etiquetas',
+    btnAddKw: '➕ Añadir palabras',
+    btnSetForward: '📬 Cambiar buzón',
+    btnResetForward: '🗑️ Eliminar buzón',
+    btnSetup: '⚡ Asistente de config.',
+    btnCancel: '❌ Cancelar',
+    routesTitle: '📂 <b>【 Gestión de Reglas de Enrutamiento 】</b>',
+    routesSelectTagPrompt: 'Seleccione una <b>etiqueta de categoría</b> para la nueva regla (toque el botón):',
+    routesInputPrefixPrompt: (tag: string) =>
+      `Categoría seleccionada: <b>【${tag}】</b>\n\n` +
+      `Por favor responda con el <b>prefijo de correo</b> a vincular (ej. <code>vip</code> o <code>support</code>):\n` +
+      `<i>(💡 Para especificar un destino de reenvío: prefijo correo, ej: vip user@example.com)</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>¡Regla de enrutamiento añadida con éxito!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Prefijo: <code>${prefix}</code>\n` +
+      `• Etiqueta: <b>${tag}</b>\n` +
+      `• Destino: <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ ¡Regla para el prefijo <code>${prefix}</code> eliminada con éxito!`,
+    tagsTitle: '🏷️ <b>【 Gestor de Etiquetas Personalizadas 】</b>',
+    tagsPrompt: 'Gestione sus etiquetas de negocio personalizadas. Podrá usarlas al añadir reglas de enrutamiento:',
+    tagsEmpty: 'Sin etiquetas personalizadas. Se usan las categorías predeterminadas (Personal, Soporte, Negocios, Producto, General).',
+    tagsAddSuccess: (tag: string) => `✅ ¡Etiqueta personalizada añadida: <b>【${tag}】</b>!`,
+    tagsDeleteSuccess: (tag: string) => `✅ ¡Etiqueta eliminada: <b>【${tag}】</b>!`,
+    tagsAddPrompt:
+      '🏷️ <b>【 Añadir Nueva Etiqueta 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      'Responda con el nombre de la nueva etiqueta (ej: <code>Finanzas</code>, <code>Monitoreo</code>, máx 10 letras):',
+    tagsInvalid: '❌ Nombre de etiqueta inválido o duplicado (1-10 caracteres sin espacios).',
+    kwTitle: '🚫 <b>【 Palabras Clave de Bloqueo Publicitario 】</b>',
+    fwdTitle: '📬 <b>【 Configuración de Reenvío y Copia 】</b>',
+    toastUpdated: '¡Configuración actualizada!',
+    toastCancelled: 'Operación cancelada',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 Seleccionar Proveedor de IA 】</b>',
+    current: (provider: string, model: string) => `Proveedor Actual: <b>${provider}</b> (Modelo: <code>${model}</code>)`,
+    prompt: 'Responda con el número correspondiente (válido por 5 minutos):',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>¡Proveedor de IA Cambiado con Éxito!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Proveedor Activo: <b>${provider}</b>\n` +
+      `• Modelo en Ejecución: <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ Selección inválida. Introduzca un número entre 1 y 9. Envíe /cancel para salir.',
+    kvError: '❌ No se puede guardar la configuración: enlace MAIL_ROUTES_KV no encontrado.',
+    tipSetKey: '💡 Consejo: Si este proveedor requiere API Key, envíe <code>/setkey ai &lt;su-clave&gt;</code>. Para cambiar modelo, use <code>/model</code>.',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 Seleccionar Modelo para ${provider} 】</b>`,
+    current: (model: string) => `Modelo Actual: <code>${model}</code>`,
+    prompt: 'Responda con un número o escriba el nombre del modelo personalizado (válido por 5 minutos):',
+    success: (model: string) =>
+      `✅ <b>¡Modelo Actualizado con Éxito!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `Modelo Activo: <code>${model}</code>`,
+    invalidOption: '❌ Opción inválida. Envíe /cancel para salir.',
+    kvError: '❌ No se puede guardar la configuración: enlace MAIL_ROUTES_KV no encontrado.',
   },
 
   langCommand: {
@@ -42,30 +126,65 @@ export const esES: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot Pasarela de correo lista 】</b>',
-    stepGuideTitle: '⚡ <b>Guía de inicio rápido en 3 pasos:</b>',
-    step1Title: '1️⃣ <b>Comprobar estado de la pasarela</b>',
-    step1Desc: '   Envía <code>/config</code> para verificar IA, correo de respaldo y base de datos KV.',
-    step2Title: '2️⃣ <b>Actualizar credenciales por Telegram (Opcional)</b>',
-    step2Desc1: '   • Activar análisis IA y extracción de códigos: <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • Configurar/cambiar correo de respaldo: <code>/setkey forward &lt;correo&gt;</code>',
-    step3Title: '3️⃣ <b>Configurar perfiles de dominio</b>',
-    step3Desc1: '   • Ver reglas activas: <code>/routes</code>',
-    step3Desc2: '   • Añadir regla personalizada: <code>/add Soporte help</code> (Soporta múltiples dominios)',
-    shortcutsTitle: '💡 <b>Comandos rápidos habituales:</b>',
-    shortcutSetup: '• <code>/setup</code> - Asistente interactivo de configuración paso a paso',
-    shortcutConfig: '• <code>/config</code> - Ver configuración activa y claves ocultas',
-    shortcutKeywords: '• <code>/keywords</code> - Gestionar palabras clave de spam (responder para editar)',
-    shortcutLang: '• <code>/lang</code> - Cambiar idioma del sistema (8 idiomas disponibles)',
-    shortcutHelp: '• <code>/help</code> - Ver panel de control completo y manual de parámetros',
-    menuActivatedNote: '<i>El botón [Menu] inferior izquierdo está sincronizado. Tócalo cuando quieras.</i>',
+    title: '👋 <b>【 Pasarela de Correo cf-mail2tg-aibot 】</b>',
+    subtitle: 'El bot de enrutamiento y análisis IA de Cloudflare está listo. Los correos se limpian, analizan y notifican en este chat.',
+    statusSectionTitle: '📊 <b>Resumen de Estado:</b>',
+    statusRunningLabel: 'Estado',
+    statusRunningValue: 'En línea (Online)',
+    statusEngineLabel: 'Motor de IA',
+    statusForwardLabel: 'Reenvío',
+    statusNoForward: 'Solo TG (No configurado)',
+    statusAliasOn: 'Alias Gmail activos',
+    statusAliasOff: 'Reenvío directo',
+    statusDefenseLabel: 'Defensa Edge',
+    statusDefenseValue: 'Sin adjuntos (550) · Límite 5MB',
+    guideTip: 'Toca 【Ajustes】 para configurar todos los parámetros; 【Guía de uso】 para detalles; 【🌐 Idioma / Language】 para cambiar el idioma.',
+    btnOpenMenu: '⚙️ Ajustes',
+    btnGuide: '📖 Guía de uso',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 Guía de Uso cf-mail2tg-aibot 】</b>',
+    subtitle: 'Funciones básicas e instrucciones de configuración:',
+    principlesTitle: '⚙️ <b>1. Flujo de Trabajo</b>',
+    principlesContent:
+      '• <b>Recepción</b>: Los correos al dominio son filtrados y estructurados mediante el script Worker.\n' +
+      '• <b>Protección Básica</b>: Rechazo de correos &gt; 5MB y adjuntos de riesgo para frenar el spam.\n' +
+      '• <b>Entrega Dual</b>: Envío del texto limpio y códigos a Telegram con reenvío paralelo a su buzón de respaldo.',
+    tagsTitle: '🏷️ <b>2. Clasificación y Códigos OTP</b>',
+    tagsContent:
+      '• <b>Tipos de Correo</b>: <code>Verificación</code> · <code>Marketing</code> · <code>Seguridad</code> · <code>Facturas</code> · <code>Directo</code> · <code>Avisos</code>\n' +
+      '• <b>Extracción de Códigos</b>: Identificación de códigos de registro y acceso fijados arriba para copiar al toque.\n' +
+      '• <b>Autenticación</b>: Comprobación de registros SPF / DKIM / DMARC para validar el remitente.',
+    antiSpamTitle: '🛡️ <b>3. Filtrado de Spam y Entrega Silenciosa</b>',
+    antiSpamContent:
+      '• <b>Filtrado por Reglas</b>: Correos con cabecera de baja (RFC 8058) o palabras clave pasan a Marketing.\n' +
+      '• <b>Notificación Silenciosa</b>: El marketing no genera sonido y omite la llamada a la IA para ahorrar cuota.\n' +
+      '• <b>Diccionario</b>: Ajustado al idioma configurado y ampliable con <code>/addkeywords</code>.',
+    routesTitle: '📂 <b>4. Enrutamiento por Prefijo y Alias</b>',
+    routesContent:
+      '• <b>Prefijos</b>: Clasifica por prefijo (ej: <code>support@</code> ➜ Soporte, <code>admin@</code> ➜ Personal).\n' +
+      '• <b>Alias de Correo</b>: Añade <code>+tag</code> al reenviar para facilitar filtros y carpetas en su buzón personal.',
+    commandsTitle: '⚡ <b>5. Lista de Comandos</b>',
+    commandsContent:
+      '• <code>/start</code> - Resumen del gateway y accesos rápidos\n' +
+      '• <code>/menu</code> - Panel de ajustes (⚙️ Ajustes)\n' +
+      '• <code>/guide</code> - Ver esta guía de uso\n' +
+      '• <code>/routes</code> - Gestionar reglas de prefijo y etiquetas\n' +
+      '• <code>/keywords</code> - Gestionar palabras clave de bloqueo\n' +
+      '• <code>/ai</code> - Cambiar proveedor y modelo de IA\n' +
+      '• <code>/lang</code> - Cambiar idioma del sistema',
+    footerTip: 'La mayoría de las acciones se realizan pulsando los botones inferiores.',
+    btnBackStart: '🔙 Volver al Resumen',
+    btnBackDashboard: '⚙️ Ajustes',
+    btnViewDocs: '🌐 Ver Documentación Completa en GitHub',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Panel de Control Completo 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot Ayuda de comandos 】</b>',
     menuHint: 'Toca el botón <b>[Menu]</b> abajo a la izquierda o envía un comando:',
-    keysSectionTitle: '🔑 <b>Credenciales y estado de la pasarela:</b>',
-    configDesc: '• <code>/config</code> - Ver estado de claves y centro de control (enmascarado)',
+    keysSectionTitle: '🔑 <b>Comandos de estado y configuración:</b>',
+    configDesc: '• <code>/config</code> - Ver estado del sistema y credenciales (enmascarado)',
     setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - Actualizar clave API de IA desde el móvil',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - Actualizar correo de reenvío',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - Restablecer claves dinámicas a valores por defecto',
@@ -86,7 +205,7 @@ export const esES: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Centro de Configuración y Claves 】</b>',
+    title: '⚙️ <b>【 Ajustes y estado de claves 】</b>',
     llmTitle: '🤖 <b>Clasificación de correos por IA (MiniMax):</b>',
     llmReady: (source: string) => `  • Estado: ✅ Listo ${source}`,
     llmNotConfigured: '  • Estado: ⚪ No configurado (Usando detector local de expresiones regulares)',
@@ -326,6 +445,9 @@ export const esES: TranslationDict = {
     },
     personaTags: {
       个人: 'Personal',
+      客服: 'Atención al Cliente',
+      商务: 'Negocios y Ventas',
+      产品: 'Producto',
       通用: 'General',
       免费产品: 'Producto Gratuito',
       付费产品: 'Producto de Pago',

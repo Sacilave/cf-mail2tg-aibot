@@ -23,7 +23,24 @@ export interface Env {
   MAX_SNIPPET_LENGTH?: string | number;
   /** Telegram marketing email policy: 'silent' (no ring/vibrate) | 'mute' (suppress TG push) */
   MARKETING_TG_POLICY?: 'silent' | 'mute';
-  /** MiniMax API Key for LLM classification */
+  /** Cloudflare Workers AI binding (env.AI) */
+  AI?: any;
+  /** Active AI Provider: 'workers-ai' | 'deepseek' | 'groq' | 'openai' | 'gemini' | 'claude' | 'openrouter' | 'minimax' | 'custom' */
+  AI_PROVIDER?: string;
+  /** Universal AI API Key */
+  AI_API_KEY?: string;
+  /** Custom model identifier */
+  AI_MODEL?: string;
+  /** Custom Base URL for OpenAI-compatible or reverse proxy */
+  AI_BASE_URL?: string;
+  /** Provider-specific API keys for auto-detection */
+  DEEPSEEK_API_KEY?: string;
+  OPENAI_API_KEY?: string;
+  GROQ_API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+  /** MiniMax API Key for LLM classification (backward compatibility) */
   MINIMAX_API_KEY?: string;
   /** MiniMax Group ID (optional) */
   MINIMAX_GROUP_ID?: string;
@@ -63,7 +80,18 @@ export interface EmailIntentResult {
   error?: string;
 }
 
-export type AllowedTag = '个人' | '通用' | '免费产品' | '付费产品' | '商业支持';
+export const ALLOWED_TAGS = [
+  '个人',
+  '客服',
+  '商务',
+  '产品',
+  '通用',
+  '商业支持',
+  '付费产品',
+  '免费产品',
+] as const;
+
+export type AllowedTag = (typeof ALLOWED_TAGS)[number];
 
 export interface CustomRouteRule {
   prefix: string;

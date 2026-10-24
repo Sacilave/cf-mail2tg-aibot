@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5-🌐-8-种主流语言国际化-i18n)
+[![Vitest](https://img.shields.io/badge/Tests-143%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-6-🌐-8-种主流语言国际化与一键切换-i18n)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本与免费配额保证)
 
 <p align="center">
@@ -113,13 +113,16 @@ flowchart TD
     E --> F{"三级加速降噪与 AI 意图判定"}
     F -->|Level 1| G["RFC 8058 退订头短路 (0ms·省Token)"]
     F -->|Level 2| H["本地/KV 关键词库短路 (0ms·省Token)"]
-    F -->|Level 3| I["LLM API 语义研判 (MiniMax / 兼容模型)"]
+    F -->|Level 3| I["LLM API 语义研判 (Workers AI / DeepSeek / Claude / OpenAI 等)"]
     
-    G --> J["🏷️ 意图分流: 验证 / 营销 / 告警 / 账单 / 业务 / 通知"]
-    H --> J
-    I --> J
+    G --> J1["🤖 AI 动态意图研判\n(验证/营销/告警/账单/业务/通知)"]
+    H --> J1
+    I --> J1
 
-    J --> K["🚀 双轨管道分流"]
+    E --> J2["📂 静态业务画像路由\n(个人/客服/商务/产品/通用)"]
+
+    J1 --> K["🚀 双轨管道分流"]
+    J2 --> K
     K -->|保底轨 Primary| L["📥 Cloudflare 原生 forward 直达 Gmail 别名\n(绝对零丢信保障)"]
     K -->|通知轨 Instant| M["📱 Telegram 格式化卡片推送\n(验证码置顶复制 / 营销邮件静音免打扰)"]
 ```
@@ -134,18 +137,67 @@ flowchart TD
 - **纯通知单轨模式**：若未配置备份邮箱，系统自动优雅降级为纯 Telegram 接收模式，零报错运行。
 
 ### 2. 🤖 LLM 语义意图识别与验证码置顶提取
-- **6 大标准化双字意图标签**：`🔐 验证`、`📢 营销`、`🚨 告警`、`💰 账单`、`💬 业务`、`🔔 通知`。
-- **验证码一键复制**：内置高精度中英文正则嗅探引擎与大模型提取能力，在卡片顶端单独以 `<code>` 代码块置顶展示，移动端**轻触一次即可复制验证码**。
-- **营销推销静音降噪**：商业广告与 SaaS 推销邮件自动使用 `disable_notification: true` 进行**静默推送（不响铃、不震动）**，彻底消除通知焦虑。
+- **开箱即用零成本边缘 AI**：默认搭载 **Cloudflare Workers AI**（运行 `@cf/meta/llama-3.1-8b-instruct`，免 API Key、零成本、边缘原生调度）；同时无缝支持 **DeepSeek**（极低消耗·中文高智）、**Groq**（极速 LPU 推理）、**OpenAI**、**Google Gemini**、**Anthropic Claude**、**OpenRouter** 与通用自定义反代；
+- **6 大标准化双字意图标签**：`🔐 验证`、`📢 营销`、`🚨 告警`、`💰 账单`、`💬 业务`、`🔔 通知`；
+- **验证码一键复制**：内置高精度中英文正则嗅探引擎与大模型提取能力，在卡片顶端单独以 `<code>` 代码块置顶展示，移动端**轻触一次即可复制验证码**；
+- **多语言地道营销词库与静默降噪**：
+  - 初始仅加载纯英文通用退订词库作为极简基线；
+  - 切换至任意支持语言（如中文、日语、俄语等）时，网关会自动将该语言**由母语习惯专业撰写的地道本地化词库增量追加**至 KV，绝非简单死板翻译，且绝不覆盖用户自定义词汇；
+  - 命中退订标头 (RFC 8058) 或词库的邮件自动使用 `disable_notification: true` 进行**静默推送（不响铃、不震动）**，彻底消除通知焦虑；
+- **Cloudflare 额度极致防卫与短路优化**：
+  - **前置短路机制**：退订标头与本地词库命中时，直接归类为营销并**彻底跳过大模型调用**，0 消耗 AI 算力与网络开销；
+  - **正文智能截断**：送审大模型的正文摘录严格限制在 800 字符内，避免长邮件消耗大量上下文与 Token；
+  - **内存级缓存与写入去重**：路由规则与词库享有 60 秒内存防击穿缓存，写入时自动对比哈希避免无改动重复写入，最大限度保护 Cloudflare KV 免费写入额度；
 - **大模型故障熔断兜底**：若 LLM 接口欠费或超时，系统坚持“先消息提醒（响铃）”，在卡片标注 `⚠️ LLM API失效 (已保底响铃)`，绝不漏掉重要信件。
 
-### 3. 🛡️ 四层边缘纵深防御体系 (Edge Armor)
+### 3. 🏷️ 双层标签体系：AI 动态意图 + 手动业务画像 (Two-Tier Tagging)
+系统在业内首创**「AI 动态意图 + 静态业务画像」双层标签协同架构**，彻底理清“信里说了什么”与“信件属于哪个业务”：
+
+```
+入站邮件
+├── 🤖 动态意图标签 (AI Intent) -> 识别「内容性质」
+│   ├── 🔐 验证 (提取验证码、置顶代码块、正常响铃)
+│   ├── 📢 营销 (命中退订头/关键词/推广语义，静默免打扰)
+│   ├── 🚨 告警 (系统报警、异地登录、高优响铃)
+│   ├── 💰 账单 (发票凭证、扣款通知、续费提醒)
+│   ├── 💬 业务 (日常商务通信、合作洽谈、私人来信)
+│   └── 🔔 通知 (GitHub 关注、系统简讯、常规日程)
+│
+└── 📂 静态画像标签 (Persona / Route Tag) -> 归属「业务领域」
+    ├── 个人 (Personal) -> 自动匹配 admin / me / hi / hello 等前缀 (对应 Gmail 别名 +personal)
+    ├── 客服 (Support)  -> 自动匹配 support / help / service / cs 等前缀 (对应 Gmail 别名 +support)
+    ├── 商务 (Business) -> 自动匹配 sales / billing / business / bd 等前缀 (对应 Gmail 别名 +business)
+    ├── 产品 (Product)  -> 自动匹配 product / feedback / app / dev 等前缀 (对应 Gmail 别名 +product)
+    ├── 通用 (General)  -> 未定义前缀时的保底归类
+    └── ➕ 自定义业务标签 -> 支持自主创建（如 财务、监控、内部 等），全界面动态选择与分流
+```
+
+- **Telegram 卡片双重呈现**：
+  - 顶部标题协同：`💬 【新邮件 · 业务 · help】`（结合意图与目标账号）；
+  - 核心属性栏目：`📂 业务分类: 客服`（直观展示归属业务线）；
+- **驱动零丢信 Gmail 别名分流**：
+  若开启 `ENABLE_GMAIL_ALIASES=true`，网关会自动将邮件分流至 `user+personal@gmail.com`、`user+support@gmail.com` 或 `user+business@gmail.com`，在 Gmail 端自动分类入盒；
+- **极简欢迎卡片 (`/start`) 与全按键设置中心 (`/menu`)**：
+  - `/start`：绝对精简的实用主义状态欢迎卡片，直观呈现网关就绪状态，并提供 `[⚙️ 设置]`、`[📖 使用指南]`、`[🌐 切换语言]` 3 大核心快捷入口；
+  - `/menu`：重新设计的**「⚙️ 设置」**交互面板，以整洁的 2x4 按钮矩阵一触即达所有配置：
+    - `[🤖 AI 模型]` `[📂 业务路由]`
+    - `[🚫 垃圾拦截]` `[📬 邮箱转发]`
+    - `[🌐 切换语言]` `[🔄 刷新状态]`
+    - `[⚡ 配置向导]` `[📖 使用指南]`
+  - **自定义分类标签管理 (`m:tags`)**：
+    - 在业务路由中提供 `[🏷️ 标签管理]`，支持一键查看、添加或删除自定义分类标签；
+    - 点击 `[➕ 添加分流规则]` 时，系统会自动将所有默认标签与自定义标签整齐排列为按钮，轻触即可完成选择绑定；
+  - `/routes`：随时查看当前所有生效的内置基线与自定义规则；
+  - `/add <标签> <前缀> [目标]`：动态添加新规则，例如 `/add 客服 help` 或 `/add 商务 vip vip@support.com`；
+  - `/del <前缀>`：删除指定规则，自带防手滑 Inline Keyboard 二次确认弹窗，或在 `/routes` 面板中直接一键点按删除。
+
+### 4. 🛡️ 四层边缘纵深防御体系 (Edge Armor)
 - **零附件装甲 (Zero-Attachment Policy)**：支持在边缘直接以 SMTP 550 拒信拦截带附件邮件，从物理层面杜绝恶意木马及大文件塞爆 Gmail 15GB 空间。
 - **体积容量熔断 (Size Cap)**：超过 5MB 邮件直接在边缘返回 SMTP 552 拒信，杜绝 OOM 崩溃与 CPU 超额。
 - **极速短路频控 (Pre-Parse Rate Check)**：未解包前先查滑动窗口，被限流垃圾信在 **0.2ms 内退出**，节省 98% 计算算力。
 - **Telegram 429 断路器**：遭遇 TG 频控时自动进入 30 秒熔断冷却期，防止请求堆积。
 
-### 4. 🎛️ 手机端 Telegram 交互式控制面板与密钥中枢
+### 5. 🎛️ 手机端 Telegram 交互式控制面板与密钥中枢
 - **交互向导 (`/setup`)**：专为移动端打造的 1 分钟交互式分步引导，按提示一步步输入备份邮箱与大模型 Key，输入 `skip` 可跳过当前项，支持随时 `/cancel` 退出；
 - **发送 `/config`**：一键调出网关全局就绪状态卡片，**敏感 Key 强制脱敏掩码显示**（如 `min***a8f9`），防止窥屏泄露；
 - **免电脑热更新 Key (`/setkey`)**：直接在手机私聊发送 `/setkey minimax <新Key>` 或 `/setkey forward <新邮箱>`，立刻持久化到 Cloudflare KV 并在边缘端实时生效，告别电脑敲命令行；
@@ -154,7 +206,7 @@ flowchart TD
 - **回复即改**：直接在 Telegram 里选择「回复 (Reply)」Bot 的消息，粘贴修改后的词库，网关自动全量热更新并同步至 Cloudflare KV；
 - **发送 `/routes`、`/add`、`/del`**：在手机端随时添加新地址路由分流规则，删除规则自带 Inline Keyboard 二次确认。
 
-### 5. 🌐 8 种主流语言国际化与一键切换 (i18n)
+### 6. 🌐 8 种主流语言国际化与一键切换 (i18n)
 - **支持 8 种主流语言**：🇨🇳 简体中文 (`zh-CN`)、🇺🇸 English (`en-US`)、🇭🇰 繁體中文 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇷🇺 Русский (`ru-RU`)、🇪🇸 Español (`es-ES`)、🇫🇷 Français (`fr-FR`)、🇩🇪 Deutsch (`de-DE`)；
 - **全链路本地化覆盖**：包括入站邮件卡片推播、验证码提取模块、安全与熔断警报、交互式配置向导、控制面板与 Telegram 原生 Bot 菜单指令；
 - **即时交互切换 (`/lang`)**：在 Telegram 中发送 `/lang` 即可呼出 4x2 紧凑内联键盘一键切换（当前语言附带 `✓` 标记），或直接传参快捷设置（如 `/lang en`、`/lang ja`）；
@@ -169,17 +221,22 @@ flowchart TD
 
 | 指令 | 参数格式 | 功能描述 |
 | :--- | :--- | :--- |
+| `/start` | - | **👋 极简状态总览**：查看网关运行摘要，直达 `[⚙️ 设置]`、`[📖 使用指南]` 与 `[🌐 切换语言]` |
+| `/menu` | - | **⚙️ 设置中心仪表盘**：以 2x4 内联按键面板层级化管理所有设置（AI、路由、拦截词、转发、语言、配置向导、使用指南） |
+| `/guide` | - | **📖 详细使用指南**：查看工作流程、邮件分类、垃圾拦截、前缀路由说明与 GitHub 文档直达按钮 |
+| `/setup` | - | **⚡ 极速配置向导**：启动交互式分步引导（1 分钟带你完成核心凭证绑定，面板中亦有专属按钮） |
 | `/lang` | `[语言代号]` | 切换系统显示语言，支持 4x2 交互式内联键盘切换或直接传参 (如 `/lang en`、`/lang ja`) |
-| `/setup` | - | 启动交互式分步极速配置向导 (1 分钟带你完成核心凭证绑定) |
+| `/provider` | `[1~9\|厂商名]` | 交互式切换大模型厂商 (回复数字 1~9 秒切 Workers AI / DeepSeek / Groq / OpenAI 等) |
+| `/model` | `[1~2\|模型名]` | 交互式切换当前厂商的运行模型版本 |
 | `/cancel` | - | 退出当前向导或会话，重置交互状态 |
 | `/config` | - | 查看网关就绪状态与密钥绑定情况 (带安全脱敏掩码，仅管理员可阅) |
-| `/setkey` | `<minimax\|forward> <值>` | 手机端热更新大模型密钥或备份转发邮箱，即刻持久化保存至 KV |
-| `/resetkey` | `<minimax\|forward>` | 清除 KV 动态覆盖项，一键恢复至部署时绑定的初始环境变量 |
+| `/setkey` | `<ai\|minimax\|forward> <值>` | 手机端热更新通用 AI / MiniMax 密钥或备份转发邮箱，即刻持久化保存至 KV |
+| `/resetkey` | `<ai\|provider\|model\|minimax\|forward>` | 清除 KV 动态覆盖项，一键恢复至部署时绑定的初始环境变量 |
 | `/keywords` | - | 查看并生成带 `<pre><code>` 代码块的全部营销关键词，便于手机一键复制 |
 | `/addkeywords` | `<词1>\n<词2>` | 安全增量追加关键词至现有词库（自动去重，绝不覆盖已有词） |
 | `/resetkeywords` | - | 一键重置清空自定义词库，恢复系统预设的标准基线关键词 |
-| `/routes` | - | 查看当前生效的内置画像规则与 KV 动态路由规则 |
-| `/add` | `<标签> <前缀> [目标]` | 动态添加分流规则，如 `/add 商业支持 help user@domain.com` |
+| `/routes` | - | 查看当前生效的内置画像规则与 KV 动态路由规则，管理自定义标签 |
+| `/add` | `<标签> <前缀> [目标]` | 动态添加分流规则，如 `/add 商务 help user@domain.com` |
 | `/del` | `<前缀>` | 删除指定前缀规则（弹出带确认/取消按钮的二次确认卡片） |
 | `/help` | - | 查看网关操作面板指南与当前状态 |
 

@@ -76,6 +76,8 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
       expect(dict.securityAlerts).toBeDefined();
       expect(dict.routesCommand).toBeDefined();
       expect(dict.keywordsCommand).toBeDefined();
+      expect(dict.providerCommand).toBeDefined();
+      expect(dict.modelCommand).toBeDefined();
 
       // Verify email card localized tags
       expect(dict.emailCard.intentTags['业务']).toBeDefined();
@@ -280,7 +282,7 @@ describe('Telegram Webhook - 多语言交互与即时切换测试', () => {
     expect(res.status).toBe(200);
 
     const body = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(body.text).toContain('Full Control Panel');
+    expect(body.text).toContain('Command Help');
     expect(body.text).toContain('/setup');
     expect(body.text).toContain('interactive configuration wizard');
   });

@@ -41,19 +41,66 @@ export interface TranslationDict {
 
   // Bot Menu Commands description
   commandDesc: {
-    lang: string;
+    start: string;
+    menu: string;
+    guide: string;
     setup: string;
+    lang: string;
     config: string;
-    setkey: string;
-    resetkey: string;
-    cancel: string;
+    provider: string;
+    model: string;
+    routes: string;
     keywords: string;
     addkeywords: string;
     resetkeywords: string;
-    routes: string;
     add: string;
     del: string;
+    setkey: string;
+    resetkey: string;
+    cancel: string;
     help: string;
+  };
+
+  // Interactive Dashboard & Button Menus
+  dashboard: {
+    title: string;
+    desc: string;
+    btnAi: string;
+    btnRoutes: string;
+    btnKeywords: string;
+    btnForward: string;
+    btnLang: string;
+    btnRefresh: string;
+    btnBackMain: string;
+    btnBackAi: string;
+    btnBackRoutes: string;
+    btnManageModels: string;
+    btnSetKey: string;
+    btnSetAiKey?: string;
+    btnResetAiKey?: string;
+    btnAddRoute: string;
+    btnTags?: string;
+    btnAddKw?: string;
+    btnSetForward?: string;
+    btnResetForward?: string;
+    btnSetup: string;
+    btnCancel: string;
+    routesTitle: string;
+    routesSelectTagPrompt: string;
+    routesInputPrefixPrompt: (tag: string) => string;
+    routesAddSuccess: (prefix: string, tag: string, forward: string) => string;
+    routesDeletedSuccess: (prefix: string) => string;
+    tagsTitle?: string;
+    tagsPrompt?: string;
+    tagsEmpty?: string;
+    tagsAddSuccess?: (tag: string) => string;
+    tagsDeleteSuccess?: (tag: string) => string;
+    tagsAddPrompt?: string;
+    tagsInvalid?: string;
+    kwTitle: string;
+    fwdTitle: string;
+    toastUpdated: string;
+    toastCancelled: string;
   };
 
   // /lang command
@@ -65,25 +112,64 @@ export interface TranslationDict {
     invalidArg: string;
   };
 
+  // /provider command
+  providerCommand: {
+    title: string;
+    current: (provider: string, model: string) => string;
+    prompt: string;
+    success: (provider: string, model: string, note: string) => string;
+    invalidOption: string;
+    kvError: string;
+    tipSetKey: string;
+  };
+
+  // /model command
+  modelCommand: {
+    title: (provider: string) => string;
+    current: (model: string) => string;
+    prompt: string;
+    success: (model: string) => string;
+    invalidOption: string;
+    kvError: string;
+  };
+
   // /start command
   startCommand: {
     title: string;
-    stepGuideTitle: string;
-    step1Title: string;
-    step1Desc: string;
-    step2Title: string;
-    step2Desc1: string;
-    step2Desc2: string;
-    step3Title: string;
-    step3Desc1: string;
-    step3Desc2: string;
-    shortcutsTitle: string;
-    shortcutSetup: string;
-    shortcutConfig: string;
-    shortcutKeywords: string;
-    shortcutLang: string;
-    shortcutHelp: string;
-    menuActivatedNote: string;
+    subtitle: string;
+    statusSectionTitle: string;
+    statusRunningLabel: string;
+    statusRunningValue: string;
+    statusEngineLabel: string;
+    statusForwardLabel: string;
+    statusNoForward: string;
+    statusAliasOn: string;
+    statusAliasOff: string;
+    statusDefenseLabel: string;
+    statusDefenseValue: string;
+    guideTip: string;
+    btnOpenMenu: string;
+    btnGuide: string;
+  };
+
+  // Usage Guide Card
+  usageGuide: {
+    title: string;
+    subtitle: string;
+    principlesTitle: string;
+    principlesContent: string;
+    tagsTitle: string;
+    tagsContent: string;
+    antiSpamTitle: string;
+    antiSpamContent: string;
+    routesTitle: string;
+    routesContent: string;
+    commandsTitle: string;
+    commandsContent: string;
+    footerTip: string;
+    btnBackStart: string;
+    btnBackDashboard: string;
+    btnViewDocs?: string;
   };
 
   // /help or /menu command
@@ -92,6 +178,9 @@ export interface TranslationDict {
     menuHint: string;
     keysSectionTitle: string;
     configDesc: string;
+    providerDesc?: string;
+    modelDesc?: string;
+    setkeyAiDesc?: string;
     setkeyMinimaxDesc: string;
     setkeyForwardDesc: string;
     resetkeyDesc: string;
@@ -115,6 +204,7 @@ export interface TranslationDict {
   configCommand: {
     title: string;
     llmTitle: string;
+    llmProvider?: (provider: string) => string;
     llmReady: (source: string) => string;
     llmNotConfigured: string;
     llmMaskedKey: (key: string) => string;
@@ -137,6 +227,8 @@ export interface TranslationDict {
     systemLangTitle: string;
     systemLangDesc: (name: string, source: string) => string;
     shortcutsTitle: string;
+    shortcutProvider?: string;
+    shortcutModel?: string;
     shortcutSetkeyMinimax: string;
     shortcutSetkeyForward: string;
     shortcutResetkeyMinimax: string;
@@ -148,10 +240,12 @@ export interface TranslationDict {
   setkeyCommand: {
     helpTitle: string;
     helpUsage: string;
+    helpAi?: string;
     helpMinimax: string;
     helpForward: string;
     helpTip: string;
     kvError: string;
+    successAi?: (maskedKey: string) => string;
     successMinimax: (maskedKey: string) => string;
     successForward: (email: string) => string;
     unsupportedType: (type: string) => string;

@@ -6,19 +6,103 @@ export const zhTW: TranslationDict = {
   flag: '🇭🇰',
 
   commandDesc: {
-    lang: '切換顯示語言 / Switch language',
-    setup: '一鍵極速設定精靈 (1分鐘分步引導)',
-    config: '查看金鑰綁定狀態與配置中心',
-    setkey: '熱更新金鑰/備份信箱: setkey <類型> <值>',
-    resetkey: '重設動態金鑰並回退至預設配置',
-    cancel: '退出目前精靈或交談會話',
-    keywords: '查看並複製全部行銷攔截關鍵字',
-    addkeywords: '增量安全追加行銷關鍵字 (不覆蓋)',
-    resetkeywords: '重設行銷關鍵字為系統預設基準',
-    routes: '查看目前所有網域名稱路由對應與規則',
-    add: '新增自訂路由規則: add 標籤 前綴 [轉發目標]',
-    del: '刪除自訂路由規則: del 前綴',
-    help: '查看閘道操作說明與狀態',
+    start: '查看運作狀態總覽',
+    menu: '開啟設定面板',
+    guide: '查看詳細使用指南',
+    setup: '啟動設定精靈 (分步引導)',
+    lang: '切換顯示語言 (Switch language)',
+    config: '查看運作狀態與金鑰詳情',
+    provider: '切換大模型廠商',
+    model: '切換運行模型版本',
+    routes: '管理分流路由與自訂標籤',
+    keywords: '查看行銷攔截詞庫',
+    addkeywords: '追加行銷攔截詞',
+    resetkeywords: '重設行銷攔截詞庫',
+    add: '新增分流規則 (add 標籤 前綴 [目標])',
+    del: '刪除分流規則 (del 前綴)',
+    setkey: '更新金鑰或備份信箱 (setkey <類型> <值>)',
+    resetkey: '重設動態金鑰或備份信箱',
+    cancel: '取消當前會話或精靈',
+    help: '查看指令幫助手冊',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 設定 】</b>',
+    desc: '輕觸下方按鈕即可無縫切換 AI 廠商、管理業務分流路由、維護垃圾攔截關鍵字庫或切換系統語言：',
+    btnAi: '🤖 AI 模型',
+    btnRoutes: '📂 業務路由',
+    btnKeywords: '🚫 垃圾攔截',
+    btnForward: '📬 信箱轉發',
+    btnLang: '🌐 語言 / Language',
+    btnRefresh: '🔄 重新整理',
+    btnBackMain: '🔙 返回主選單',
+    btnBackAi: '🔙 返回 AI 設定',
+    btnBackRoutes: '🔙 返回路由設定',
+    btnManageModels: '🎯 切換具體模型',
+    btnSetKey: '🔑 設定 API Key',
+    btnSetAiKey: '🔑 綁定 API Key',
+    btnResetAiKey: '🔄 清除自訂 Key',
+    btnAddRoute: '➕ 新增分流規則',
+    btnTags: '🏷️ 標籤管理',
+    btnAddKw: '➕ 追加關鍵字',
+    btnSetForward: '📬 修改備份信箱',
+    btnResetForward: '🗑️ 清除備份信箱',
+    btnSetup: '⚡ 設定精靈',
+    btnCancel: '❌ 取消',
+    routesTitle: '📂 <b>【 業務畫像分流規則管理 】</b>',
+    routesSelectTagPrompt: '請為新規則選擇<b>業務分類標籤</b>（輕觸按鈕選擇）：',
+    routesInputPrefixPrompt: (tag: string) =>
+      `已選擇分類標籤：<b>【${tag}】</b>\n\n` +
+      `請直接回覆您想要綁定的<b>信箱前綴</b>（例如 <code>vip</code> 或 <code>support</code>）：\n` +
+      `<i>（💡 如需同時指定專屬轉發目標，請回覆: 前綴 信箱，例如: vip user@example.com）</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>分流規則新增成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 匹配前綴: <code>${prefix}</code>\n` +
+      `• 業務畫像: <b>${tag}</b>\n` +
+      `• 遞送目標: <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ 已成功刪除前綴為 <code>${prefix}</code> 的分流規則！`,
+    tagsTitle: '🏷️ <b>【 業務分類標籤管理 】</b>',
+    tagsPrompt: '在此管理您的自訂業務分類標籤。這些標籤可在新增前綴分流規則時使用：',
+    tagsEmpty: '暫無自訂標籤，目前使用系統預設分類（個人、客服、商務、產品、通用）。',
+    tagsAddSuccess: (tag: string) => `✅ 成功新增自訂標籤: <b>【${tag}】</b>！`,
+    tagsDeleteSuccess: (tag: string) => `✅ 已刪除自訂標籤: <b>【${tag}】</b>！`,
+    tagsAddPrompt:
+      '🏷️ <b>【 新增自訂標籤 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      '請直接回覆您想要建立的業務標籤名稱（例如：<code>財務</code>、<code>監控</code>、<code>內部</code>，10字以內）：',
+    tagsInvalid: '❌ 標籤名稱無效或已存在（必須為1-10個字元且不含空格）。',
+    kwTitle: '🚫 <b>【 行銷推廣與垃圾攔截關鍵字庫 】</b>',
+    fwdTitle: '📬 <b>【 備份信箱與轉發設定 】</b>',
+    toastUpdated: '已更新設定！',
+    toastCancelled: '已取消目前操作',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 請選擇大模型 API 廠商 】</b>',
+    current: (provider: string, model: string) => `目前廠商: <b>${provider}</b> (模型: <code>${model}</code>)`,
+    prompt: '請直接回覆對應序號進行切換（5分鐘內有效）：',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>API 廠商切換成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 目前廠商: <b>${provider}</b>\n` +
+      `• 執行模型: <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ 無效的序號，請輸入 1 到 9 之間的數字。如需退出請發送 /cancel。',
+    kvError: '❌ 無法儲存設定，未偵測到綁定的 MAIL_ROUTES_KV 資料庫。',
+    tipSetKey: '💡 提示: 若該廠商需要 API Key，可發送 <code>/setkey ai &lt;你的Key&gt;</code> 進行綁定。如需更換模型，可發送 <code>/model</code>。',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 請選擇 ${provider} 執行模型 】</b>`,
+    current: (model: string) => `目前執行模型: <code>${model}</code>`,
+    prompt: '請直接回覆對應序號完成切換，或直接回覆自訂模型名稱（5分鐘内有效）：',
+    success: (model: string) =>
+      `✅ <b>執行模型更新成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `目前生效模型: <code>${model}</code>`,
+    invalidOption: '❌ 無效的模型序號或名稱。如需退出請發送 /cancel。',
+    kvError: '❌ 無法儲存設定，未偵測到綁定的 MAIL_ROUTES_KV 資料庫。',
   },
 
   langCommand: {
@@ -42,30 +126,65 @@ export const zhTW: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot 郵件閘道已就緒 】</b>',
-    stepGuideTitle: '⚡ <b>高效 3 步初始化指引:</b>',
-    step1Title: '1️⃣ <b>查驗就緒狀態</b>',
-    step1Desc: '   發送 <code>/config</code> 查看大模型、備份信箱與 KV 資料庫連線狀態。',
-    step2Title: '2️⃣ <b>手機端熱更新金鑰 (可選)</b>',
-    step2Desc1: '   • 開啟 AI 審信與提碼: <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • 設定/更換 Gmail 備份: <code>/setkey forward &lt;接收信箱&gt;</code>',
-    step3Title: '3️⃣ <b>配置網域名稱收信畫像</b>',
-    step3Desc1: '   • 查看生效畫像規則: <code>/routes</code>',
-    step3Desc2: '   • 新增專屬分流規則: <code>/add 商業支援 help</code> (支援多網域)',
-    shortcutsTitle: '💡 <b>日常快捷指令:</b>',
-    shortcutSetup: '• <code>/setup</code> - 互動式極速分步精靈',
-    shortcutConfig: '• <code>/config</code> - 查看目前配置與脫敏金鑰',
-    shortcutKeywords: '• <code>/keywords</code> - 行銷攔截詞庫管理 (回覆即可修改)',
-    shortcutLang: '• <code>/lang</code> - 切換系統顯示語言 (多語言支援)',
-    shortcutHelp: '• <code>/help</code> - 查看全量控制台與詳細參數說明',
-    menuActivatedNote: '<i>左下角 [Menu] 選單按鈕已同步啟動，點選即可快速調用。</i>',
+    title: '👋 <b>【 cf-mail2tg-aibot 郵件閘道 】</b>',
+    subtitle: 'Cloudflare 郵件轉推與 AI 審信機器人已就緒。所有來信將自動經過安全清洗、意圖識別與驗證碼提取後推送至本會話。',
+    statusSectionTitle: '📊 <b>閘道運作狀態摘要:</b>',
+    statusRunningLabel: '運作狀態',
+    statusRunningValue: '正常運作 (Online)',
+    statusEngineLabel: '審信引擎',
+    statusForwardLabel: '備份轉發',
+    statusNoForward: '純TG模式 (未設定)',
+    statusAliasOn: 'Gmail 別名已啟用',
+    statusAliasOff: '直轉模式',
+    statusDefenseLabel: '防禦裝甲',
+    statusDefenseValue: '零附件攔截 (550) · 5MB 容量熔斷',
+    guideTip: '輕觸下方【設定】進入配置面板；輕觸【使用指南】查看詳細說明；輕觸【🌐 語言 / Language】可切換語言。',
+    btnOpenMenu: '⚙️ 設定',
+    btnGuide: '📖 使用指南',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 cf-mail2tg-aibot 使用指南 】</b>',
+    subtitle: '閘道基礎功能與設定說明：',
+    principlesTitle: '⚙️ <b>1. 工作流程</b>',
+    principlesContent:
+      '• <b>郵件接收</b>: 網域信箱接收來信，由 Worker 腳本進行過濾與結構化解析。\n' +
+      '• <b>基礎防護</b>: 攔截超大郵件 (預設 5MB) 與危險格式附件，防止垃圾郵件衝擊。\n' +
+      '• <b>雙軌投遞</b>: 提取內文文字與驗證碼推送至 Telegram，同時原樣轉發至備份信箱。',
+    tagsTitle: '🏷️ <b>2. 郵件分類與驗證碼</b>',
+    tagsContent:
+      '• <b>意圖類型</b>: <code>驗證</code> · <code>行銷</code> · <code>告警</code> · <code>帳單</code> · <code>業務</code> · <code>通知</code>\n' +
+      '• <b>驗證碼提取</b>: 識別到登入與註冊驗證碼時置頂顯示，支援直接點擊複製。\n' +
+      '• <b>安全校驗</b>: 校驗寄件人 SPF / DKIM 簽名狀態以標識寄件來源可信度。',
+    antiSpamTitle: '🛡️ <b>3. 垃圾攔截與靜默推送</b>',
+    antiSpamContent:
+      '• <b>規則過濾</b>: 識別含退訂標頭 (RFC 8058) 或命中攔截詞庫的郵件，自動歸為行銷分類。\n' +
+      '• <b>靜默通知</b>: 行銷郵件預設啟用靜音推送，且不觸發 AI 模型調用以節約算力。\n' +
+      '• <b>詞庫匹配</b>: 根據系統語言自動匹配詞庫，支援使用 <code>/addkeywords</code> 自行擴充。',
+    routesTitle: '📂 <b>4. 前綴路由與別名</b>',
+    routesContent:
+      '• <b>前綴分流</b>: 根據收信前綴歸類業務畫像（如 <code>support@</code> 歸為客服，<code>admin@</code> 归为個人）。\n' +
+      '• <b>信箱別名</b>: 啟用後轉發時自動追加 <code>+tag</code> 別名（如 <code>user+support@gmail.com</code>），便於在信箱內分類歸檔。',
+    commandsTitle: '⚡ <b>5. 常用指令速查</b>',
+    commandsContent:
+      '• <code>/start</code> - 查看運作狀態與快速入口\n' +
+      '• <code>/menu</code> - 開啟設定面板 (⚙️ 設定)\n' +
+      '• <code>/guide</code> - 查看本使用指南\n' +
+      '• <code>/routes</code> - 管理前綴分流規則與自訂標籤\n' +
+      '• <code>/keywords</code> - 查看與維護攔截詞庫\n' +
+      '• <code>/ai</code> - 切換 AI 模型廠商與版本\n' +
+      '• <code>/lang</code> - 切換系統語言',
+    footerTip: '輕觸訊息下方按鈕即可快捷操作，無需手動輸入指令。',
+    btnBackStart: '🔙 返回總覽',
+    btnBackDashboard: '⚙️ 設定',
+    btnViewDocs: '🌐 查看 GitHub 詳細文件',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot 全量控制台 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot 指令幫助 】</b>',
     menuHint: '您可直接點選左下角 <b>[Menu]</b> 按鈕或發送以下指令：',
-    keysSectionTitle: '🔑 <b>金鑰與運行狀態指令:</b>',
-    configDesc: '• <code>/config</code> - 查看金鑰綁定狀態與配置中心 (附遮罩)',
+    keysSectionTitle: '🔑 <b>狀態與配置指令:</b>',
+    configDesc: '• <code>/config</code> - 查看運作狀態與金鑰詳情 (附遮罩)',
     setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - 手機端熱更新大模型金鑰',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - 手機端熱更新備份信箱',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - 重設動態覆蓋回退預設值',
@@ -86,7 +205,7 @@ export const zhTW: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot 配置與金鑰中心 】</b>',
+    title: '⚙️ <b>【 設定與金鑰狀態 】</b>',
     llmTitle: '🤖 <b>大模型審信 (LLM):</b>',
     llmReady: (source: string) => `  • 綁定狀態: ✅ 已就緒 ${source}`,
     llmNotConfigured: '  • 綁定狀態: ⚪ 未配置 (目前使用本機正則特徵嗅探)',
@@ -326,6 +445,9 @@ export const zhTW: TranslationDict = {
     },
     personaTags: {
       个人: '個人',
+      客服: '客服',
+      商务: '商務',
+      产品: '產品',
       通用: '通用',
       免费产品: '免費產品',
       付费产品: '付費產品',

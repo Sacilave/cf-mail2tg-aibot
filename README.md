@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5--8-mainstream-languages-i18n--instant-switching)
+[![Vitest](https://img.shields.io/badge/Tests-143%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-6--8-mainstream-languages-i18n--instant-switching)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-zero-cost--free-quota-guarantee)
 
 <p align="center">
@@ -113,13 +113,16 @@ flowchart TD
     E --> F{"3-Tier Noise Reduction & AI Triage"}
     F -->|Level 1| G["RFC 8058 List-Unsubscribe Header (0ms · Token-free)"]
     F -->|Level 2| H["Local & KV Filter Keywords (0ms · Token-free)"]
-    F -->|Level 3| I["LLM Semantic Analysis (MiniMax / Compatible)"]
+    F -->|Level 3| I["LLM Semantic Analysis (Workers AI / DeepSeek / Claude / OpenAI etc.)"]
     
-    G --> J["🏷️ Intent Triage: Verification / Marketing / Alert / Billing / Business / Notification"]
-    H --> J
-    I --> J
+    G --> J1["🤖 Dynamic AI Intent Triage\n(Verification/Marketing/Alert/Billing/Direct/Notice)"]
+    H --> J1
+    I --> J1
 
-    J --> K["🚀 Dual-Track Pipeline Dispatcher"]
+    E --> J2["📂 Static Persona Routing\n(Personal/Commercial Support/Pro/Free/Generic)"]
+
+    J1 --> K["🚀 Dual-Track Pipeline Dispatcher"]
+    J2 --> K
     K -->|Primary Track| L["📥 Native Cloudflare forward to Gmail alias\n(Absolute Zero-Drop Assurance)"]
     K -->|Instant Track| M["📱 Telegram formatted card notification\n(1-tap copy code / silent push for marketing)"]
 ```
@@ -133,19 +136,69 @@ flowchart TD
 - **Instant Track (Push Notification)**: Automatically cleans HTML formatting, fixes Quoted-Printable encoding, and renders an elegant markdown card on Telegram.
 - **Single-Track Mode**: When no backup email is configured, the gateway gracefully degrades to pure Telegram push mode with zero errors.
 
-### 2. 🤖 LLM Semantic Triage & 1-Tap Verification Code Extraction
+### 2. 🤖 Multi-Provider LLM Semantic Triage & 1-Tap Verification Code Extraction
+- **Zero-Cost Out-of-the-Box Edge AI**: Pre-configured with **Cloudflare Workers AI** (running `@cf/meta/llama-3.1-8b-instruct`, 100% Free · Zero API Key · Edge Native); seamlessly supports **DeepSeek** (Ultra-low cost · High intelligence), **Groq** (Blazing fast LPU inference), **OpenAI**, **Google Gemini**, **Anthropic Claude**, **OpenRouter**, and custom OpenAI-compatible proxies.
 - **6 Standardized Intent Categories**: `🔐 Verification`, `📢 Marketing`, `🚨 Security Alert`, `💰 Billing`, `💬 Business`, `🔔 Notification`.
 - **1-Tap Code Copy**: Built-in high-precision regex sniffing engine alongside LLM parsing extracts authentication codes and displays them in a top-level `<code>` block—**tap once on your phone to copy**.
-- **Silent Marketing Push**: Marketing and SaaS promotional emails automatically trigger with `disable_notification: true` for **silent delivery (no sound, no vibration)**, eliminating notification fatigue.
+- **Multi-Language Native Spam Dictionaries & Silent Push**:
+  - Initializes with a clean English baseline keyword dictionary;
+  - Switching to any of the 8 supported languages automatically and non-destructively appends **authentic, professionally crafted native spam keywords** into KV (tailored to regional marketing patterns, not literal translations);
+  - RFC 8058 unsubscribe headers and keyword matches trigger with `disable_notification: true` for **silent delivery (no sound, no vibration)**.
+- **Cloudflare Free Tier Quota Defense**:
+  - **Pre-AI Short-Circuiting**: Emails matching unsubscribe headers or spam dictionaries bypass AI invocation entirely, consuming 0 tokens and 0 CPU time;
+  - **Smart Snippet Capping**: Email snippets sent to LLMs are capped at 800 characters, minimizing token usage and latency;
+  - **Memory Cache & Write Deduplication**: 60-second in-memory KV cache and hash comparison skip redundant writes, preserving your Cloudflare KV free quotas.
 - **Fail-Safe Circuit Breaker**: If LLM quotas expire or time out, the system defaults to loud notifications marked `⚠️ LLM API Offline (Alert Sound Preserved)`, ensuring critical messages are never missed.
 
-### 3. 🛡️ 4-Layer Edge Armor Defense
+### 3. 🏷️ Two-Tier Tagging Architecture: Dynamic AI Intent + Manual Persona Routing
+`cf-mail2tg-aibot` pioneers a **Two-Tier Tagging System** that cleanly separates "What the email is about" from "Which business/product it belongs to":
+
+```
+Incoming Email
+├── 🤖 Dynamic AI Intent Tag (Content Semantic)
+│   ├── 🔐 Verification (Extract OTP code, highlight in monospace, alert)
+│   ├── 📢 Marketing (RFC unsubscribe / keywords / promo detected -> silent delivery)
+│   ├── 🚨 Security (Account alerts, server monitoring, high priority)
+│   ├── 💰 Billing (Invoices, payment receipts, subscription renewals)
+│   ├── 💬 Direct (Human-to-human communications, business inquiries)
+│   └── 🔔 Notification (System digests, GitHub updates)
+│
+└── 📂 Manual Persona Route Tag (Business Domain)
+    ├── 个人 (Personal) -> Auto-matches admin/me/hi prefixes (Maps to Gmail alias +personal)
+    ├── 客服 (Support)  -> Auto-matches support/help/service/cs prefixes (Maps to Gmail alias +support)
+    ├── 商务 (Business) -> Auto-matches sales/billing/business/bd prefixes (Maps to Gmail alias +business)
+    ├── 产品 (Product)  -> Auto-matches product/feedback/app prefixes (Maps to Gmail alias +product)
+    ├── 通用 (General)  -> Universal fallback
+    └── ➕ Custom Category Tags -> Create your own (e.g. Finance, Ops, Internal) with 1-click dynamic selection
+```
+
+- **Telegram Card Layout**:
+  - Header: `💬 [New Email · Direct · help]` (Combines intent & target username);
+  - Attribute: `📂 Business Persona: Customer Support` (Shows product domain);
+- **Powers Zero-Drop Gmail Alias Routing**:
+  When `ENABLE_GMAIL_ALIASES=true`, emails automatically route to `user+personal@gmail.com`, `user+support@gmail.com`, `user+business@gmail.com`, etc., mapping directly into Gmail label filters.
+- **Minimalist Status (`/start`) & Button-First Settings (`/menu`)**:
+  - `/start` - Absolute minimalist overview with 3 direct shortcuts: `[⚙️ Settings]`, `[📖 User Guide]`, and `[🌐 Language]`;
+  - `/menu` - Redesigned **"⚙️ Settings"** control center with a neat 2x4 inline button grid:
+    - `[🤖 AI Model]` `[📂 Routes]`
+    - `[🚫 Anti-Spam]` `[📬 Forwarding]`
+    - `[🌐 Language]` `[🔄 Refresh]`
+    - `[⚡ Setup Wizard]` `[📖 User Guide]`
+  - **Dynamic Tag Management (`m:tags`)**:
+    - Manage custom tags inside Route Settings via `[🏷️ Tag Manager]`;
+    - Add or delete custom tags with 1-tap confirmation;
+    - Custom tags appear seamlessly as buttons when creating routing rules!
+  - `/routes` - Inspect all active baseline and dynamic KV rules with inline management buttons;
+  - `/add <Tag> <Prefix> [ForwardTarget]` - Add custom routing rules on the fly (e.g. `/add 客服 help` or `/add 商务 vip vip@support.com`);
+  - `/del <Prefix>` - Safely remove rules with an interactive confirmation prompt or direct inline tap.
+
+### 4. 🛡️ 4-Layer Edge Armor Defense
 - **Zero-Attachment Policy**: Reject incoming emails containing binary attachments at the edge using SMTP 550, safeguarding your Gmail quota and eliminating malware risks.
 - **Size Cap Hard Limit**: Emails exceeding 5MB are immediately rejected with SMTP 552 at the edge, preventing OOM crashes and CPU exhaustion.
 - **Pre-Parse Rate Limiting**: Checks sender sliding windows before unpacking email bodies; rate-limited spam exits within **0.2ms**, cutting CPU consumption by 98%.
 - **Telegram 429 Circuit Breaker**: Automatically engages a 30-second cooldown period when Telegram API rate limits occur to prevent request pileups.
 
-### 4. 🎛️ Mobile Telegram Control Panel & Key Management Hub
+### 5. 🎛️ Mobile Telegram Control Panel & Key Management Hub
 - **Interactive Setup Wizard (`/setup`)**: A 1-minute mobile-friendly step-by-step wizard to bind your backup inbox and LLM API key; enter `skip` to bypass any step, or `/cancel` anytime.
 - **Global Status (`/config`)**: View gateway status with **security masking on sensitive keys** (e.g., `min***a8f9`).
 - **Mobile Hot-Updates (`/setkey`)**: Send `/setkey minimax <NewKey>` or `/setkey forward <NewEmail>` in private chat to persist updates to Cloudflare KV in real time—no terminal needed.
@@ -154,7 +207,7 @@ flowchart TD
 - **Reply-to-Update**: Simply reply to the Bot's keyword message with your modified wordlist to perform an instant full hot-reload into Cloudflare KV.
 - **Routing Rules (`/routes`, `/add`, `/del`)**: Inspect domain persona rules and dynamically add/remove prefix routing with interactive confirmation buttons.
 
-### 5. 🌐 8 Mainstream Languages i18n & Instant Switching
+### 6. 🌐 8 Mainstream Languages i18n & Instant Switching
 - **8 Supported Languages**: 🇨🇳 Simplified Chinese (`zh-CN`), 🇺🇸 English (`en-US`), 🇭🇰 Traditional Chinese (`zh-TW`), 🇯🇵 Japanese (`ja-JP`), 🇷🇺 Russian (`ru-RU`), 🇪🇸 Spanish (`es-ES`), 🇫🇷 French (`fr-FR`), 🇩🇪 German (`de-DE`).
 - **End-to-End Localization**: Email notification cards, verification code banners, security alerts, setup wizards, control panels, and native Telegram Bot menu commands are fully localized.
 - **Instant Switcher (`/lang`)**: Send `/lang` to invoke a 4x2 inline button matrix (the active language is marked with `✓`), or supply a code directly (e.g., `/lang en`, `/lang ja`).
@@ -169,17 +222,22 @@ Tap the **[Menu]** button at the bottom-left of the Telegram chat or send any co
 
 | Command | Parameter Format | Description |
 | :--- | :--- | :--- |
+| `/start` | - | **👋 Minimalist Overview**: View gateway status summary with shortcuts to `[⚙️ Settings]`, `[📖 User Guide]`, and `[🌐 Language]` |
+| `/menu` | - | **⚙️ Settings Dashboard**: 2x4 inline button grid to manage all settings (AI, routing, anti-spam, forwarding, language, setup wizard, guide) |
+| `/guide` | - | **📖 Detailed User Guide**: View workflow, classification, spam filtering, prefix routing docs with direct GitHub documentation link |
+| `/setup` | - | **⚡ Quick Setup Wizard**: 1-minute step-by-step interactive setup wizard (accessible via inline button in Settings) |
 | `/lang` | `[code]` | Switch system language via interactive 4x2 keyboard or direct code (e.g. `/lang en`, `/lang ja`) |
-| `/setup` | - | Launch 1-minute step-by-step interactive setup wizard |
+| `/provider` | `[1~9\|name]` | Interactive AI provider switch (reply with 1~9 to toggle Workers AI / DeepSeek / Groq / OpenAI etc.) |
+| `/model` | `[1~2\|name]` | Interactive model switch for the active provider |
 | `/cancel` | - | Exit active setup wizard or session, resetting interactive state |
 | `/config` | - | Inspect gateway readiness status and masked credentials |
-| `/setkey` | `<minimax\|forward> <value>` | Hot-update LLM API key or backup forwarding email into KV directly from mobile |
-| `/resetkey` | `<minimax\|forward>` | Reset dynamic KV override and restore deployment defaults |
+| `/setkey` | `<ai\|minimax\|forward> <value>` | Hot-update Universal AI / MiniMax key or backup forwarding email directly from mobile |
+| `/resetkey` | `<ai\|provider\|model\|minimax\|forward>` | Reset dynamic KV override and restore deployment defaults |
 | `/keywords` | - | Display all active marketing filter keywords in copyable code block |
 | `/addkeywords` | `<word1>\n<word2>` | Safely append marketing filter keywords with deduplication |
 | `/resetkeywords` | - | Reset marketing keywords to default baseline |
-| `/routes` | - | View system persona presets and dynamic KV routing rules |
-| `/add` | `<tag> <prefix> [forward]` | Dynamically add custom route (e.g. `/add Commercial help user@domain.com`) |
+| `/routes` | - | View system persona presets and dynamic KV routing rules, manage custom tags |
+| `/add` | `<tag> <prefix> [forward]` | Dynamically add custom route (e.g. `/add Support help user@domain.com`) |
 | `/del` | `<prefix>` | Delete route rule with interactive confirmation dialog |
 | `/help` | - | Display operation manual and gateway status |
 

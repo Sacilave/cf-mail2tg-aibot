@@ -6,19 +6,103 @@ export const enUS: TranslationDict = {
   flag: '🇺🇸',
 
   commandDesc: {
-    lang: 'Switch language / 切换语言',
-    setup: 'Interactive setup wizard (1-min step-by-step)',
-    config: 'View credentials, routing status & config hub',
-    setkey: 'Hot-update API keys & forward inbox: setkey <type> <val>',
-    resetkey: 'Reset dynamic keys and fallback to defaults',
-    cancel: 'Exit current setup wizard or interactive session',
-    keywords: 'View and copy all marketing filter keywords',
-    addkeywords: 'Safely append marketing keywords without overwrite',
-    resetkeywords: 'Reset marketing keywords to default baseline',
-    routes: 'View active domain routing mappings and persona rules',
-    add: 'Add custom route rule: add <tag> <prefix> [forward]',
-    del: 'Delete custom route rule: del <prefix>',
-    help: 'View gateway operation manual & command status',
+    start: 'View gateway status overview',
+    menu: 'Open Settings dashboard',
+    guide: 'View detailed user guide',
+    setup: 'Launch quick setup wizard',
+    lang: 'Switch display language',
+    config: 'View system status & credentials',
+    provider: 'Switch AI model provider',
+    model: 'Switch AI model version',
+    routes: 'Manage routing rules & custom tags',
+    keywords: 'View spam filter keyword list',
+    addkeywords: 'Append spam filter keywords',
+    resetkeywords: 'Reset spam keywords to baseline',
+    add: 'Add route rule (add <tag> <prefix> [fwd])',
+    del: 'Delete route rule (del <prefix>)',
+    setkey: 'Set secret key or email (setkey <type> <val>)',
+    resetkey: 'Reset dynamic secret key or email',
+    cancel: 'Cancel active session or wizard',
+    help: 'Display command manual & help',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 Settings 】</b>',
+    desc: 'Tap buttons below to seamlessly switch AI providers, manage routing personas, maintain spam keywords, or change system language:',
+    btnAi: '🤖 AI Model',
+    btnRoutes: '📂 Routes',
+    btnKeywords: '🚫 Anti-Spam',
+    btnForward: '📬 Forwarding',
+    btnLang: '🌐 Language / 语言',
+    btnRefresh: '🔄 Refresh',
+    btnBackMain: '🔙 Main Menu',
+    btnBackAi: '🔙 AI Settings',
+    btnBackRoutes: '🔙 Route Settings',
+    btnManageModels: '🎯 Switch Model',
+    btnSetKey: '🔑 Set API Key',
+    btnSetAiKey: '🔑 Set API Key',
+    btnResetAiKey: '🔄 Clear Custom Key',
+    btnAddRoute: '➕ Add Route',
+    btnTags: '🏷️ Tag Manager',
+    btnAddKw: '➕ Add Keywords',
+    btnSetForward: '📬 Update Forward Email',
+    btnResetForward: '🗑️ Clear Forward Email',
+    btnSetup: '⚡ Setup Wizard',
+    btnCancel: '❌ Cancel',
+    routesTitle: '📂 <b>【 Persona Routing Rules 】</b>',
+    routesSelectTagPrompt: 'Select a <b>business category tag</b> for this new route (tap button):',
+    routesInputPrefixPrompt: (tag: string) =>
+      `Selected Category Tag: <b>【${tag}】</b>\n\n` +
+      `Please reply with the <b>email prefix</b> you wish to bind (e.g. <code>vip</code> or <code>support</code>):\n` +
+      `<i>(💡 To specify a dedicated forward target, reply: prefix email, e.g.: vip user@example.com)</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>Routing rule added successfully!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Match Prefix: <code>${prefix}</code>\n` +
+      `• Persona Tag: <b>${tag}</b>\n` +
+      `• Destination: <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ Routing rule for prefix <code>${prefix}</code> deleted successfully!`,
+    tagsTitle: '🏷️ <b>【 Business Category Tag Manager 】</b>',
+    tagsPrompt: 'Manage your custom business category tags here. These tags can be assigned to routing rules:',
+    tagsEmpty: 'No custom tags yet. System default categories are currently in use (Personal, Support, Business, Product, Generic).',
+    tagsAddSuccess: (tag: string) => `✅ Custom tag added successfully: <b>【${tag}】</b>!`,
+    tagsDeleteSuccess: (tag: string) => `✅ Custom tag deleted: <b>【${tag}】</b>!`,
+    tagsAddPrompt:
+      '🏷️ <b>【 Add Custom Tag 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      'Please reply with the tag name you want to create (e.g. <code>Finance</code>, <code>Monitoring</code>, <code>Dev</code>, max 10 chars):',
+    tagsInvalid: '❌ Invalid or duplicate tag name (must be 1-10 characters without spaces).',
+    kwTitle: '🚫 <b>【 Marketing & Spam Keyword Filter 】</b>',
+    fwdTitle: '📬 <b>【 Forwarding & Backup Inbox 】</b>',
+    toastUpdated: 'Settings updated!',
+    toastCancelled: 'Operation cancelled',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 Select AI Provider 】</b>',
+    current: (provider: string, model: string) => `Current Provider: <b>${provider}</b> (Model: <code>${model}</code>)`,
+    prompt: 'Reply with the corresponding number (valid for 5 minutes):',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>AI Provider Switched Successfully!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Active Provider: <b>${provider}</b>\n` +
+      `• Running Model: <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ Invalid selection. Please enter a number between 1 and 9. Send /cancel to exit.',
+    kvError: '❌ Cannot save configuration: MAIL_ROUTES_KV namespace binding not found.',
+    tipSetKey: '💡 Tip: If this provider requires an API Key, send <code>/setkey ai &lt;your-key&gt;</code>. To switch models, send <code>/model</code>.',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 Select Model for ${provider} 】</b>`,
+    current: (model: string) => `Current Model: <code>${model}</code>`,
+    prompt: 'Reply with a number or enter a custom model name (valid for 5 minutes):',
+    success: (model: string) =>
+      `✅ <b>Model Updated Successfully!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `Active Model: <code>${model}</code>`,
+    invalidOption: '❌ Invalid model option. Send /cancel to exit.',
+    kvError: '❌ Cannot save configuration: MAIL_ROUTES_KV namespace binding not found.',
   },
 
   langCommand: {
@@ -42,31 +126,69 @@ export const enUS: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot Mail Gateway Ready 】</b>',
-    stepGuideTitle: '⚡ <b>3-Step Rapid Getting Started Guide:</b>',
-    step1Title: '1️⃣ <b>Check Gateway Status</b>',
-    step1Desc: '   Send <code>/config</code> to inspect LLM model, backup inbox, and KV database bindings.',
-    step2Title: '2️⃣ <b>Hot-Update Keys via Telegram (Optional)</b>',
-    step2Desc1: '   • Enable AI triage & code extraction: <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • Bind/change backup forwarding inbox: <code>/setkey forward &lt;email&gt;</code>',
-    step3Title: '3️⃣ <b>Configure Domain Personas</b>',
-    step3Desc1: '   • View active persona routes: <code>/routes</code>',
-    step3Desc2: '   • Add custom address routing: <code>/add Commercial help</code> (Multi-domain ready)',
-    shortcutsTitle: '💡 <b>Everyday Quick Commands:</b>',
-    shortcutSetup: '• <code>/setup</code> - Interactive rapid setup wizard',
-    shortcutConfig: '• <code>/config</code> - View active configuration & masked keys',
-    shortcutKeywords: '• <code>/keywords</code> - Manage marketing filter keywords (Reply to edit)',
-    shortcutLang: '• <code>/lang</code> - Switch system display language',
-    shortcutHelp: '• <code>/help</code> - View complete control panel & parameter manual',
-    menuActivatedNote: '<i>The bottom-left [Menu] button is synchronized. Tap anytime for quick access.</i>',
+    title: '👋 <b>【 cf-mail2tg-aibot Gateway 】</b>',
+    subtitle: 'Cloudflare email routing and AI analysis bot is active. Incoming emails are securely sanitized, classified, and forwarded to this chat.',
+    statusSectionTitle: '📊 <b>Gateway Readiness Summary:</b>',
+    statusRunningLabel: 'Status',
+    statusRunningValue: 'Online',
+    statusEngineLabel: 'AI Engine',
+    statusForwardLabel: 'Backup Forward',
+    statusNoForward: 'TG-Only Mode (None)',
+    statusAliasOn: 'Gmail Aliases Active',
+    statusAliasOff: 'Direct Forward',
+    statusDefenseLabel: 'Edge Armor',
+    statusDefenseValue: 'Zero-Attachment (550) · 5MB Size Cap',
+    guideTip: 'Tap 【Settings】 to manage gateway configurations; tap 【User Guide】 for details; tap 【🌐 Language / 语言】 to switch display language.',
+    btnOpenMenu: '⚙️ Settings',
+    btnGuide: '📖 User Guide',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 cf-mail2tg-aibot User Guide 】</b>',
+    subtitle: 'Gateway architecture and configuration instructions:',
+    principlesTitle: '⚙️ <b>1. Workflow</b>',
+    principlesContent:
+      '• <b>Inbound Processing</b>: Emails sent to your domain are received and parsed by the Worker script.\n' +
+      '• <b>Basic Safeguards</b>: Rejects oversized emails (default 5MB) and dangerous file types to block spam floods.\n' +
+      '• <b>Dual-Track Delivery</b>: Extracts plain text and OTP codes to Telegram while forwarding raw emails to your backup inbox.',
+    tagsTitle: '🏷️ <b>2. Email Classification & OTP Codes</b>',
+    tagsContent:
+      '• <b>Intent Types</b>: <code>Verification</code> · <code>Marketing</code> · <code>Security</code> · <code>Billing</code> · <code>Direct</code> · <code>Notification</code>\n' +
+      '• <b>OTP Extraction</b>: Automatically identifies verification codes and displays them at the top for 1-tap copying.\n' +
+      '• <b>Sender Authentication</b>: Verifies SPF / DKIM / DMARC records to indicate sender trustworthiness.',
+    antiSpamTitle: '🛡️ <b>3. Spam Filtering & Silent Delivery</b>',
+    antiSpamContent:
+      '• <b>Rule Filtering</b>: Flags emails with unsubscribe headers (RFC 8058) or keyword matches as Marketing.\n' +
+      '• <b>Silent Alerts</b>: Marketing emails default to silent delivery and skip AI model invocation to conserve quota.\n' +
+      '• <b>Dictionary Sync</b>: Matches keywords based on the configured language, expandable via <code>/addkeywords</code>.',
+    routesTitle: '📂 <b>4. Prefix Routing & Aliases</b>',
+    routesContent:
+      '• <b>Prefix Triage</b>: Categorizes emails by inbox prefix (e.g. <code>support@</code> to Support, <code>admin@</code> to Personal).\n' +
+      '• <b>Inbox Aliases</b>: Appends <code>+tag</code> aliases during forwarding (e.g. <code>user+support@gmail.com</code>) for personal inbox filtering.',
+    commandsTitle: '⚡ <b>5. Command Quick Reference</b>',
+    commandsContent:
+      '• <code>/start</code> - Gateway status summary & shortcuts\n' +
+      '• <code>/menu</code> - Open Settings dashboard (⚙️ Settings)\n' +
+      '• <code>/guide</code> - View this user guide\n' +
+      '• <code>/routes</code> - Manage prefix routing rules & custom tags\n' +
+      '• <code>/keywords</code> - View and manage spam keyword filter\n' +
+      '• <code>/ai</code> - Switch AI providers & models\n' +
+      '• <code>/lang</code> - Change system display language',
+    footerTip: 'Most actions can be performed via the inline buttons below without typing commands.',
+    btnBackStart: '🔙 Back to Overview',
+    btnBackDashboard: '⚙️ Settings',
+    btnViewDocs: '🌐 View Detailed Docs on GitHub',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Full Control Panel 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot Command Help 】</b>',
     menuHint: 'Tap the <b>[Menu]</b> button or send any command below:',
-    keysSectionTitle: '🔑 <b>Credentials & Gateway Status:</b>',
-    configDesc: '• <code>/config</code> - View credentials status & config hub (masked)',
-    setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - Hot-update LLM API key on mobile',
+    keysSectionTitle: '🔑 <b>Status & Configuration Commands:</b>',
+    configDesc: '• <code>/config</code> - View system status & masked credentials',
+    providerDesc: '• <code>/provider</code> - Interactive switch of AI provider',
+    modelDesc: '• <code>/model</code> - Interactive switch of running model version',
+    setkeyAiDesc: '• <code>/setkey ai &lt;key&gt;</code> - Hot-update universal AI API key',
+    setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - Hot-update MiniMax API key',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - Hot-update backup forwarding inbox',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - Reset dynamic key override to defaults',
     keywordsSectionTitle: '📋 <b>Marketing Keywords & Spam Shield:</b>',
@@ -86,8 +208,9 @@ export const enUS: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Configuration & Credentials Hub 】</b>',
-    llmTitle: '🤖 <b>LLM Email Classification (MiniMax):</b>',
+    title: '⚙️ <b>【 Settings & Credentials Status 】</b>',
+    llmTitle: '🤖 <b>LLM Email Classification (AI):</b>',
+    llmProvider: (provider: string) => `  • AI Provider: <b>${provider}</b>`,
     llmReady: (source: string) => `  • Binding Status: ✅ Ready ${source}`,
     llmNotConfigured: '  • Binding Status: ⚪ Not configured (Using local regex sniffer)',
     llmMaskedKey: (key: string) => `  • Masked Key: <code>${key}</code>`,
@@ -111,6 +234,8 @@ export const enUS: TranslationDict = {
     systemLangTitle: '🌐 <b>System Display Language:</b>',
     systemLangDesc: (name: string, source: string) => `  • Current Language: <b>${name}</b> ${source}`,
     shortcutsTitle: '💡 <b>Quick Update Commands:</b>',
+    shortcutProvider: '• <code>/provider</code> - Interactive AI provider switch',
+    shortcutModel: '• <code>/model</code> - Interactive model switch',
     shortcutSetkeyMinimax: '• <code>/setkey minimax &lt;API_KEY&gt;</code> - Hot-update LLM key',
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - Hot-update backup inbox',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - Clear LLM key override',
@@ -121,10 +246,16 @@ export const enUS: TranslationDict = {
   setkeyCommand: {
     helpTitle: '💡 <b>【 Hot-Update Credentials Guide 】</b>',
     helpUsage: '<b>Usage:</b> <code>/setkey &lt;type&gt; &lt;value&gt;</code>',
-    helpMinimax: '• <b>Update LLM API Key:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
+    helpAi: '• <b>Update Universal AI Key:</b>\n  <code>/setkey ai sk-your-api-key</code>',
+    helpMinimax: '• <b>Update MiniMax API Key:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
     helpForward: '• <b>Update Backup Forward Inbox:</b>\n  <code>/setkey forward your-inbox@gmail.com</code>',
     helpTip: '💡 <i>Changes take effect immediately at Cloudflare edge.</i>',
     kvError: '❌ <b>System Error:</b> MAIL_ROUTES_KV is not bound.',
+    successAi: (maskedKey: string) =>
+      `✅ <b>AI API Key Hot-Updated Successfully!</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `New key stored in KV, preview: <code>${maskedKey}</code>\n` +
+      `Future incoming emails will use this key for AI intent triage.`,
     successMinimax: (maskedKey: string) =>
       `✅ <b>LLM API Key Hot-Updated Successfully!</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
@@ -136,7 +267,7 @@ export const enUS: TranslationDict = {
       `New target address: <code>${email}</code>\n` +
       `⚠️ <i>Ensure this address is verified in Cloudflare Email Routing!</i>`,
     unsupportedType: (type: string) =>
-      `❌ <b>Unsupported config type:</b> 「<code>${type}</code>」\nSupported types: <code>minimax</code> or <code>forward</code>.`,
+      `❌ <b>Unsupported config type:</b> 「<code>${type}</code>」\nSupported types: <code>ai</code>, <code>minimax</code>, or <code>forward</code>.`,
   },
 
   resetkeyCommand: {
@@ -326,6 +457,9 @@ export const enUS: TranslationDict = {
     },
     personaTags: {
       个人: 'Personal',
+      客服: 'Customer Support',
+      商务: 'Business & Sales',
+      产品: 'Product',
       通用: 'General',
       免费产品: 'Free Product',
       付费产品: 'Paid Product',

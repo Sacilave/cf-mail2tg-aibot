@@ -6,19 +6,103 @@ export const zhCN: TranslationDict = {
   flag: '🇨🇳',
 
   commandDesc: {
-    lang: '切换显示语言 / Switch language',
-    setup: '一键极速配置向导 (1分钟分步引导)',
-    config: '查看密钥绑定状态与配置中枢',
-    setkey: '热更新密钥/备份邮箱: setkey <类型> <值>',
-    resetkey: '重置动态密钥并回退至默认配置',
-    cancel: '退出当前向导或交互会话',
-    keywords: '查看并复制全部营销拦截关键词',
-    addkeywords: '增量安全追加营销关键词 (不覆盖)',
-    resetkeywords: '重置营销关键词为系统默认基线',
-    routes: '查看当前所有域名路由映射与规则',
-    add: '添加自定义路由规则: add 标签 前缀 [转发目标]',
-    del: '删除自定义路由规则: del 前缀',
-    help: '查看网关操作帮助与状态',
+    start: '查看运行状态总览',
+    menu: '打开设置面板',
+    guide: '查看详细使用指南',
+    setup: '启动配置向导 (分步引导)',
+    lang: '切换显示语言 (Switch language)',
+    config: '查看运行状态与密钥详情',
+    provider: '切换大模型厂商',
+    model: '切换运行模型版本',
+    routes: '管理分流路由与自定义标签',
+    keywords: '查看营销拦截词库',
+    addkeywords: '追加营销拦截词',
+    resetkeywords: '重置营销拦截词库',
+    add: '添加分流规则 (add 标签 前缀 [目标])',
+    del: '删除分流规则 (del 前缀)',
+    setkey: '更新密钥或备份邮箱 (setkey <类型> <值>)',
+    resetkey: '重置动态密钥或备份邮箱',
+    cancel: '取消当前会话或向导',
+    help: '查看指令帮助手册',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 设置 】</b>',
+    desc: '轻触下方按钮即可无缝切换 AI 厂商、管理业务分流路由、维护垃圾拦截词库或切换系统语言：',
+    btnAi: '🤖 AI 模型',
+    btnRoutes: '📂 业务路由',
+    btnKeywords: '🚫 垃圾拦截',
+    btnForward: '📬 邮箱转发',
+    btnLang: '🌐 语言 / Language',
+    btnRefresh: '🔄 刷新状态',
+    btnBackMain: '🔙 返回主菜单',
+    btnBackAi: '🔙 返回 AI 设置',
+    btnBackRoutes: '🔙 返回路由设置',
+    btnManageModels: '🎯 切换具体模型',
+    btnSetKey: '🔑 设置 API Key',
+    btnSetAiKey: '🔑 绑定 API Key',
+    btnResetAiKey: '🔄 清除自定义 Key',
+    btnAddRoute: '➕ 添加分流规则',
+    btnTags: '🏷️ 标签管理',
+    btnAddKw: '➕ 追加拦截词',
+    btnSetForward: '📬 修改备份邮箱',
+    btnResetForward: '🗑️ 清除备份邮箱',
+    btnSetup: '⚡ 配置向导',
+    btnCancel: '❌ 取消',
+    routesTitle: '📂 <b>【 业务画像分流规则管理 】</b>',
+    routesSelectTagPrompt: '请为新规则选择<b>业务分类标签</b>（轻触按钮选择）：',
+    routesInputPrefixPrompt: (tag: string) =>
+      `已选择分类标签：<b>【${tag}】</b>\n\n` +
+      `请直接回复您想要绑定的<b>邮箱前缀</b>（例如 <code>vip</code> 或 <code>support</code>）：\n` +
+      `<i>（💡 如需同时指定专属转发目标，请回复: 前缀 邮箱，例如: vip user@example.com）</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>分流规则添加成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 匹配前缀: <code>${prefix}</code>\n` +
+      `• 业务画像: <b>${tag}</b>\n` +
+      `• 投递目标: <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ 已成功删除前缀为 <code>${prefix}</code> 的分流规则！`,
+    tagsTitle: '🏷️ <b>【 业务分类标签管理 】</b>',
+    tagsPrompt: '在此管理您的自定义业务分类标签。这些标签可在添加前缀分流规则时使用：',
+    tagsEmpty: '暂无自定义标签，当前使用系统默认分类（个人、客服、商务、产品、通用）。',
+    tagsAddSuccess: (tag: string) => `✅ 成功添加自定义标签: <b>【${tag}】</b>！`,
+    tagsDeleteSuccess: (tag: string) => `✅ 已删除自定义标签: <b>【${tag}】</b>！`,
+    tagsAddPrompt:
+      '🏷️ <b>【 添加自定义标签 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      '请直接回复您想要创建的业务标签名称（例如：<code>财务</code>、<code>监控</code>、<code>内部</code>，10字以内）：',
+    tagsInvalid: '❌ 标签名称无效或已存在（必须为1-10个字符且不含空格）。',
+    kwTitle: '🚫 <b>【 营销推广与垃圾拦截词库 】</b>',
+    fwdTitle: '📬 <b>【 备份邮箱与转发设置 】</b>',
+    toastUpdated: '已更新设置！',
+    toastCancelled: '已取消当前操作',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 请选择大模型 API 厂商 】</b>',
+    current: (provider: string, model: string) => `当前厂商: <b>${provider}</b> (模型: <code>${model}</code>)`,
+    prompt: '请直接回复对应序号进行切换（5分钟内有效）：',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>API 厂商切换成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 当前厂商: <b>${provider}</b>\n` +
+      `• 运行模型: <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ 无效的序号，请输入 1 到 9 之间的数字。如需退出请发送 /cancel。',
+    kvError: '❌ 无法保存配置，未检测到绑定的 MAIL_ROUTES_KV 数据库。',
+    tipSetKey: '💡 提示: 若该厂商需要 API Key，可发送 <code>/setkey ai &lt;你的Key&gt;</code> 进行绑定。如需更换模型，可发送 <code>/model</code>。',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 请选择 ${provider} 运行模型 】</b>`,
+    current: (model: string) => `当前运行模型: <code>${model}</code>`,
+    prompt: '请直接回复对应序号完成切换，或直接回复自定义模型名称（5分钟内有效）：',
+    success: (model: string) =>
+      `✅ <b>运行模型更新成功！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `当前生效模型: <code>${model}</code>`,
+    invalidOption: '❌ 无效的模型序号或名称。如需退出请发送 /cancel。',
+    kvError: '❌ 无法保存配置，未检测到绑定的 MAIL_ROUTES_KV 数据库。',
   },
 
   langCommand: {
@@ -42,31 +126,69 @@ export const zhCN: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot 邮件网关已就绪 】</b>',
-    stepGuideTitle: '⚡ <b>高效 3 步初始化指引:</b>',
-    step1Title: '1️⃣ <b>查验就绪状态</b>',
-    step1Desc: '   发送 <code>/config</code> 查看大模型、备份邮箱与 KV 数据库连接状态。',
-    step2Title: '2️⃣ <b>手机端热更新密钥 (可选)</b>',
-    step2Desc1: '   • 开启 AI 审信与提码: <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • 设置/更换 Gmail 备份: <code>/setkey forward &lt;接收邮箱&gt;</code>',
-    step3Title: '3️⃣ <b>配置域名收信画像</b>',
-    step3Desc1: '   • 查看生效画像规则: <code>/routes</code>',
-    step3Desc2: '   • 添加专属分流规则: <code>/add 商业支持 help</code> (支持多域名)',
-    shortcutsTitle: '💡 <b>日常快捷指令:</b>',
-    shortcutSetup: '• <code>/setup</code> - 交互式极速分步向导',
-    shortcutConfig: '• <code>/config</code> - 查看当前配置与脱敏密钥',
-    shortcutKeywords: '• <code>/keywords</code> - 营销拦截词库管理 (回复即改)',
-    shortcutLang: '• <code>/lang</code> - 切换系统显示语言 (多语言支持)',
-    shortcutHelp: '• <code>/help</code> - 查看全量控制面板与详细参数说明',
-    menuActivatedNote: '<i>左下角 [Menu] 菜单按钮已同步激活，点击即可快捷调用。</i>',
+    title: '👋 <b>【 cf-mail2tg-aibot 邮件网关 】</b>',
+    subtitle: 'Cloudflare 邮件转推与 AI 审信机器人已就绪。所有来信将自动经过安全清洗、意图识别与验证码提取后推送至本会话。',
+    statusSectionTitle: '📊 <b>网关运行状态摘要:</b>',
+    statusRunningLabel: '运行状态',
+    statusRunningValue: '正常运行 (Online)',
+    statusEngineLabel: '审信引擎',
+    statusForwardLabel: '备份转发',
+    statusNoForward: '纯TG模式 (未设置)',
+    statusAliasOn: 'Gmail 别名已开启',
+    statusAliasOff: '直转模式',
+    statusDefenseLabel: '防御装甲',
+    statusDefenseValue: '零附件拦截 (550) · 5MB 容量熔断',
+    guideTip: '轻触下方【设置】进入配置面板；轻触【使用指南】查看详细说明；轻触【🌐 语言 / Language】可切换语言。',
+    btnOpenMenu: '⚙️ 设置',
+    btnGuide: '📖 使用指南',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 cf-mail2tg-aibot 使用指南 】</b>',
+    subtitle: '网关基础功能与配置说明：',
+    principlesTitle: '⚙️ <b>1. 工作流程</b>',
+    principlesContent:
+      '• <b>邮件接收</b>: 域名邮箱接收来信，由 Worker 脚本进行过滤与结构化解析。\n' +
+      '• <b>基础防护</b>: 拦截超大邮件 (默认 5MB) 与危险格式附件，防止垃圾邮件冲击。\n' +
+      '• <b>双轨投递</b>: 提取正文文本与验证码推送至 Telegram，同时原样转发至备份邮箱。',
+    tagsTitle: '🏷️ <b>2. 邮件分类与验证码</b>',
+    tagsContent:
+      '• <b>意图类型</b>: <code>验证</code> · <code>营销</code> · <code>告警</code> · <code>账单</code> · <code>业务</code> · <code>通知</code>\n' +
+      '• <b>验证码提取</b>: 识别到登录与注册验证码时置顶显示，支持直接点击复制。\n' +
+      '• <b>安全校验</b>: 校验发件人 SPF / DKIM 签名状态以标识发件来源可信度。',
+    antiSpamTitle: '🛡️ <b>3. 垃圾拦截与静默推送</b>',
+    antiSpamContent:
+      '• <b>规则过滤</b>: 识别含退订标头 (RFC 8058) 或命中拦截词库的邮件，自动归为营销分类。\n' +
+      '• <b>静默通知</b>: 营销邮件默认开启静音推送，且不触发 AI 模型调用以节约算力。\n' +
+      '• <b>词库匹配</b>: 根据系统语言自动匹配词库，支持使用 <code>/addkeywords</code> 自行扩充。',
+    routesTitle: '📂 <b>4. 前缀路由与别名</b>',
+    routesContent:
+      '• <b>前缀分流</b>: 根据收信前缀归类业务画像（如 <code>support@</code> 归为客服，<code>admin@</code> 归为个人）。\n' +
+      '• <b>邮箱别名</b>: 开启后转发时自动追加 <code>+tag</code> 别名（如 <code>user+support@gmail.com</code>），便于在邮箱内分类归档。',
+    commandsTitle: '⚡ <b>5. 常用指令速查</b>',
+    commandsContent:
+      '• <code>/start</code> - 查看运行状态与快捷入口\n' +
+      '• <code>/menu</code> - 打开设置面板 (⚙️ 设置)\n' +
+      '• <code>/guide</code> - 查看本使用指南\n' +
+      '• <code>/routes</code> - 管理前缀分流规则与自定义标签\n' +
+      '• <code>/keywords</code> - 查看与维护拦截词库\n' +
+      '• <code>/ai</code> - 切换 AI 模型厂商与版本\n' +
+      '• <code>/lang</code> - 切换系统语言',
+    footerTip: '轻触消息下方按键即可快捷操作，无需手动输入指令。',
+    btnBackStart: '🔙 返回总览',
+    btnBackDashboard: '⚙️ 设置',
+    btnViewDocs: '🌐 查看 GitHub 详细文档',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot 全量控制面板 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot 指令帮助 】</b>',
     menuHint: '您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：',
-    keysSectionTitle: '🔑 <b>密钥与运行状态指令:</b>',
-    configDesc: '• <code>/config</code> - 查看密钥绑定状态与配置中枢 (带脱敏掩码)',
-    setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - 手机端热更新大模型密钥',
+    keysSectionTitle: '🔑 <b>状态与配置指令:</b>',
+    configDesc: '• <code>/config</code> - 查看运行状态与密钥绑定详情 (带脱敏掩码)',
+    providerDesc: '• <code>/provider</code> - 交互式切换大模型厂商',
+    modelDesc: '• <code>/model</code> - 交互式切换当前厂商的运行模型',
+    setkeyAiDesc: '• <code>/setkey ai &lt;key&gt;</code> - 手机端热更新通用大模型 API Key',
+    setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - 手机端热更新 MiniMax 密钥',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - 手机端热更新备份邮箱',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - 重置动态覆盖回退默认值',
     keywordsSectionTitle: '📋 <b>营销关键词与防垃圾指令:</b>',
@@ -86,8 +208,9 @@ export const zhCN: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot 配置与密钥中枢 】</b>',
+    title: '⚙️ <b>【 设置与密钥状态 】</b>',
     llmTitle: '🤖 <b>大模型审信 (LLM):</b>',
+    llmProvider: (provider: string) => `  • 模型厂商: <b>${provider}</b>`,
     llmReady: (source: string) => `  • 绑定状态: ✅ 已就绪 ${source}`,
     llmNotConfigured: '  • 绑定状态: ⚪ 未配置 (当前使用本地正则嗅探)',
     llmMaskedKey: (key: string) => `  • 密钥脱敏: <code>${key}</code>`,
@@ -111,6 +234,8 @@ export const zhCN: TranslationDict = {
     systemLangTitle: '🌐 <b>系统显示语言:</b>',
     systemLangDesc: (name: string, source: string) => `  • 当前语言: <b>${name}</b> ${source}`,
     shortcutsTitle: '💡 <b>快捷更新指令:</b>',
+    shortcutProvider: '• <code>/provider</code> - 交互式切换大模型厂商',
+    shortcutModel: '• <code>/model</code> - 交互式切换大模型版本',
     shortcutSetkeyMinimax: '• <code>/setkey minimax &lt;API_KEY&gt;</code> - 热更新大模型密钥',
     shortcutSetkeyForward: '• <code>/setkey forward &lt;邮箱地址&gt;</code> - 热更新备份邮箱',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - 清除密钥动态覆盖并回退',
@@ -121,10 +246,16 @@ export const zhCN: TranslationDict = {
   setkeyCommand: {
     helpTitle: '💡 <b>【热更新密钥/配置说明】</b>',
     helpUsage: '<b>格式:</b> <code>/setkey &lt;类型&gt; &lt;值&gt;</code>',
-    helpMinimax: '• <b>更新大模型密钥:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
+    helpAi: '• <b>更新通用大模型密钥:</b>\n  <code>/setkey ai sk-your-api-key</code>',
+    helpMinimax: '• <b>更新 MiniMax 密钥:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
     helpForward: '• <b>更新备份邮箱:</b>\n  <code>/setkey forward your-inbox@gmail.com</code>',
     helpTip: '💡 <i>更新后即刻保存在 KV 并在边缘端实时生效。</i>',
     kvError: '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。',
+    successAi: (maskedKey: string) =>
+      `✅ <b>通用大模型 API 密钥已成功热更新！</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `新密钥已保存至 KV，脱敏预览: <code>${maskedKey}</code>\n` +
+      `后续来信将即刻使用新密钥进行 LLM 意图识别。`,
     successMinimax: (maskedKey: string) =>
       `✅ <b>大模型 API 密钥已成功热更新！</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
@@ -136,7 +267,7 @@ export const zhCN: TranslationDict = {
       `新目标地址: <code>${email}</code>\n` +
       `⚠️ <i>请务必确保该邮箱已在 Cloudflare Email Routing 中完成验证！</i>`,
     unsupportedType: (type: string) =>
-      `❌ <b>不支持的配置类型:</b> 「<code>${type}</code>」\n目前仅支持 <code>minimax</code> 或 <code>forward</code>。`,
+      `❌ <b>不支持的配置类型:</b> 「<code>${type}</code>」\n目前支持 <code>ai</code>、<code>minimax</code> 或 <code>forward</code>。`,
   },
 
   resetkeyCommand: {
@@ -326,6 +457,9 @@ export const zhCN: TranslationDict = {
     },
     personaTags: {
       个人: '个人',
+      客服: '客服',
+      商务: '商务',
+      产品: '产品',
       通用: '通用',
       免费产品: '免费产品',
       付费产品: '付费产品',

@@ -6,19 +6,103 @@ export const frFR: TranslationDict = {
   flag: '🇫🇷',
 
   commandDesc: {
-    lang: 'Changer de langue / Switch language',
-    setup: 'Assistant de configuration rapide (en 1 min)',
-    config: 'Afficher les identifiants, le routage et le statut',
-    setkey: 'Mettre à jour clés API ou e-mail : setkey <type> <val>',
-    resetkey: 'Réinitialiser les clés dynamiques par défaut',
-    cancel: 'Quitter l’assistant de configuration ou la session',
-    keywords: 'Mots-clés de filtrage des e-mails marketing',
-    addkeywords: 'Ajouter des mots-clés sans écraser les existants',
-    resetkeywords: 'Rétablir les mots-clés par défaut du système',
-    routes: 'Afficher les règles actives de routage de domaine',
-    add: 'Ajouter une règle : add <étiquette> <préfixe> [e-mail]',
-    del: 'Supprimer une règle : del <préfixe>',
-    help: 'Afficher l’aide et le manuel des commandes',
+    start: 'Aperçu de l\'état du système',
+    menu: 'Ouvrir les paramètres',
+    guide: 'Consulter le guide détaillé',
+    setup: 'Lancer l\'assistant de config.',
+    lang: 'Changer de langue (Switch language)',
+    config: 'Voir l\'état et les clés d\'accès',
+    provider: 'Changer de fournisseur d\'IA',
+    model: 'Changer de modèle d\'IA',
+    routes: 'Gérer le routage et les balises',
+    keywords: 'Voir les mots-clés anti-spam',
+    addkeywords: 'Ajouter des mots-clés',
+    resetkeywords: 'Réinitialiser les mots-clés',
+    add: 'Ajouter une règle (add <balise> <préfixe>)',
+    del: 'Supprimer une règle (del <préfixe>)',
+    setkey: 'Définir clé ou e-mail (setkey)',
+    resetkey: 'Réinitialiser clé dynamique',
+    cancel: 'Annuler la session en cours',
+    help: 'Manuel des commandes',
+  },
+
+  dashboard: {
+    title: '⚙️ <b>【 Paramètres 】</b>',
+    desc: 'Appuyez sur les boutons ci-dessous pour changer de modèle IA, gérer les routes, le filtre antispam ou la langue :',
+    btnAi: '🤖 Modèles IA',
+    btnRoutes: '📂 Routage',
+    btnKeywords: '🚫 Filtre Spam',
+    btnForward: '📬 Redirection',
+    btnLang: '🌐 Langue / Language',
+    btnRefresh: '🔄 Actualiser',
+    btnBackMain: '🔙 Menu Principal',
+    btnBackAi: '🔙 Retour à l’IA',
+    btnBackRoutes: '🔙 Retour au Routage',
+    btnManageModels: '🎯 Changer de Modèle',
+    btnSetKey: '🔑 Définir Clé API',
+    btnSetAiKey: '🔑 Associer clé API',
+    btnResetAiKey: '🔄 Effacer clé API',
+    btnAddRoute: '➕ Ajouter Règle',
+    btnTags: '🏷️ Gestion des Balises',
+    btnAddKw: '➕ Ajouter mots-clés',
+    btnSetForward: '📬 Modifier l\'e-mail',
+    btnResetForward: '🗑️ Effacer l\'e-mail',
+    btnSetup: '⚡ Assistant de config.',
+    btnCancel: '❌ Annuler',
+    routesTitle: '📂 <b>【 Gestion des Règles de Routage 】</b>',
+    routesSelectTagPrompt: 'Sélectionnez une <b>catégorie</b> pour la nouvelle règle (appuyez sur le bouton) :',
+    routesInputPrefixPrompt: (tag: string) =>
+      `Catégorie sélectionnée : <b>【${tag}】</b>\n\n` +
+      `Veuillez répondre avec le <b>préfixe d'adresse</b> à lier (ex. <code>vip</code> ou <code>support</code>) :\n` +
+      `<i>(💡 Pour spécifier une redirection dédiée : préfixe e-mail, ex. : vip user@example.com)</i>`,
+    routesAddSuccess: (prefix: string, tag: string, forward: string) =>
+      `✅ <b>Règle de routage ajoutée avec succès !</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Préfixe : <code>${prefix}</code>\n` +
+      `• Catégorie : <b>${tag}</b>\n` +
+      `• Destination : <code>${forward}</code>`,
+    routesDeletedSuccess: (prefix: string) => `✅ Règle pour le préfixe <code>${prefix}</code> supprimée avec succès !`,
+    tagsTitle: '🏷️ <b>【 Gestionnaire de Balises Personnalisées 】</b>',
+    tagsPrompt: 'Gérez vos balises de catégorie ici pour les utiliser lors de la création de règles :',
+    tagsEmpty: 'Aucune balise personnalisée. Les catégories par défaut sont utilisées (Personnel, Support, Business, Produit, Générique).',
+    tagsAddSuccess: (tag: string) => `✅ Balise personnalisée ajoutée : <b>【${tag}】</b> !`,
+    tagsDeleteSuccess: (tag: string) => `✅ Balise supprimée : <b>【${tag}】</b> !`,
+    tagsAddPrompt:
+      '🏷️ <b>【 Ajouter une nouvelle balise 】</b>\n' +
+      '━━━━━━━━━━━━━━━━━━\n' +
+      'Répondez avec le nom de la balise (ex. <code>Finance</code>, <code>Monitoring</code>, max 10 lettres) :',
+    tagsInvalid: '❌ Nom de balise invalide ou déjà existant (1-10 caractères sans espaces).',
+    kwTitle: '🚫 <b>【 Mots-clés de Filtrage des E-mails Marketing 】</b>',
+    fwdTitle: '📬 <b>【 Configuration de Redirection et Copie 】</b>',
+    toastUpdated: 'Paramètres mis à jour !',
+    toastCancelled: 'Opération annulée',
+  },
+
+  providerCommand: {
+    title: '🏢 <b>【 Sélectionner le fournisseur d’IA 】</b>',
+    current: (provider: string, model: string) => `Fournisseur actuel : <b>${provider}</b> (Modèle : <code>${model}</code>)`,
+    prompt: 'Répondez avec le numéro correspondant (valable 5 minutes) :',
+    success: (provider: string, model: string, note: string) =>
+      `✅ <b>Fournisseur d’IA modifié avec succès !</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Fournisseur actif : <b>${provider}</b>\n` +
+      `• Modèle en cours : <code>${model}</code>\n` +
+      `${note}`,
+    invalidOption: '❌ Sélection invalide. Entrez un numéro entre 1 et 9. Envoyez /cancel pour quitter.',
+    kvError: '❌ Impossible d’enregistrer : liaison MAIL_ROUTES_KV introuvable.',
+    tipSetKey: '💡 Conseil : Si ce fournisseur nécessite une clé API, envoyez <code>/setkey ai &lt;votre-clé&gt;</code>. Pour changer de modèle, envoyez <code>/model</code>.',
+  },
+
+  modelCommand: {
+    title: (provider: string) => `🧠 <b>【 Sélectionner le modèle pour ${provider} 】</b>`,
+    current: (model: string) => `Modèle actuel : <code>${model}</code>`,
+    prompt: 'Répondez avec un numéro ou un nom de modèle personnalisé (valable 5 minutes) :',
+    success: (model: string) =>
+      `✅ <b>Modèle mis à jour avec succès !</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `Modèle actif : <code>${model}</code>`,
+    invalidOption: '❌ Option invalide. Envoyez /cancel pour quitter.',
+    kvError: '❌ Impossible d’enregistrer : liaison MAIL_ROUTES_KV introuvable.',
   },
 
   langCommand: {
@@ -42,30 +126,65 @@ export const frFR: TranslationDict = {
   },
 
   startCommand: {
-    title: '👋 <b>【 cf-mail2tg-aibot Passerelle e-mail prête 】</b>',
-    stepGuideTitle: '⚡ <b>Guide d’initialisation rapide en 3 étapes :</b>',
-    step1Title: '1️⃣ <b>Vérifier l’état de la passerelle</b>',
-    step1Desc: '   Envoyez <code>/config</code> pour inspecter l’IA, la boîte de secours et la base KV.',
-    step2Title: '2️⃣ <b>Mettre à jour les clés via Telegram (Facultatif)</b>',
-    step2Desc1: '   • Activer l’analyse IA et l’extraction de codes : <code>/setkey minimax &lt;API_KEY&gt;</code>',
-    step2Desc2: '   • Configurer/modifier l’e-mail de secours : <code>/setkey forward &lt;e-mail&gt;</code>',
-    step3Title: '3️⃣ <b>Configurer les profils de domaine</b>',
-    step3Desc1: '   • Voir les règles actives : <code>/routes</code>',
-    step3Desc2: '   • Ajouter un routage dédié : <code>/add Support help</code> (Multi-domaines)',
-    shortcutsTitle: '💡 <b>Commandes rapides du quotidien :</b>',
-    shortcutSetup: '• <code>/setup</code> - Assistant de configuration interactif pas-à-pas',
-    shortcutConfig: '• <code>/config</code> - Voir la configuration active et les clés masquées',
-    shortcutKeywords: '• <code>/keywords</code> - Gérer les mots-clés marketing (répondre pour modifier)',
-    shortcutLang: '• <code>/lang</code> - Changer la langue du système (8 langues disponibles)',
-    shortcutHelp: '• <code>/help</code> - Panneau de configuration complet et manuel des paramètres',
-    menuActivatedNote: '<i>Le bouton [Menu] en bas à gauche est synchronisé. Appuyez dessus à tout moment.</i>',
+    title: '👋 <b>【 Passerelle E-mail cf-mail2tg-aibot 】</b>',
+    subtitle: 'Le bot de routage et de tri IA Cloudflare est actif. Tous les e-mails sont analysés en toute sécurité et notifiés dans ce chat.',
+    statusSectionTitle: '📊 <b>Résumé de l’état du système :</b>',
+    statusRunningLabel: 'Statut',
+    statusRunningValue: 'En ligne (Online)',
+    statusEngineLabel: 'Moteur IA',
+    statusForwardLabel: 'Redirection',
+    statusNoForward: 'Mode TG seul (Non défini)',
+    statusAliasOn: 'Alias Gmail activés',
+    statusAliasOff: 'Redirection directe',
+    statusDefenseLabel: 'Protection Edge',
+    statusDefenseValue: 'Zéro pièce jointe (550) · Limite 5 Mo',
+    guideTip: 'Touchez 【Paramètres】 pour configurer la passerelle ; 【Guide d\'utilisation】 pour les détails ; 【🌐 Langue / Language】 pour changer de langue.',
+    btnOpenMenu: '⚙️ Paramètres',
+    btnGuide: '📖 Guide d\'utilisation',
+  },
+
+  usageGuide: {
+    title: '📖 <b>【 Guide d\'utilisation cf-mail2tg-aibot 】</b>',
+    subtitle: 'Fonctions de base et instructions de configuration :',
+    principlesTitle: '⚙️ <b>1. Fonctionnement</b>',
+    principlesContent:
+      '• <b>Réception</b>: Les e-mails adressés à votre domaine sont filtrés et structurés par le script Worker.\n' +
+      '• <b>Sécurité</b>: Rejet des e-mails &gt; 5 Mo et pièces jointes à risque pour bloquer les attaques de spam.\n' +
+      '• <b>Double Distribution</b>: Envoi du texte et des codes sur Telegram avec copie vers votre boîte de secours.',
+    tagsTitle: '🏷️ <b>2. Tri et codes de vérification OTP</b>',
+    tagsContent:
+      '• <b>Types d\'e-mails</b>: <code>Vérification</code> · <code>Marketing</code> · <code>Alerte</code> · <code>Facturation</code> · <code>Direct</code> · <code>Notification</code>\n' +
+      '• <b>Codes OTP</b>: Détection des codes de connexion affichés en haut pour une copie instantanée.\n' +
+      '• <b>Authentification</b>: Vérification des enregistrements SPF / DKIM / DMARC de l\'expéditeur.',
+    antiSpamTitle: '🛡️ <b>3. Filtrage Anti-Spam et Mode Silencieux</b>',
+    antiSpamContent:
+      '• <b>Filtrage par Règles</b>: Les e-mails avec en-têtes de désinscription (RFC 8058) ou mots-clés sont classés en marketing.\n' +
+      '• <b>Distribution Silencieuse</b>: Les messages marketing n\'émettent aucun son et n\'appellent pas l\'IA afin d\'économiser les quotas.\n' +
+      '• <b>Dictionnaire</b>: Adapté à la langue du système et extensible via <code>/addkeywords</code>.',
+    routesTitle: '📂 <b>4. Routage par Préfixe et Alias</b>',
+    routesContent:
+      '• <b>Tri par Préfixe</b>: Classement selon le préfixe (ex. <code>support@</code> ➜ Support, <code>admin@</code> ➜ Personnel).\n' +
+      '• <b>Alias d\'e-mail</b>: Ajout automatique de <code>+tag</code> lors du transfert pour faciliter les filtres de messagerie.',
+    commandsTitle: '⚡ <b>5. Liste des Commandes</b>',
+    commandsContent:
+      '• <code>/start</code> - Résumé de la passerelle et accès rapide\n' +
+      '• <code>/menu</code> - Panneau de réglages (⚙️ Paramètres)\n' +
+      '• <code>/guide</code> - Consulter ce guide\n' +
+      '• <code>/routes</code> - Gérer les règles de routage et balises\n' +
+      '• <code>/keywords</code> - Gérer les mots-clés anti-spam\n' +
+      '• <code>/ai</code> - Changer de fournisseur et modèle d\'IA\n' +
+      '• <code>/lang</code> - Changer la langue du système',
+    footerTip: 'La plupart des actions s\'effectuent en un clic sur les boutons ci-dessous.',
+    btnBackStart: '🔙 Revenir au Résumé',
+    btnBackDashboard: '⚙️ Paramètres',
+    btnViewDocs: '🌐 Voir la Documentation Complète sur GitHub',
   },
 
   helpCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Panneau de Contrôle Complet 】</b>',
+    title: '📖 <b>【 cf-mail2tg-aibot Aide des commandes 】</b>',
     menuHint: 'Appuyez sur le bouton <b>[Menu]</b> ou envoyez l’une des commandes ci-dessous :',
-    keysSectionTitle: '🔑 <b>Identifiants et état du système :</b>',
-    configDesc: '• <code>/config</code> - Voir l’état des clés et le hub de configuration (masqué)',
+    keysSectionTitle: '🔑 <b>Commandes d\'état et de configuration :</b>',
+    configDesc: '• <code>/config</code> - Voir l\'état du système et les identifiants (masqué)',
     setkeyMinimaxDesc: '• <code>/setkey minimax &lt;key&gt;</code> - Mettre à jour la clé IA sur mobile',
     setkeyForwardDesc: '• <code>/setkey forward &lt;email&gt;</code> - Mettre à jour l’e-mail de transfert',
     resetkeyDesc: '• <code>/resetkey &lt;minimax|forward&gt;</code> - Réinitialiser les clés dynamiques',
@@ -86,7 +205,7 @@ export const frFR: TranslationDict = {
   },
 
   configCommand: {
-    title: '🎛️ <b>【 cf-mail2tg-aibot Centre de Configuration et Clés 】</b>',
+    title: '⚙️ <b>【 Paramètres et état des clés 】</b>',
     llmTitle: '🤖 <b>Classification des e-mails par IA (MiniMax) :</b>',
     llmReady: (source: string) => `  • État : ✅ Prêt ${source}`,
     llmNotConfigured: '  • État : ⚪ Non configuré (Détection locale par regex active)',
@@ -326,6 +445,9 @@ export const frFR: TranslationDict = {
     },
     personaTags: {
       个人: 'Personnel',
+      客服: 'Support Client',
+      商务: 'Affaires & Ventes',
+      产品: 'Produit',
       通用: 'Général',
       免费产品: 'Produit Gratuit',
       付费产品: 'Produit Payant',
