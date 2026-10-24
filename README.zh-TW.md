@@ -76,6 +76,13 @@ npm run deploy
 - **綁定路由**：在 Cloudflare **Email Routing** ➔ **Routing rules** 中添加 Catch-all 規則：動作選 **Send to Worker** ➔ 綁定 `cf-mail2tg-aibot`；
 - **手機完成配置**：在 Telegram 中對 Bot 發送 `/setup`，1 分鐘互動式綁定備份信箱與大模型 Key，無需回電腦打指令！
 
+#### 🤖 可選：配置自動持續部署（Vibe Coding / GitHub Actions）
+如果你 Fork 本專案用於二次開發（Vibe Coding），並希望每次向 `main` 分支提交程式碼時由 GitHub 自動部署到 Cloudflare：
+1. 將 [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) 重新命名為 `.github/workflows/deploy.yml`；
+2. 在你的 GitHub 倉庫中進入 **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ 添加 Secret：`CLOUDFLARE_API_TOKEN`（取得方式：Cloudflare 控制台 ➔ 我的個人資料 ➔ API 權杖 ➔ 建立具有「編輯 Cloudflare Workers」權限的權杖）；
+3. 大功告成！之後每次 push 程式碼或在 GitHub Actions 頁面手動點選 "Run workflow"，都會自動通過單元測試並完成上線。
+*(註：作為公開開源範本，預設不啟用自動部署，以避免使用者 Fork 後因未配置 Secret 而出現紅叉報錯。)*
+
 ---
 
 ## ⚡ 為什麼選擇 cf-mail2tg-aibot？ (對比矩陣)

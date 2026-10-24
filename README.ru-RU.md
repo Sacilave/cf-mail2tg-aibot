@@ -76,6 +76,13 @@ npm run deploy
 - **Настройка маршрута**: в Cloudflare **Email Routing** ➔ **Routing rules** добавьте Catch-all: **Send to Worker** ➔ выберите `cf-mail2tg-aibot`.
 - **Завершение настройки с телефона**: отправьте боту `/setup` в Telegram — мастер за 1 минуту привяжет резервную почту и ключ LLM без терминала!
 
+#### 🤖 Опционально: Непрерывное развертывание (Vibe Coding / GitHub Actions)
+Если вы форкнули этот репозиторий для собственной разработки (vibe coding) и хотите, чтобы коммиты в `main` автоматически деплоились в Cloudflare:
+1. Переименуйте [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) в `.github/workflows/deploy.yml`.
+2. В репозитории GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ добавьте секрет `CLOUDFLARE_API_TOKEN`.
+3. Готово! Каждый пуш в `main` запустит автоматические тесты и выполнит деплой в Cloudflare Workers.
+*(Примечание: в качестве открытого шаблона автоматический деплой по умолчанию отключен, чтобы избежать ошибок CI до настройки секретов.)*
+
 ---
 
 ## ⚡ Почему cf-mail2tg-aibot? (Таблица сравнения)

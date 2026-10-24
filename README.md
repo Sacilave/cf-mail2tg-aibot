@@ -76,6 +76,13 @@ npm run deploy
 - **Route Emails**: In Cloudflare **Email Routing** ➔ **Routing rules** ➔ Add Catch-all: **Send to Worker** ➔ Select `cf-mail2tg-aibot`.
 - **Finish on Mobile**: In Telegram, send `/setup` to Bot to bind your backup Gmail and LLM Key in 1 minute—no terminal required!
 
+#### 🤖 Optional: Continuous Deployment (Vibe Coding / GitHub Actions)
+If you fork or clone this repository for customized development (vibe coding) and want pushes to `main` to automatically deploy to Cloudflare:
+1. Rename [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) to `.github/workflows/deploy.yml`.
+2. In your GitHub repository: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ Add repository secret `CLOUDFLARE_API_TOKEN`.
+3. Every push to `main` (or manual trigger in the Actions tab) will run automated tests and deploy to Cloudflare Workers automatically!
+*(Note: As an open template, automatic deployment is intentionally disabled by default to prevent failed CI checks before Cloudflare secrets are configured.)*
+
 ---
 
 ## ⚡ Why cf-mail2tg-aibot? (Comparison Matrix)

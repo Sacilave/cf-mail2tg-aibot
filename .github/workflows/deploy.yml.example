@@ -1,0 +1,49 @@
+# ==============================================================================
+# GitHub Actions: Cloudflare Workers Continuous Deployment (Template / Example)
+# ==============================================================================
+# 
+# [How to Enable / 如何启用]
+# 1. Rename this file from `deploy.yml.example` to `deploy.yml` in `.github/workflows/`.
+#    将此文件从 `deploy.yml.example` 重命名为 `deploy.yml`。
+# 2. In your GitHub repository:
+#    在你的 GitHub 仓库中：
+#    Settings ➔ Secrets and variables ➔ Actions ➔ New repository secret
+#    Add secret name: `CLOUDFLARE_API_TOKEN`
+#    (Get token from: Cloudflare Dashboard ➔ My Profile ➔ API Tokens ➔ Create "Edit Cloudflare Workers" Token)
+# 3. Ensure your `wrangler.jsonc` has your actual KV ID (`MAIL_ROUTES_KV`).
+#    确保 `wrangler.jsonc` 中的 KV ID 已填入真实的 ID。
+# 4. Push to `main` branch or click "Run workflow" in GitHub Actions tab to deploy!
+#    推送到 `main` 分支或在 GitHub Actions 页面手动点击 "Run workflow" 即可部署！
+# ==============================================================================
+
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions web UI
+
+jobs:
+  deploy:
+    name: Deploy Worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

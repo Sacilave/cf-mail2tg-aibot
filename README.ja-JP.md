@@ -76,6 +76,13 @@ npm run deploy
 - **ルーティング設定**：Cloudflare **Email Routing** ➔ **Routing rules** で Catch-all ルールを追加：アクション **Send to Worker** ➔ `cf-mail2tg-aibot` を選択。
 - **スマホで仕上げ設定**：Telegram で Bot に `/setup` を送信し、1分でバックアップ先 Gmail と LLM キーを対話設定。PC 操作は不要です！
 
+#### 🤖 オプション: 自動継続的デプロイ (Vibe Coding / GitHub Actions)
+本リポジトリを Fork してカスタマイズ開発（Vibe Coding）を行い、`main` ブランチへのプッシュ時に Cloudflare へ自動デプロイしたい場合：
+1. [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) を `.github/workflows/deploy.yml` に名前変更します。
+2. GitHub リポジトリの **Settings** ➔ **Secrets and variables** ➔ **Actions** で `CLOUDFLARE_API_TOKEN` を追加します。
+3. これで完了です！`main` へのプッシュ（または Actions タブからの手動実行）のたびに自動テストが実行され、自動デプロイされます。
+*(注: オープンテンプレートとして、シークレット未設定による CI エラーの赤バツを防ぐため、デフォルトでは自動デプロイを無効にしています。)*
+
 ---
 
 ## ⚡ なぜ cf-mail2tg-aibot なのか？ (比較表)

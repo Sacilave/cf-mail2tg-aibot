@@ -76,6 +76,13 @@ npm run deploy
 - **E-Mails weiterleiten**: Im Cloudflare Dashboard unter **Email Routing** ➔ **Routing rules** eine Catch-all-Regel anlegen: Aktion **Send to Worker** ➔ `cf-mail2tg-aibot` auswählen.
 - **Konfiguration mobil abschließen**: Senden Sie dem Bot in Telegram `/setup`, um Zielpostfach und LLM-Schlüssel in 1 Minute interaktiv einzurichten – ganz ohne Terminal!
 
+#### 🤖 Optional: Kontinuierliche Bereitstellung (Vibe Coding / GitHub Actions)
+Wenn Sie dieses Repository forken, um es anzupassen (Vibe Coding), und möchten, dass Pushes in den Branch `main` automatisch bei Cloudflare bereitgestellt werden:
+1. Benennen Sie [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) in `.github/workflows/deploy.yml` um.
+2. Fügen Sie im GitHub-Repository unter **Settings** ➔ **Secrets and variables** ➔ **Actions** das Secret `CLOUDFLARE_API_TOKEN` hinzu.
+3. Fertig! Jeder Push in `main` führt automatisch die Tests aus und stellt den Worker bereit.
+*(Hinweis: Als Open-Source-Vorlage ist die automatische Bereitstellung standardmäßig deaktiviert, um fehlgeschlagene CI-Prüfungen vor dem Einrichten des Secrets zu vermeiden.)*
+
 ---
 
 ## ⚡ Warum cf-mail2tg-aibot? (Vergleichsmatrix)
