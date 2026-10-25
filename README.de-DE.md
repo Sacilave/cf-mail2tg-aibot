@@ -12,7 +12,6 @@
 [![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--internationalisierung-i18n-in-10-sprachen--sofortiger-wechsel)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-null-kosten--kostenlose-kontingent-garantie)
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -29,8 +28,7 @@
 
 <p align="center">
   <a href="#-screenshots">Screenshots</a> •
-  <a href="#-2-minuten-1-klick-schnellbereitstellung-zero-cli--web-ui">1-Klick-Bereitstellung</a> •
-  <a href="#-schnellstart-in-3-schritten">CLI-Bereitstellung</a> •
+  <a href="#-schnellstart-wählen-sie-entweder-option-a-oder-b">Schnellstart (A oder B)</a> •
   <a href="#-warum-cf-mail2tg-aibot-vergleichsmatrix">Vergleichsmatrix</a> •
   <a href="#️-systemarchitektur">Architektur</a> •
   <a href="#-hauptmerkmale">Hauptmerkmale</a> •
@@ -74,7 +72,15 @@ Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sen
 
 ---
 
-## ⚡ 2-Minuten 1-Klick-Schnellbereitstellung (Zero CLI / Web-UI)
+## 🚀 Schnellstart (Wählen Sie ENTWEDER Option A ODER B)
+
+> 📌 **【WICHTIG: NUR EINE OPTION WÄHLEN】**：Sie müssen **NUR EINE der beiden folgenden Methoden** durchführen. Bitte **NICHT** beide ausführen!
+> - **🟢 Option A (Dringend empfohlen / Für Anfänger)**: **1-Klick-Web-Bereitstellung** — Keine Installation von Node.js/Git, keine Terminalbefehle, direkt im Browser in 3 Schritten (~2 Min.);
+> - **🔵 Option B (Für Entwickler)**: **Lokale CLI-Bereitstellung** — Erfordert Node.js 22+ und Terminal, ideal für Quellcodeanpassungen und Debugging.
+
+---
+
+### 🟢 Option A: 2-Minuten 1-Klick-Web-Bereitstellung (Empfohlen / Zero CLI)
 
 > **💡 Für Nicht-Entwickler optimiert**: Sie müssen weder Node.js noch Git installieren oder die Kommandozeile bedienen. Stellen Sie Ihren produktionsreifen E-Mail-zu-Telegram-Bot in nur 3 einfachen Schritten direkt im Browser bereit!
 
@@ -84,11 +90,11 @@ Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sen
   </a>
 </p>
 
-### Schritt 1: Telegram-Bot-Zugangsdaten abrufen (1 Min.)
+#### Schritt 1: Telegram-Bot-Zugangsdaten abrufen (1 Min.)
 1. Schreiben Sie [@BotFather](https://t.me/BotFather) auf Telegram an, senden Sie `/newbot`, folgen Sie den Anweisungen zur Benennung und kopieren Sie das **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`);
 2. Schreiben Sie [@userinfobot](https://t.me/userinfobot) an, um Ihre numerische Benutzer-ID (`TELEGRAM_ADMIN_CHAT_ID`) zu erhalten (stellt sicher, dass nur Sie Zugriff haben).
 
-### Schritt 2: 1-Klick-Web-Bereitstellung auf Cloudflare (30 Sek.)
+#### Schritt 2: 1-Klick-Web-Bereitstellung auf Cloudflare (30 Sek.)
 1. Klicken Sie oben auf die Schaltfläche **`[Deploy to Cloudflare Workers]`** (oder [öffnen Sie den Web-Deploy-Link direkt](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot));
 2. Melden Sie sich in Ihrem Cloudflare-Konto an und autorisieren Sie den GitHub-Zugriff;
 3. Cloudflare erstellt automatisch einen neuen KV-Speicher (`MAIL_ROUTES_KV`) und vorkonfigurierte Variablen. Tragen Sie Ihre Zugangsdaten ein:
@@ -96,7 +102,7 @@ Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sen
    - `TELEGRAM_ADMIN_CHAT_ID`: Ihre numerische Telegram-Chat-ID aus Schritt 1
 4. Klicken Sie auf **Save and Deploy**. In ca. 10 Sekunden ist Ihr Worker online! Notieren Sie die zugewiesene Worker-URL (z. B. `https://cf-mail2tg-aibot.xxx.workers.dev`).
 
-### Schritt 3: E-Mails an den Worker weiterleiten (30 Sek.)
+#### Schritt 3: E-Mails an den Worker weiterleiten (30 Sek.)
 1. Navigieren Sie im Cloudflare-Dashboard zu Ihrer Domain ➔ **Email** ➔ **Email Routing**;
 2. Falls noch nicht geschehen, aktivieren Sie Email Routing mit einem Klick (erforderliche MX-Einträge werden automatisch gesetzt);
 3. Wechseln Sie zu **Routing rules** ➔ klicken Sie auf **Add rule** (oder bearbeiten Sie die Catch-all-Regel):
@@ -109,11 +115,7 @@ Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sen
 
 ---
 
-> 💻 **Entwickler-Hinweis**: Wenn Sie die Bereitstellung per Terminal CLI bevorzugen oder den Code weiterentwickeln möchten, lesen Sie [CLI-Schnellstart (in 3 Schritten)](#-schnellstart-in-3-schritten).
-
----
-
-## 🚀 Schnellstart (in 3 Schritten) [CLI-Bereitstellung]
+### 🔵 Option B: Lokale CLI-Terminal-Bereitstellung (Für Entwickler)
 
 **Voraussetzungen:**
 - Ein kostenloses Cloudflare-Konto und eine bei Cloudflare hinzugefügte Domain (E-Mail-Routing wird pro Domain aktiviert; Schritt 3 richtet es für Ihre Domain ein).

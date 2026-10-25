@@ -12,7 +12,6 @@
 [![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-6--10개-주요-언어-다국어-지원-및-즉시-전환)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-완전-무료--무료-할당량-보장)
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -29,8 +28,7 @@
 
 <p align="center">
   <a href="#-스크린샷">스크린샷</a> •
-  <a href="#-2분-초고속-원클릭-배포-zero-cli--웹-ui">원클릭 배포</a> •
-  <a href="#-빠른-시작-3단계">CLI 배포</a> •
+  <a href="#-빠른-시작-방법-a와-b-중-하나만-선택">빠른 시작 (택1)</a> •
   <a href="#-왜-cf-mail2tg-aibot인가-비교-매트릭스">비교 매트릭스</a> •
   <a href="#️-시스템-아키텍처">시스템 아키텍처</a> •
   <a href="#-핵심-기능">핵심 기능</a> •
@@ -74,7 +72,15 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
 
 ---
 
-## ⚡ 2분 초고속 원클릭 배포 (Zero CLI / 웹 UI)
+## 🚀 빠른 시작 (방법 A와 B 중 하나만 선택)
+
+> 📌 **【중요: 둘 중 하나만 선택하세요】**：아래의 두 가지 배포 방식 중 **하나만 선택하여 진행**하시면 됩니다 (둘 다 진행할 필요가 없습니다)!
+> - **🟢 방법 A (적극 권장 / 비개발자 맞춤)**：**웹 원클릭 초고속 배포** — Node.js/Git 설치 불필요, 터미널 명령어 없이 브라우저에서 3단계 만에 2분 만에 완료;
+> - **🔵 방법 B (개발자 전용)**：**로컬 CLI 터미널 배포** — Node.js 22+ 및 터미널 환경 필요, 2차 개발 및 로컬 디버깅에 적합.
+
+---
+
+### 🟢 방법 A: 2분 초고속 원클릭 배포 (권장 / Zero CLI / 웹 UI)
 
 > **💡 비개발자를 위한 맞춤 설계**: PC에 Node.js나 Git을 설치하거나 터미널 명령어를 입력할 필요가 전혀 없습니다. Cloudflare 공식 웹 대시보드에서 클릭 몇 번으로 즉시 완벽한 이메일 게이트웨이를 구축할 수 있습니다!
 
@@ -84,11 +90,11 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
   </a>
 </p>
 
-### 1단계: Telegram 봇 토큰 및 Chat ID 발급 (1분)
+#### 1단계: Telegram 봇 토큰 및 Chat ID 발급 (1분)
 1. Telegram에서 [@BotFather](https://t.me/BotFather)에게 `/newbot` 명령어를 전송하고 안내에 따라 봇을 생성한 후 발급된 **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`)을 복사합니다.
 2. [@userinfobot](https://t.me/userinfobot)에게 메시지를 보내 본인의 고유 숫자 ID (`TELEGRAM_ADMIN_CHAT_ID`)를 확인합니다 (관리자 본인만 봇을 제어하도록 보호).
 
-### 2단계: 위 버튼을 클릭하여 웹에서 원클릭 배포 (30초)
+#### 2단계: 위 버튼을 클릭하여 웹에서 원클릭 배포 (30초)
 1. 상단의 **`[Deploy to Cloudflare Workers]`** 버튼을 클릭합니다 (또는 [웹 배포 페이지 바로가기](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot));
 2. Cloudflare 계정으로 로그인하고 GitHub 권한 연동을 승인합니다;
 3. Cloudflare가 신규 KV 스토리지(`MAIL_ROUTES_KV`)와 기본 환경변수를 자동으로 생성합니다. 배포 화면에 1단계에서 발급받은 값을 입력합니다:
@@ -96,7 +102,7 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
    - `TELEGRAM_ADMIN_CHAT_ID`: 텔레그램 숫자 Chat ID
 4. **Save and Deploy**를 클릭하면 약 10초 만에 배포가 완료됩니다! 배포 후 발급된 Worker 접속 주소(예: `https://cf-mail2tg-aibot.xxx.workers.dev`)를 확인합니다.
 
-### 3단계: 도메인 Email Routing에 Worker 연결 (30초)
+#### 3단계: 도메인 Email Routing에 Worker 연결 (30초)
 1. Cloudflare 대시보드에서 보유 도메인 선택 ➔ **Email** ➔ **Email Routing**으로 이동합니다;
 2. 아직 활성화되지 않았다면 원클릭 활성화를 진행합니다 (필요한 DNS MX 레코드가 자동 등록됩니다);
 3. **Routing rules** 탭에서 **Add rule** 클릭 (또는 Catch-all 규칙 수정):
@@ -109,11 +115,7 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
 
 ---
 
-> 💻 **개발자 안내**: 터미널 CLI를 선호하거나 커스텀 튜닝을 원하시는 개발자분은 아래의 [CLI 빠른 시작 (3단계)](#-빠른-시작-3단계)을 참조하세요.
-
----
-
-## 🚀 빠른 시작 (3단계) [CLI 배포]
+### 🔵 방법 B: 로컬 CLI 터미널 배포 (개발자 전용)
 
 **사전 준비:**
 - 무료 Cloudflare 계정과 Cloudflare에 추가된 도메인 (Email Routing은 도메인별로 활성화되며, 3단계에서 설정합니다).

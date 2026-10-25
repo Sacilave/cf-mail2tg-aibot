@@ -12,7 +12,6 @@
 [![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-6-🌐-10-种主流语言国际化与一键切换-i18n)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本与免费配额保证)
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -29,8 +28,7 @@
 
 <p align="center">
   <a href="#-截图演示">截图演示</a> •
-  <a href="#-2分钟极速一键部署-zero-cli--网页即点即用">极速一键部署</a> •
-  <a href="#-极速上手-3-步搞定">CLI 部署</a> •
+  <a href="#-极速上手-两种部署方式二选一推荐方式-a">快速部署 (二选一)</a> •
   <a href="#-核心特性">核心特性</a> •
   <a href="#-为什么选择-cf-mail2tg-aibot-对比矩阵">方案对比</a> •
   <a href="#-系统架构">系统架构</a> •
@@ -74,7 +72,15 @@
 
 ---
 
-## ⚡ 2分钟极速一键部署 (Zero CLI / 网页即点即用)
+## 🚀 极速上手 (两种部署方式二选一，推荐方式 A)
+
+> 📌 **【特别声明：二选一即可】**：以下两种部署方式**只需选择其中一种即可**完成全部安装，请**勿**重复操作！
+> - **🟢 方式 A（强烈推荐·小白首选）**：**网页一键极速部署** —— 免装 Node.js/Git，无需命令行，在 Cloudflare 网页后台 3 步点选，2 分钟搞定；
+> - **🔵 方式 B（开发者专享）**：**本地 CLI 命令行部署** —— 需电脑安装 Node.js 22+ 与终端命令，适合二次开发与代码调试。
+
+---
+
+### 🟢 方式 A：2分钟极速一键部署 (推荐 / 0 命令行·网页即点即用)
 
 > **💡 专为非技术小白设计**：全程无需在电脑安装 Node.js、Git 或运行任何终端命令，直接在 Cloudflare 官方网页后台点选即可完成全部部署！
 
@@ -84,11 +90,11 @@
   </a>
 </p>
 
-### 步骤 1：获取 Telegram 机器人凭据 (1 分钟)
+#### 步骤 1：获取 Telegram 机器人凭据 (1 分钟)
 1. 在 Telegram 中私聊 [@BotFather](https://t.me/BotFather)，发送 `/newbot`，按提示给机器人起名，复制生成的 **`HTTP API Token`**（即 `TELEGRAM_BOT_TOKEN`）；
 2. 私聊 [@userinfobot](https://t.me/userinfobot)，获取你个人的纯数字 ID（即 `TELEGRAM_ADMIN_CHAT_ID`，仅你本人有权控制机器人）。
 
-### 步骤 2：点击上方按钮，网页一键授权部署 (30 秒)
+#### 步骤 2：点击上方按钮，网页一键授权部署 (30 秒)
 1. 点击上方的 **`[Deploy to Cloudflare Workers]`** 按钮（或[点击此处直达网页部署](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)）；
 2. 登录你的 Cloudflare 账号，授权关联 GitHub；
 3. Cloudflare 会全自动创建全新的 KV 数据库（`MAIL_ROUTES_KV`）及默认环境变量。在部署页面填入刚才获取的两个凭据：
@@ -96,7 +102,7 @@
    - `TELEGRAM_ADMIN_CHAT_ID`：你的 Telegram 数字 Chat ID
 4. 点击 **Save and Deploy (保存并部署)**，等待约 10 秒即部署上线！部署完成后，记下系统分配的 Worker 访问地址（例如 `https://cf-mail2tg-aibot.xxx.workers.dev`）。
 
-### 步骤 3：在域名开启邮件路由，绑定 Worker (30 秒)
+#### 步骤 3：在域名开启邮件路由，绑定 Worker (30 秒)
 1. 在 Cloudflare 控制台左侧进入你的域名 ➔ **Email (电子邮件)** ➔ **Email Routing (电子邮件路由)**；
 2. 如果此前未启用，按网页提示一键点击开启（Cloudflare 会全自动配置好所需的 DNS MX 记录）；
 3. 在 **Routing rules (路由规则)** 标签页中，点击 **Add rule (添加规则)**（或编辑 Catch-all 规则）：
@@ -109,11 +115,7 @@
 
 ---
 
-> 💻 **开发者提示**：如果你习惯使用终端 CLI 或希望进行二次开发调试，请参考下方的 [传统 CLI 3步部署](#-极速上手-3-步搞定)。
-
----
-
-## 🚀 极速上手 (3 步搞定) [CLI 部署]
+### 🔵 方式 B：本地 CLI 命令行部署 (开发者调试 / 二次开发)
 
 **准备工作：**
 - 一个免费的 Cloudflare 账号，以及一个已添加到 Cloudflare 的域名（Email Routing 按域名启用，第 3 步会为你的域名开启）；
