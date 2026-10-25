@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-截图演示">截图演示</a> •
   <a href="#-极速上手-3-步搞定">快速开始</a> •
   <a href="#-核心特性">核心特性</a> •
   <a href="#-为什么选择-cf-mail2tg-aibot-对比矩阵">方案对比</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** 是专为**独立开发者（Indie Hackers）、出海团队与多域名站长**打造的自建邮件网关。
 
 利用 Cloudflare Workers 边缘计算与免费的 Email Routing，它将发往你所有域名的邮件**深度解析、经过大模型语义审信与防垃圾降噪后，秒级推送到 Telegram Bot**；同时支持双轨制（Zero-Drop）无损保底直转个人 Gmail。彻底告别每个域名每年数十美元的企业邮箱月费，享受即时通讯收信的极客体验。
+
+---
+
+## 📸 截图演示
+
+以下均为真实运行实例的截图，其中的邮箱地址、验证码、发票号等敏感字段已全部替换为占位内容。
+
+### 🎛️ 机器人控制面板
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="网关主页" width="100%"><br><sub>网关主页——在线状态、AI 引擎与备份转发一目了然</sub> | <img src="docs/screenshots/settings.png" alt="设置面板" width="100%"><br><sub>设置面板——AI 供应商、路由画像、防垃圾与语言一站管理</sub> |
+
+### 📬 邮件通知实景
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="验证码邮件" width="100%"><br><sub>验证码邮件——验证码自动提取并置顶，点击即可复制</sub> | <img src="docs/screenshots/email-security-alert.png" alt="安全警报" width="100%"><br><sub>安全警报——钓鱼邮件被识别并标出 SPF/DKIM 失败</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="账单邮件" width="100%"><br><sub>账单邮件——发票信息自动解析，附件一目了然</sub> | <img src="docs/screenshots/email-business.png" alt="商务合作" width="100%"><br><sub>商务合作——AI 分诊自动标为优先处理</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="营销邮件" width="49%"><br>
+  <sub>营销邮件——促销内容被垃圾规则自动静默</sub>
+</p>
 
 ---
 

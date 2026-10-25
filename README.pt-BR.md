@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-capturas-de-tela">Capturas</a> •
   <a href="#-início-rápido-em-3-etapas">Início Rápido</a> •
   <a href="#-por-que-o-cf-mail2tg-aibot-matriz-de-comparação">Comparação</a> •
   <a href="#️-arquitetura-do-sistema">Arquitetura</a> •
@@ -44,6 +45,30 @@
 O **`cf-mail2tg-aibot`** é um gateway de e-mail auto-hospedado projetado especificamente para **Indie Hackers, equipes de desenvolvimento globais e administradores de múltiplos domínios**.
 
 Aproveitando a computação de borda do Cloudflare Workers e o roteamento gratuito do Email Routing, ele **analisa profundamente os e-mails recebidos, filtra ruídos e spams, realiza triagem semântica com LLM e entrega cards elegantes no Telegram em segundos**. Ao mesmo tempo, seu pipeline de trilha dupla com entrega sem perdas (Zero-Drop) encaminha o e-mail bruto original para sua caixa postal de backup (ex: aliases do Gmail). Diga adeus às assinaturas caras de e-mail corporativo (US$ 6 a US$ 18/usuário/mês por domínio) e aproveite um fluxo de recebimento de e-mails em tempo real, sem custos e ultraleve.
+
+---
+
+## 📸 Capturas de tela
+
+Todas as capturas abaixo são de uma instância real em execução. Os campos sensíveis (endereços de e-mail, códigos de verificação, números de fatura) foram substituídos por marcadores.
+
+### 🎛️ Painel de controle do bot
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="Início do gateway" width="100%"><br><sub>Início do gateway — status online, mecanismo de IA e encaminhamento de backup num relance</sub> | <img src="docs/screenshots/settings.png" alt="Configurações" width="100%"><br><sub>Configurações — provedores de IA, personas de roteamento, antispam e idioma num só painel</sub> |
+
+### 📬 Notificações de e-mail em ação
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="Códigos de verificação" width="100%"><br><sub>Códigos de verificação — extraídos e fixados no topo, toque para copiar</sub> | <img src="docs/screenshots/email-security-alert.png" alt="Alertas de segurança" width="100%"><br><sub>Alertas de segurança — phishing sinalizado com falha SPF/DKIM</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="Cobrança" width="100%"><br><sub>Cobrança — faturas analisadas com detalhes do anexo</sub> | <img src="docs/screenshots/email-business.png" alt="Consultas comerciais" width="100%"><br><sub>Consultas comerciais — priorizadas pela triagem de IA</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="Marketing" width="49%"><br>
+  <sub>Marketing — promoções silenciadas automaticamente pelas regras antispam</sub>
+</p>
 
 ---
 

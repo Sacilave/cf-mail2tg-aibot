@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-captures-décran">Captures</a> •
   <a href="#-démarrage-rapide-en-3-étapes">Démarrage Rapide</a> •
   <a href="#-pourquoi-cf-mail2tg-aibot-matrice-comparative">Comparatif</a> •
   <a href="#️-architecture-système">Architecture</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** est une passerelle de messagerie auto-hébergée conçue pour les **Indie Hackers, les équipes internationales et les propriétaires de domaines multiples**.
 
 En tirant parti de l'edge computing de Cloudflare Workers et du service gratuit Email Routing, la passerelle **analyse en profondeur les e-mails entrants, filtre le spam, effectue une classification sémantique par LLM et diffuse des cartes Telegram élégantes et lisibles en quelques secondes**. En parallèle, son architecture à double canal (Zero-Drop) garantit la réexpédition intégrale de l'e-mail original vers votre boîte Gmail personnelle. Dites adieu aux abonnements professionnels coûteux (6 à 18 $ par utilisateur et par mois) sur plusieurs domaines !
+
+---
+
+## 📸 Captures d’écran
+
+Toutes les captures ci-dessous proviennent d’une instance réelle en production. Les champs sensibles (adresses e-mail, codes de vérification, numéros de facture) sont remplacés par des valeurs factices.
+
+### 🎛️ Panneau de contrôle du bot
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="Accueil de la passerelle" width="100%"><br><sub>Accueil de la passerelle — état en ligne, moteur IA et transfert de sauvegarde en un coup d’œil</sub> | <img src="docs/screenshots/settings.png" alt="Réglages" width="100%"><br><sub>Réglages — fournisseurs IA, personas de routage, anti-spam et langue dans un seul panneau</sub> |
+
+### 📬 Notifications e-mail en action
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="Codes de vérification" width="100%"><br><sub>Codes de vérification — extraits et épinglés en haut, touchez pour copier</sub> | <img src="docs/screenshots/email-security-alert.png" alt="Alertes de sécurité" width="100%"><br><sub>Alertes de sécurité — hameçonnage signalé avec échec SPF/DKIM</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="Facturation" width="100%"><br><sub>Facturation — factures analysées avec le détail des pièces jointes</sub> | <img src="docs/screenshots/email-business.png" alt="Demandes commerciales" width="100%"><br><sub>Demandes commerciales — priorisées par le triage IA</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="Marketing" width="49%"><br>
+  <sub>Marketing — promotions mises en sourdine automatiquement par les règles anti-spam</sub>
+</p>
 
 ---
 

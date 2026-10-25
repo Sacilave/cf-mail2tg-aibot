@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-스크린샷">스크린샷</a> •
   <a href="#-빠른-시작-3단계">빠른 시작</a> •
   <a href="#-왜-cf-mail2tg-aibot인가-비교-매트릭스">비교 매트릭스</a> •
   <a href="#️-시스템-아키텍처">시스템 아키텍처</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`**는 **인디 해커, 글로벌 개발팀, 다중 도메인을 운영하는 웹마스터**를 위해 특별히 설계된 셀프 호스팅 이메일 게이트웨이입니다.
 
 Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, **수신된 이메일을 심층 파싱하고, 스팸/노이즈를 차단하며, LLM 기반의 시맨틱 의도 분류를 거쳐 미려한 카드 형태로 수 초 내에 Telegram에 전달**합니다. 이와 동시에 무손실(Zero-Drop) 듀얼 트랙 파이프라인을 통해 원본 이메일을 개인 백업 사서함(예: Gmail 별칭)으로 직접 전달합니다. 다중 도메인으로 인해 발생하는 비싼 비즈니스 메일 구독료(유저당 월 $6~$18)를 없애고, 가볍고 유지비가 전혀 없는 실시간 이메일 수신 환경을 구축하세요.
+
+---
+
+## 📸 스크린샷
+
+아래는 모두 실제 운영 중인 인스턴스의 스크린샷입니다. 이메일 주소, 인증 코드, 인보이스 번호 등 민감한 항목은 모두 자리 표시자로 교체했습니다.
+
+### 🎛️ 봇 제어 패널
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="게이트웨이 홈" width="100%"><br><sub>게이트웨이 홈 — 온라인 상태, AI 엔진, 백업 포워딩을 한눈에</sub> | <img src="docs/screenshots/settings.png" alt="설정" width="100%"><br><sub>설정 — AI 제공업체, 라우팅 페르소나, 안티스팸, 언어를 한 패널에서 관리</sub> |
+
+### 📬 이메일 알림 실제 화면
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="인증 코드" width="100%"><br><sub>인증 코드 — 자동 추출해 상단에 고정, 탭하면 복사</sub> | <img src="docs/screenshots/email-security-alert.png" alt="보안 알림" width="100%"><br><sub>보안 알림 — SPF/DKIM 실패로 피싱 경고</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="청구" width="100%"><br><sub>청구 — 인보이스를 파싱하고 첨부 파일 정보까지 표시</sub> | <img src="docs/screenshots/email-business.png" alt="비즈니스 문의" width="100%"><br><sub>비즈니스 문의 — AI 분류로 우선 처리 지정</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="마케팅" width="49%"><br>
+  <sub>마케팅 — 프로모션은 스팸 규칙으로 자동 음소거</sub>
+</p>
 
 ---
 

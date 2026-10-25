@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-截圖演示">截圖演示</a> •
   <a href="#-極速上手-3-步搞定">快速開始</a> •
   <a href="#-核心特性">核心特性</a> •
   <a href="#-為什麼選擇-cf-mail2tg-aibot-對比矩陣">方案對比</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** 是專為**獨立開發者（Indie Hackers）、出海團隊與多域名站長**打造的自建郵件網關。
 
 利用 Cloudflare Workers 邊緣運算與免費的 Email Routing，它將發往你所有域名的郵件**深度解析、經過大模型語義審信與防垃圾降噪後，秒級推播到 Telegram Bot**；同時支援雙軌制（Zero-Drop）無損保底直轉個人 Gmail。徹底告別每個域名每年數十美元的企業信箱月費，享受即時通訊收信的極客體驗。
+
+---
+
+## 📸 截圖演示
+
+以下均為真實運行實例的截圖，其中的郵箱地址、驗證碼、發票號等敏感欄位已全部替換為佔位內容。
+
+### 🎛️ 機器人控制面板
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="網關主頁" width="100%"><br><sub>網關主頁——在線狀態、AI 引擎與備份轉發一目了然</sub> | <img src="docs/screenshots/settings.png" alt="設定面板" width="100%"><br><sub>設定面板——AI 供應商、路由画像、防垃圾與語言一站管理</sub> |
+
+### 📬 郵件通知實景
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="驗證碼郵件" width="100%"><br><sub>驗證碼郵件——驗證碼自動擷取並置頂，點擊即可複製</sub> | <img src="docs/screenshots/email-security-alert.png" alt="安全警報" width="100%"><br><sub>安全警報——釣魚郵件被識別並標出 SPF/DKIM 失敗</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="賬單郵件" width="100%"><br><sub>賬單郵件——發票資訊自動解析，附件一目了然</sub> | <img src="docs/screenshots/email-business.png" alt="商務合作" width="100%"><br><sub>商務合作——AI 分診自動標為優先處理</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="行銷郵件" width="49%"><br>
+  <sub>行銷郵件——促銷內容被垃圾規則自動靜默</sub>
+</p>
 
 ---
 
