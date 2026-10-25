@@ -77,6 +77,7 @@
 ### 1. Получение учетных данных Telegram
 - Напишите [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ скопируйте `TELEGRAM_BOT_TOKEN`.
 - Напишите [@userinfobot](https://t.me/userinfobot) ➔ скопируйте числовой ID как `TELEGRAM_ADMIN_CHAT_ID`.
+- Выполните `openssl rand -hex 32` ➔ скопируйте результат как `TELEGRAM_WEBHOOK_SECRET`.
 
 ### 2. Подтверждение адреса пересылки в Cloudflare
 - В панели Cloudflare: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ добавьте и подтвердите личный email (например, `you@gmail.com`).
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # Настройка основных секретов
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Рекомендуется
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Рекомендуется (значение из шага 1)
 
 # Деплой в Cloudflare
 npm run deploy
 ```
 
-- **Активация вебхука**: откройте в браузере `https://<ваш-воркер>.<поддомен>.workers.dev/setup-webhook?secret=<ВАШ_СЕКРЕТ>` (ответ `{"ok":true}` подтверждает успех).
+- **Активация вебхука**: откройте в браузере `https://<ваш-воркер>.<поддомен>.workers.dev/setup-webhook?secret=<ВАШ_СЕКРЕТ>` (ответ `{"ok":true}` подтверждает успех; `<ВАШ_СЕКРЕТ>` должен точно совпадать с `TELEGRAM_WEBHOOK_SECRET` из шага 1, а URL воркера показан в выводе `npm run deploy`).
 - **Настройка маршрута**: в Cloudflare **Email Routing** ➔ **Routing rules** добавьте Catch-all: **Send to Worker** ➔ выберите `cf-mail2tg-aibot`.
 - **Завершение настройки с телефона**: отправьте боту `/setup` в Telegram — мастер за 1 минуту привяжет резервную почту и ключ LLM без терминала!
 

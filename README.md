@@ -77,6 +77,7 @@ Real screenshots from a running instance. All sensitive fields (email addresses,
 ### 1. Get Telegram Credentials
 - Message [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ copy `TELEGRAM_BOT_TOKEN`.
 - Message [@userinfobot](https://t.me/userinfobot) ➔ copy your user ID as `TELEGRAM_ADMIN_CHAT_ID`.
+- Run `openssl rand -hex 32` ➔ copy the output as `TELEGRAM_WEBHOOK_SECRET`.
 
 ### 2. Verify Cloudflare Destination Address
 - In Cloudflare Dashboard: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ Add and verify your personal email (e.g. `you@gmail.com`).
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # Set required credentials
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Strongly recommended
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Strongly recommended (the value from Step 1)
 
 # Deploy to Cloudflare edge
 npm run deploy
 ```
 
-- **Activate Webhook**: Open `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` in browser (returns `{"ok":true}`).
+- **Activate Webhook**: Open `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` in browser (returns `{"ok":true}`; `<YOUR_SECRET>` must be exactly the `TELEGRAM_WEBHOOK_SECRET` from Step 1, and the Worker URL is shown in the `npm run deploy` output).
 - **Route Emails**: In Cloudflare **Email Routing** ➔ **Routing rules** ➔ Add Catch-all: **Send to Worker** ➔ Select `cf-mail2tg-aibot`.
 - **Finish on Mobile**: In Telegram, send `/setup` to Bot to bind your backup Gmail and LLM Key in 1 minute—no terminal required!
 
