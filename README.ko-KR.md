@@ -77,6 +77,7 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
 ### 1. Telegram 자격 증명 발급
 - [@BotFather](https://t.me/BotFather)에게 대화 시작 ➔ `/newbot` 입력 ➔ 발급된 `TELEGRAM_BOT_TOKEN` 복사.
 - [@userinfobot](https://t.me/userinfobot)에게 대화 시작 ➔ 사용자 ID 숫자를 복사하여 `TELEGRAM_ADMIN_CHAT_ID`로 보관.
+- 터미널에서 `openssl rand -hex 32` 실행 ➔ 출력값을 복사하여 `TELEGRAM_WEBHOOK_SECRET`로 보관.
 
 ### 2. Cloudflare 목적지 주소 인증
 - Cloudflare 대시보드 접속: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 개인 이메일(예: `you@gmail.com`) 추가 후 인증 메일 확인.
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # 필수 비밀값 설정
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 강력 권장
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 강력 권장 (1단계에서 만든 값)
 
 # Cloudflare 에지로 배포
 npm run deploy
 ```
 
-- **웹훅 등록 활성화**: 브라우저에서 `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` 접속 (`{"ok":true}` 반환 확인).
+- **웹훅 등록 활성화**: 브라우저에서 `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` 접속 (`{"ok":true}` 반환 확인. `<YOUR_SECRET>`은 1단계의 `TELEGRAM_WEBHOOK_SECRET`와 정확히 일치해야 하며, Worker URL은 `npm run deploy` 출력에서 확인).
 - **이메일 라우팅 연결**: Cloudflare **Email Routing** ➔ **Routing rules** ➔ Catch-all 규칙 추가: **Send to Worker** ➔ `cf-mail2tg-aibot` 선택.
 - **모바일에서 간편 마무리**: Telegram에서 봇에게 `/setup`을 전송하여 백업 Gmail과 LLM 키를 1분 만에 등록하세요 (터미널 재접속 불필요!).
 

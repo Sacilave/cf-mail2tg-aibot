@@ -76,7 +76,8 @@
 
 ### 1. 獲取 Telegram 憑證
 - 私聊 [@BotFather](https://t.me/BotFather) ➔ `/newbot` 獲取 `TELEGRAM_BOT_TOKEN`；
-- 私聊 [@userinfobot](https://t.me/userinfobot) ➔ 獲取數字 ID 作為 `TELEGRAM_ADMIN_CHAT_ID`。
+- 私聊 [@userinfobot](https://t.me/userinfobot) ➔ 獲取數字 ID 作為 `TELEGRAM_ADMIN_CHAT_ID`；
+- 運行 `openssl rand -hex 32` ➔ 生成隨機字串作為 `TELEGRAM_WEBHOOK_SECRET`。
 
 ### 2. 驗證 Cloudflare 目標信箱
 - 進入 Cloudflare 控制台：**Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 添加並驗證你的個人信箱（如 `you@gmail.com`）。
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # 設定核心金鑰
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 強烈推薦
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 強烈推薦，填第 1 步生成的值
 
 # 部署上線
 npm run deploy
 ```
 
-- **啟用 Webhook**：瀏覽器造訪 `https://<你的Worker>.<子域>.workers.dev/setup-webhook?secret=<金鑰>`（返回 `{"ok":true}` 即註冊成功）；
+- **啟用 Webhook**：瀏覽器造訪 `https://<你的Worker>.<子域>.workers.dev/setup-webhook?secret=<金鑰>`（返回 `{"ok":true}` 即註冊成功，`<金鑰>` 即第 1 步的 `TELEGRAM_WEBHOOK_SECRET`、須完全一致，Worker 地址見 `npm run deploy` 輸出）；
 - **綁定路由**：在 Cloudflare **Email Routing** ➔ **Routing rules** 中添加 Catch-all 規則：動作選 **Send to Worker** ➔ 綁定 `cf-mail2tg-aibot`；
 - **手機完成配置**：在 Telegram 中對 Bot 發送 `/setup`，1 分鐘互動式綁定備份信箱與大模型 Key，無需回電腦打指令！
 

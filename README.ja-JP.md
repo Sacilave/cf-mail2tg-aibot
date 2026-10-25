@@ -77,6 +77,7 @@ Cloudflare Workers のエッジコンピューティングと無料の Email Rou
 ### 1. Telegram 認証情報の取得
 - [@BotFather](https://t.me/BotFather) ➔ `/newbot` で `TELEGRAM_BOT_TOKEN` を取得。
 - [@userinfobot](https://t.me/userinfobot) ➔ 自身の数値 ID を `TELEGRAM_ADMIN_CHAT_ID` として取得。
+- `openssl rand -hex 32` を実行 ➔ 出力を `TELEGRAM_WEBHOOK_SECRET` として取得。
 
 ### 2. Cloudflare 転送先メールアドレスの認証
 - Cloudflare ダッシュボード：**Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 個人メール（例: `you@gmail.com`）を追加して認証。
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # 主要シークレットの設定
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 推奨
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # 推奨（ステップ1で生成した値）
 
 # デプロイ
 npm run deploy
 ```
 
-- **Webhook の有効化**：ブラウザで `https://<Worker名>.<サブドメイン>.workers.dev/setup-webhook?secret=<シークレットキー>` を開く（`{"ok":true}` で登録完了）。
+- **Webhook の有効化**：ブラウザで `https://<Worker名>.<サブドメイン>.workers.dev/setup-webhook?secret=<シークレットキー>` を開く（`{"ok":true}` で登録完了。`<シークレットキー>` はステップ 1 の `TELEGRAM_WEBHOOK_SECRET` と完全一致が必要。Worker の URL は `npm run deploy` の出力に表示）。
 - **ルーティング設定**：Cloudflare **Email Routing** ➔ **Routing rules** で Catch-all ルールを追加：アクション **Send to Worker** ➔ `cf-mail2tg-aibot` を選択。
 - **スマホで仕上げ設定**：Telegram で Bot に `/setup` を送信し、1分でバックアップ先 Gmail と LLM キーを対話設定。PC 操作は不要です！
 

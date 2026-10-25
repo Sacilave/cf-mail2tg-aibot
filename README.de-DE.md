@@ -77,6 +77,7 @@ Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sen
 ### 1. Telegram-Zugangsdaten abrufen
 - [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ `TELEGRAM_BOT_TOKEN` kopieren.
 - [@userinfobot](https://t.me/userinfobot) ➔ numerische ID als `TELEGRAM_ADMIN_CHAT_ID` kopieren.
+- `openssl rand -hex 32` ausführen ➔ Ausgabe als `TELEGRAM_WEBHOOK_SECRET` kopieren.
 
 ### 2. Cloudflare-Zieladresse bestätigen
 - Im Cloudflare Dashboard: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ Persönliche E-Mail (z. B. `you@gmail.com`) hinzufügen und verifizieren.
@@ -93,13 +94,13 @@ npx wrangler kv namespace create MAIL_ROUTES_KV
 # Wichtigste Secrets konfigurieren
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_ADMIN_CHAT_ID
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Empfohlen
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET  # Empfohlen (der Wert aus Schritt 1)
 
 # Im Cloudflare-Edge bereitstellen
 npm run deploy
 ```
 
-- **Webhook aktivieren**: Im Browser `https://<ihr-worker>.<subdomain>.workers.dev/setup-webhook?secret=<IHR_GEHEIMNIS>` aufrufen (`{"ok":true}` bestätigt den Erfolg).
+- **Webhook aktivieren**: Im Browser `https://<ihr-worker>.<subdomain>.workers.dev/setup-webhook?secret=<IHR_GEHEIMNIS>` aufrufen (`{"ok":true}` bestätigt den Erfolg; `<IHR_GEHEIMNIS>` muss exakt dem `TELEGRAM_WEBHOOK_SECRET` aus Schritt 1 entsprechen, die Worker-URL steht in der Ausgabe von `npm run deploy`).
 - **E-Mails weiterleiten**: Im Cloudflare Dashboard unter **Email Routing** ➔ **Routing rules** eine Catch-all-Regel anlegen: Aktion **Send to Worker** ➔ `cf-mail2tg-aibot` auswählen.
 - **Konfiguration mobil abschließen**: Senden Sie dem Bot in Telegram `/setup`, um Zielpostfach und LLM-Schlüssel in 1 Minute interaktiv einzurichten – ganz ohne Terminal!
 
