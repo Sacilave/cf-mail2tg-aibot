@@ -10,6 +10,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     TELEGRAM_BOT_TOKEN: '123456789:test_mock_token',
     TELEGRAM_ADMIN_CHAT_ID: '987654321',
     FORWARD_TO_EMAIL: 'backup@example.com',
+    DEFAULT_LANGUAGE: 'zh-CN',
     MAIL_ROUTES_KV: null as any,
   };
 

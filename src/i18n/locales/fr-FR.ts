@@ -121,7 +121,7 @@ export const frFR: TranslationDict = {
       `💡 <i>Envoyez /help pour découvrir toutes les commandes disponibles.</i>`,
     invalidArg:
       '❌ <b>Code de langue non valide !</b>\n' +
-      'Langues disponibles : <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      'Langues disponibles : <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       'Exemple : <code>/lang fr</code> ou envoyez <code>/lang</code> pour ouvrir le menu interactif.',
   },
 
@@ -234,7 +234,7 @@ export const frFR: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - Mettre à jour la boîte de secours',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - Effacer la clé IA dynamique',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - Effacer l’e-mail de secours dynamique',
-    shortcutLang: '• <code>/lang</code> - Changer de langue (8 langues supportées)',
+    shortcutLang: '• <code>/lang</code> - Changer de langue (10 langues supportées)',
   },
 
   setkeyCommand: {

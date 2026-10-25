@@ -2,7 +2,7 @@
  * =============================================================================
  * Module: src/i18n/types.ts
  * Description: Strong type definitions and schemas for internationalization.
- * Supports 8 mainstream languages: zh-CN, en-US, zh-TW, ja-JP, ru-RU, es-ES, fr-FR, de-DE.
+ * Supports 10 mainstream languages: zh-CN, en-US, zh-TW, ja-JP, ko-KR, pt-BR, ru-RU, es-ES, fr-FR, de-DE.
  * =============================================================================
  */
 
@@ -11,6 +11,8 @@ export type SupportedLang =
   | 'en-US'
   | 'zh-TW'
   | 'ja-JP'
+  | 'ko-KR'
+  | 'pt-BR'
   | 'ru-RU'
   | 'es-ES'
   | 'fr-FR'
@@ -28,6 +30,8 @@ export const SUPPORTED_LANGUAGES: LanguageMeta[] = [
   { code: 'en-US', name: 'English', nativeName: 'English', flag: '🇺🇸' },
   { code: 'zh-TW', name: 'Traditional Chinese', nativeName: '繁體中文', flag: '🇭🇰' },
   { code: 'ja-JP', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'ko-KR', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+  { code: 'pt-BR', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
   { code: 'ru-RU', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
   { code: 'es-ES', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
   { code: 'fr-FR', name: 'French', nativeName: 'Français', flag: '🇫🇷' },

@@ -121,7 +121,7 @@ export const esES: TranslationDict = {
       `💡 <i>Envía /help para explorar todos los comandos en el idioma seleccionado.</i>`,
     invalidArg:
       '❌ <b>¡Código de idioma no válido!</b>\n' +
-      'Idiomas disponibles: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      'Idiomas disponibles: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       'Ejemplo: <code>/lang es</code> o envía <code>/lang</code> para abrir el menú interactivo.',
   },
 
@@ -234,7 +234,7 @@ export const esES: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;correo&gt;</code> - Actualizar correo de respaldo',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - Borrar clave de IA en KV',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - Borrar correo en KV',
-    shortcutLang: '• <code>/lang</code> - Cambiar idioma (8 idiomas soportados)',
+    shortcutLang: '• <code>/lang</code> - Cambiar idioma (10 idiomas compatibles)',
   },
 
   setkeyCommand: {

@@ -8,20 +8,22 @@ import worker, {
   SUPPORTED_LANGUAGES,
 } from '../src/index';
 
-describe('i18n System - 8 种主流语言与国际化核心架构测试', () => {
-  it('SUPPORTED_LANGUAGES 数组应包含 8 种主流语言元数据', () => {
+describe('i18n System - 10 种主流语言与国际化核心架构测试', () => {
+  it('SUPPORTED_LANGUAGES 数组应包含 10 种主流语言元数据', () => {
     const codes = SUPPORTED_LANGUAGES.map((l) => l.code);
     expect(codes).toEqual([
       'zh-CN',
       'en-US',
       'zh-TW',
       'ja-JP',
+      'ko-KR',
+      'pt-BR',
       'ru-RU',
       'es-ES',
       'fr-FR',
       'de-DE',
     ]);
-    expect(SUPPORTED_LANGUAGES.length).toBe(8);
+    expect(SUPPORTED_LANGUAGES.length).toBe(10);
   });
 
   it('normalizeLanguage 应正确标准化各种语言代号变体与简写', () => {
@@ -41,6 +43,16 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
     expect(normalizeLanguage('ja')).toBe('ja-JP');
     expect(normalizeLanguage('ja-jp')).toBe('ja-JP');
 
+    expect(normalizeLanguage('ko')).toBe('ko-KR');
+    expect(normalizeLanguage('ko-kr')).toBe('ko-KR');
+    expect(normalizeLanguage('kr')).toBe('ko-KR');
+    expect(normalizeLanguage('kor')).toBe('ko-KR');
+
+    expect(normalizeLanguage('pt')).toBe('pt-BR');
+    expect(normalizeLanguage('pt-br')).toBe('pt-BR');
+    expect(normalizeLanguage('pt-pt')).toBe('pt-BR');
+    expect(normalizeLanguage('br')).toBe('pt-BR');
+
     expect(normalizeLanguage('ru')).toBe('ru-RU');
     expect(normalizeLanguage('ru-ru')).toBe('ru-RU');
 
@@ -58,7 +70,7 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
     expect(normalizeLanguage(null as any)).toBeNull();
   });
 
-  it('getTranslation 应为全部 8 种语言返回完整且结构一致的词典', () => {
+  it('getTranslation 应为全部 10 种语言返回完整且结构一致的词典', () => {
     for (const meta of SUPPORTED_LANGUAGES) {
       const dict = getTranslation(meta.code);
       expect(dict).toBeDefined();
@@ -85,13 +97,13 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
     }
   });
 
-  it('getTranslation 传入未知语言时应保底回退至 zh-CN', () => {
+  it('getTranslation 传入未知语言时应保底回退至 en-US', () => {
     const fallbackDict = getTranslation('unknown' as any);
-    expect(fallbackDict.langCode).toBe('zh-CN');
-    expect(fallbackDict.flag).toBe('🇨🇳');
+    expect(fallbackDict.langCode).toBe('en-US');
+    expect(fallbackDict.flag).toBe('🇺🇸');
   });
 
-  it('resolveLanguage 应遵循严格优先级: KV动态配置 > 环境变量默认 > TG客户端上报 > zh-CN保底', async () => {
+  it('resolveLanguage 应遵循严格优先级: KV动态配置 > 环境变量默认 > TG客户端上报 > en-US保底', async () => {
     const store = new Map<string, string>();
     const mockKv = {
       get: vi.fn(async (key: string) => store.get(key) || null),
@@ -103,11 +115,13 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
       }),
     } as any;
 
-    // 1. All empty => zh-CN
-    expect(await resolveLanguage(mockKv, undefined, undefined)).toBe('zh-CN');
+    // 1. All empty => en-US
+    expect(await resolveLanguage(mockKv, undefined, undefined)).toBe('en-US');
 
     // 2. Telegram user language provided => maps to that language
     expect(await resolveLanguage(mockKv, undefined, 'ja')).toBe('ja-JP');
+    expect(await resolveLanguage(mockKv, undefined, 'ko')).toBe('ko-KR');
+    expect(await resolveLanguage(mockKv, undefined, 'pt')).toBe('pt-BR');
 
     // 3. Env DEFAULT_LANGUAGE overrides Telegram user language
     expect(await resolveLanguage(mockKv, 'ru-RU', 'ja')).toBe('ru-RU');
@@ -117,19 +131,29 @@ describe('i18n System - 8 种主流语言与国际化核心架构测试', () => 
     expect(await resolveLanguage(mockKv, 'ru-RU', 'ja')).toBe('es-ES');
   });
 
-  it('getLanguageKeyboard 应生成 4x2 网格并包含所有 8 种语言的回调按钮', () => {
+  it('getLanguageKeyboard 应生成 5x2 网格并包含所有 10 种语言的回调按钮', () => {
     const rows = getLanguageKeyboard('en-US');
     expect(rows).toBeDefined();
-    expect(rows.length).toBe(4); // 4 rows
+    expect(rows.length).toBe(5); // 5 rows
     expect(rows[0].length).toBe(2); // 2 columns
 
     const allButtons = rows.flat();
-    expect(allButtons.length).toBe(8);
+    expect(allButtons.length).toBe(10);
 
     // Selected language should have a checkmark
     const enButton = allButtons.find((btn) => btn.callback_data === 'lang:en-US');
     expect(enButton).toBeDefined();
     expect(enButton?.text).toContain('✓');
+
+    const koButton = allButtons.find((btn) => btn.callback_data === 'lang:ko-KR');
+    expect(koButton).toBeDefined();
+    expect(koButton?.text).toContain('한국어');
+    expect(koButton?.text).not.toContain('✓');
+
+    const ptButton = allButtons.find((btn) => btn.callback_data === 'lang:pt-BR');
+    expect(ptButton).toBeDefined();
+    expect(ptButton?.text).toContain('Português');
+    expect(ptButton?.text).not.toContain('✓');
 
     const zhButton = allButtons.find((btn) => btn.callback_data === 'lang:zh-CN');
     expect(zhButton).toBeDefined();
@@ -181,7 +205,7 @@ describe('Telegram Webhook - 多语言交互与即时切换测试', () => {
     vi.unstubAllGlobals();
   });
 
-  it('发送 /lang 指令应返回 8 种语言的选择卡片与内联键盘', async () => {
+  it('发送 /lang 指令应返回 10 种语言的选择卡片与内联键盘', async () => {
     const req = new Request('https://worker.dev/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -200,7 +224,7 @@ describe('Telegram Webhook - 多语言交互与即时切换测试', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.text).toContain('语言偏好设置');
     expect(body.reply_markup?.inline_keyboard).toBeDefined();
-    expect(body.reply_markup.inline_keyboard.flat().length).toBe(8);
+    expect(body.reply_markup.inline_keyboard.flat().length).toBe(10);
   });
 
   it('直接发送 /lang ja 应直接切换为日语并持久化存入 KV', async () => {
@@ -287,6 +311,67 @@ describe('Telegram Webhook - 多语言交互与即时切换测试', () => {
     expect(body.text).toContain('interactive configuration wizard');
   });
 
+  it('直接发送 /lang ko 应直接切换为韩语并持久化存入 KV', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: {
+          from: { id: 987654321 },
+          text: '/lang ko',
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+
+    // KV should be updated
+    expect(store.get('config:sys:system_language')).toBe('ko-KR');
+
+    // Should call setMyCommands (1st call) and sendMessage (2nd call)
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const setMyCommandsCall = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(setMyCommandsCall.commands).toBeDefined();
+
+    const msgCall = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(msgCall.text).toContain('언어 설정이 업데이트되었습니다');
+    expect(msgCall.text).toContain('한국어');
+  });
+
+  it('点击语言选择内联按钮 (lang:pt-BR) 应答复回调、更新 KV 并编辑卡片为葡萄牙语', async () => {
+    const req = new Request('https://worker.dev/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callback_query: {
+          id: 'cb_lang_pt',
+          from: { id: 987654321 },
+          data: 'lang:pt-BR',
+          message: { message_id: 888 },
+        },
+      }),
+    });
+
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+
+    // KV should have saved pt-BR
+    expect(store.get('config:sys:system_language')).toBe('pt-BR');
+
+    // 1: answerCallbackQuery, 2: editMessageText, 3: setMyCommands
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+
+    const answerCall = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(answerCall.callback_query_id).toBe('cb_lang_pt');
+    expect(answerCall.text).toContain('Português');
+
+    const editCall = JSON.parse(fetchMock.mock.calls[1][1].body);
+    expect(editCall.message_id).toBe(888);
+    expect(editCall.text).toContain('Preferência de Idioma Atualizada');
+  });
+
   it('切换为德语后，入站邮件推送的 Telegram 通知卡片应完全本地化为德语', async () => {
     store.set('config:sys:system_language', 'de-DE');
 
@@ -316,5 +401,69 @@ describe('Telegram Webhook - 多语言交互与即时切换测试', () => {
     expect(tgCallBody.text).toContain('Empfänger-Domain');
     expect(tgCallBody.text).toContain('Weiterleitungsstatus');
     expect(tgCallBody.text).toContain('E-Mail-Auszug');
+  });
+
+  it('切换为韩语后，入站邮件推送的 Telegram 通知卡片应完全本地化为韩语', async () => {
+    store.set('config:sys:system_language', 'ko-KR');
+
+    const forwardMock = vi.fn().mockResolvedValue(undefined);
+    const mockMessage = {
+      from: 'service@company.kr',
+      to: 'support@mycustomdomain.com',
+      forward: forwardMock,
+      headers: {
+        get: (k: string) => (k === 'subject' ? '고객 문의 안내' : null),
+      },
+      raw: new ReadableStream({
+        start(c) {
+          c.enqueue(new TextEncoder().encode('안녕하세요, 서비스 이용 관련 문의드립니다. 인증번호: 482910'));
+          c.close();
+        },
+      }),
+    };
+
+    await worker.email(mockMessage, env, null);
+
+    expect(forwardMock).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const tgCallBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(tgCallBody.text).toContain('새 이메일');
+    expect(tgCallBody.text).toContain('수신 도메인');
+    expect(tgCallBody.text).toContain('전달 상태');
+    expect(tgCallBody.text).toContain('본문 미리보기');
+    expect(tgCallBody.text).toContain('<code>482910</code>');
+  });
+
+  it('切换为葡萄牙语后，入站邮件推送的 Telegram 通知卡片应完全本地化为葡萄牙语', async () => {
+    store.set('config:sys:system_language', 'pt-BR');
+
+    const forwardMock = vi.fn().mockResolvedValue(undefined);
+    const mockMessage = {
+      from: 'contato@empresa.com.br',
+      to: 'admin@mycustomdomain.com',
+      forward: forwardMock,
+      headers: {
+        get: (k: string) => (k === 'subject' ? 'Fatura Mensal de Serviços' : null),
+      },
+      raw: new ReadableStream({
+        start(c) {
+          c.enqueue(new TextEncoder().encode('Olá, segue o comprovante de pagamento da sua fatura. Código de verificação: 928371'));
+          c.close();
+        },
+      }),
+    };
+
+    await worker.email(mockMessage, env, null);
+
+    expect(forwardMock).toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const tgCallBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(tgCallBody.text).toContain('Novo E-mail');
+    expect(tgCallBody.text).toContain('Domínio de Destino');
+    expect(tgCallBody.text).toContain('Status de Encaminhamento');
+    expect(tgCallBody.text).toContain('Trecho do E-mail');
+    expect(tgCallBody.text).toContain('<code>928371</code>');
   });
 });

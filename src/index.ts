@@ -111,6 +111,9 @@ import {
   normalizeLanguage,
   getLanguageKeyboard,
   getCommandsPayload,
+  syncAllTelegramCommands,
+  TELEGRAM_I18N_COMMAND_MAP,
+  DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
 } from './i18n';
 import type { SupportedLang, TranslationDict } from './i18n';
@@ -198,6 +201,9 @@ export {
   normalizeLanguage,
   getLanguageKeyboard,
   getCommandsPayload,
+  syncAllTelegramCommands,
+  TELEGRAM_I18N_COMMAND_MAP,
+  DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
 };
 
@@ -361,6 +367,13 @@ export default {
         const cmdData = await cmdRes.json();
 
         if (url.pathname === '/setup-commands') {
+          const syncAll = url.searchParams.get('all') === 'true' || url.searchParams.get('multi') === 'true';
+          if (syncAll) {
+            const allResults = await syncAllTelegramCommands(botToken, currentLang);
+            return new Response(JSON.stringify({ ok: true, multiLanguage: true, results: allResults }, null, 2), {
+              headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            });
+          }
           return new Response(JSON.stringify({ ok: true, setMyCommands: cmdData }, null, 2), {
             headers: { 'Content-Type': 'application/json; charset=utf-8' },
           });

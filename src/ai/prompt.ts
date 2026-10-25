@@ -48,7 +48,34 @@ export function extractVerificationCode(text: string): string | undefined {
     }
   }
 
-  // 3. Brackets like 【123456】 or [123456]
+  // 3. Korean patterns
+  const koPatterns = [
+    /(?:인증\s*번호|인증\s*코드|보안\s*코드|확인\s*코드|인증\s*키)[：:\s은는]*([0-9a-zA-Z]{4,8})(?!\d)/i,
+    /(?:인증\s*번호는|인증\s*코드는)[：:\s]*([0-9a-zA-Z]{4,8})(?!\d)/i,
+  ];
+
+  for (const pattern of koPatterns) {
+    const match = pattern.exec(text);
+    if (match && match[1] && !isLikelyYear(match[1])) {
+      return match[1].trim();
+    }
+  }
+
+  // 4. Portuguese patterns
+  const ptPatterns = [
+    /(?:código\s*de\s*(?:verificação|segurança|confirmação|acesso))[：:\s-]*([0-9a-zA-Z]{4,8})(?!\d)/i,
+    /(?:seu\s*código(?:\s*(?:de\s*(?:verificação|segurança|acesso)|único))?\s*(?:é|:))[：:\s]*([0-9a-zA-Z]{4,8})(?!\d)/i,
+    /(?:insira\s*o\s*código|use\s*o\s*código)[：:\s]*([0-9a-zA-Z]{4,8})(?!\d)/i,
+  ];
+
+  for (const pattern of ptPatterns) {
+    const match = pattern.exec(text);
+    if (match && match[1] && !isLikelyYear(match[1])) {
+      return match[1].trim();
+    }
+  }
+
+  // 5. Brackets like 【123456】 or [123456]
   const bracketMatch = /(?:【|\[)([0-9a-zA-Z]{4,8})(?:】|\])/.exec(text);
   if (bracketMatch && bracketMatch[1] && !isLikelyYear(bracketMatch[1])) {
     const lower = text.toLowerCase();
@@ -56,7 +83,9 @@ export function extractVerificationCode(text: string): string | undefined {
       lower.includes('code') ||
       lower.includes('verify') ||
       lower.includes('验证') ||
-      lower.includes('动态码')
+      lower.includes('动态码') ||
+      lower.includes('인증') ||
+      lower.includes('código')
     ) {
       return bracketMatch[1].trim();
     }

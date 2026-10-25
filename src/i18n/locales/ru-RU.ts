@@ -121,7 +121,7 @@ export const ruRU: TranslationDict = {
       `💡 <i>Отправьте /help, чтобы просмотреть команды на выбранном языке.</i>`,
     invalidArg:
       '❌ <b>Неверный код языка!</b>\n' +
-      'Доступные языки: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      'Доступные языки: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       'Пример: <code>/lang ru</code> или просто <code>/lang</code> для интерактивного меню.',
   },
 
@@ -234,7 +234,7 @@ export const ruRU: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - Обновить резервную почту',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - Сбросить ключ AI',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - Сбросить адрес пересылки',
-    shortcutLang: '• <code>/lang</code> - Сменить язык (поддерживается 8 языков)',
+    shortcutLang: '• <code>/lang</code> - Сменить язык (поддерживается 10 языков)',
   },
 
   setkeyCommand: {

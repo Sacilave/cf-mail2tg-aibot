@@ -121,7 +121,7 @@ export const deDE: TranslationDict = {
       `💡 <i>Senden Sie /help, um alle Befehle in der gewählten Sprache zu erkunden.</i>`,
     invalidArg:
       '❌ <b>Ungültiger Sprachcode!</b>\n' +
-      'Verfügbare Sprachen: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      'Verfügbare Sprachen: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       'Beispiel: <code>/lang de</code> oder senden Sie <code>/lang</code> für das Menü.',
   },
 
@@ -234,7 +234,7 @@ export const deDE: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - Backup-Postfach aktualisieren',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - KI-Schlüssel-Überschreibung löschen',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - Postfach-Überschreibung löschen',
-    shortcutLang: '• <code>/lang</code> - Sprache wechseln (8 Sprachen unterstützt)',
+    shortcutLang: '• <code>/lang</code> - Sprache wechseln (10 Sprachen unterstützt)',
   },
 
   setkeyCommand: {

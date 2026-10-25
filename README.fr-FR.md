@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5--internationalisation-i18n-en-8-langues-et-changement-instantané)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--internationalisation-i18n-en-10-langues-et-changement-instantané)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-coût-zéro-et-garantie-de-quota-gratuit)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <a href="./README.es-ES.md">Español</a> •
   <b>Français</b> •
@@ -154,10 +156,10 @@ flowchart TD
 - **Modification par Réponse Directe** : Répondez (Reply) directement au message de mots-clés du bot pour charger la liste mise à jour dans Cloudflare KV.
 - **Règles de Routage (`/routes`, `/add`, `/del`)** : Consultez et configurez facilement vos profils d'adresses avec validation par boutons interactifs.
 
-### 5. 🌐 Internationalisation (i18n) en 8 Langues et Changement Instantané
-- **8 Langues Prises en Charge** : 🇨🇳 Chinois Simplifié (`zh-CN`), 🇺🇸 Anglais (`en-US`), 🇭🇰 Chinois Traditionnel (`zh-TW`), 🇯🇵 Japonais (`ja-JP`), 🇷🇺 Russe (`ru-RU`), 🇪🇸 Espagnol (`es-ES`), 🇫🇷 Français (`fr-FR`), 🇩🇪 Allemand (`de-DE`).
+### 5. 🌐 Internationalisation (i18n) en 10 Langues et Changement Instantané
+- **10 Langues Prises en Charge** : 🇨🇳 Chinois Simplifié (`zh-CN`), 🇺🇸 Anglais (`en-US`), 🇭🇰 Chinois Traditionnel (`zh-TW`), 🇯🇵 Japonais (`ja-JP`), 🇰🇷 Coréen (`ko-KR`), 🇧🇷 Portugais (`pt-BR`), 🇷🇺 Russe (`ru-RU`), 🇪🇸 Espagnol (`es-ES`), 🇫🇷 Français (`fr-FR`), 🇩🇪 Allemand (`de-DE`).
 - **Localisation Complète** : Cartes de notification, cartes d'alerte, assistants, tableaux de bord et commandes du menu Telegram entièrement traduits.
-- **Changement Immédiat (`/lang`)** : Affichez un menu tactile 4x2 avec indicateur `✓` de la langue active, ou fournissez un code directement (ex. : `/lang fr`, `/lang en`).
+- **Changement Immédiat (`/lang`)** : Affichez un menu tactile 5x2 avec indicateur `✓` de la langue active, ou fournissez un code directement (ex. : `/lang ko`, `/lang pt`, `/lang fr`).
 - **Résolution en 4 Étapes** : `Configuration dynamique Cloudflare KV` > `Variable d'environnement (DEFAULT_LANGUAGE)` > `Langue du client Telegram` > `Valeur par défaut (zh-CN)`.
 - **Performances Submilliseconde** : Arbres de dictionnaires TypeScript typés statiquement pour un temps de réponse < 0,1 ms sans consommation mémoire superflue.
 
@@ -169,7 +171,7 @@ Appuyez sur le bouton **[Menu]** en bas à gauche de la conversation Telegram ou
 
 | Commande | Paramètres | Description |
 | :--- | :--- | :--- |
-| `/lang` | `[code]` | Changer la langue d'affichage via le clavier interactif 4x2 ou en paramètre direct (ex. `/lang fr`) |
+| `/lang` | `[code]` | Changer la langue d'affichage via le clavier interactif 5x2 ou en paramètre direct (ex. `/lang ko`, `/lang pt`, `/lang fr`) |
 | `/setup` | - | Lancer l'assistant interactif de configuration pas-à-pas en 1 minute |
 | `/cancel` | - | Quitter l'assistant ou la session active et réinitialiser l'état |
 | `/config` | - | Consulter l'état de la passerelle et les identifiants masqués |

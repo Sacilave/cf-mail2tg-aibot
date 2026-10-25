@@ -31,8 +31,8 @@ MAX_EMAIL_SIZE_BYTES="5242880"
 # [OPTIONAL] Telegram marketing notification policy: 'silent' (no vibration/sound) | 'mute' (do not send to TG)
 MARKETING_TG_POLICY="silent"
 
-# [OPTIONAL] Default display language ('zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE', default: zh-CN)
-DEFAULT_LANGUAGE="zh-CN"
+# [OPTIONAL] Default display language ('zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR' | 'pt-BR' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE', default: zh-CN)
+DEFAULT_LANGUAGE="en-US"
 
 # [OPTIONAL] Multi-Provider AI Triage & Verification Code Extraction Settings
 # Supported providers: workers-ai | deepseek | groq | openai | gemini | claude | openrouter | minimax | custom

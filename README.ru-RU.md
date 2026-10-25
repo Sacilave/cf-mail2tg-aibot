@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5--интернационализация-i18n-на-8-языках-и-мгновенное-переключение)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--интернационализация-i18n-на-10-языках-и-мгновенное-переключение)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-нулевая-стоимость-и-гарантия-бесплатного-тарифа)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <b>Русский</b> •
   <a href="./README.es-ES.md">Español</a> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -154,10 +156,10 @@ flowchart TD
 - **Обновление ответом**: Ответьте (Reply) на сообщение бота с ключевыми словами новым списком, и шлюз обновит их в Cloudflare KV на лету.
 - **Маршрутизация (`/routes`, `/add`, `/del`)**: Просмотр и редактирование правил пересылки по префиксам с интерактивными кнопками подтверждения.
 
-### 5. 🌐 Интернационализация (i18n) на 8 языках и мгновенное переключение
-- **8 поддерживаемых языков**: 🇨🇳 Упрощенный китайский (`zh-CN`), 🇺🇸 Английский (`en-US`), 🇭🇰 Традиционный китайский (`zh-TW`), 🇯🇵 Японский (`ja-JP`), 🇷🇺 Русский (`ru-RU`), 🇪🇸 Испанский (`es-ES`), 🇫🇷 Французский (`fr-FR`), 🇩🇪 Немецкий (`de-DE`).
+### 5. 🌐 Интернационализация (i18n) на 10 языках и мгновенное переключение
+- **10 поддерживаемых языков**: 🇨🇳 Упрощенный китайский (`zh-CN`), 🇺🇸 Английский (`en-US`), 🇭🇰 Традиционный китайский (`zh-TW`), 🇯🇵 Японский (`ja-JP`), 🇰🇷 Корейский (`ko-KR`), 🇧🇷 Португальский (`pt-BR`), 🇷🇺 Русский (`ru-RU`), 🇪🇸 Испанский (`es-ES`), 🇫🇷 Французский (`fr-FR`), 🇩🇪 Немецкий (`de-DE`).
 - **Полная локализация**: Карточки писем, коды подтверждения, алерты безопасности, диалоги настройки и меню команд переведены полностью.
-- **Быстрое переключение (`/lang`)**: Меню-матрица 4x2 с отметкой текущего языка `✓` или быстрая команда (например, `/lang ru`, `/lang en`).
+- **Быстрое переключение (`/lang`)**: Меню-матрица 5x2 с отметкой текущего языка `✓` или быстрая команда (например, `/lang ko`, `/lang pt`, `/lang ru`).
 - **4 уровня приоритета**: `Настройки в KV` > `Переменная окружения (DEFAULT_LANGUAGE)` > `Язык Telegram-клиента` > `Базовый язык (zh-CN)`.
 - **Субмиллисекундная скорость**: Чистый TypeScript с нулевым потреблением дополнительной памяти и поиском быстрее 0.1 мс.
 
@@ -169,7 +171,7 @@ flowchart TD
 
 | Команда | Параметры | Описание |
 | :--- | :--- | :--- |
-| `/lang` | `[код]` | Переключение языка интерфейса (меню 4x2 или параметр `/lang ru`) |
+| `/lang` | `[код]` | Переключение языка интерфейса (меню 5x2 или параметр `/lang ko`, `/lang pt`, `/lang ru`) |
 | `/setup` | - | Пошаговый интерактивный мастер быстрой настройки |
 | `/cancel` | - | Отмена текущего мастера или диалога с возвратом в исходное состояние |
 | `/config` | - | Просмотр статуса шлюза и привязанных ключей (с маскированием) |

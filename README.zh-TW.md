@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5-🌐-8-種主流語言國際化-i18n)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5-🌐-10-種主流語言國際化-i18n)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本與免費配額保證)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <b>繁體中文</b> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <a href="./README.es-ES.md">Español</a> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -154,10 +156,10 @@ flowchart TD
 - **回覆即改**：直接在 Telegram 裡選擇「回覆 (Reply)」Bot 的訊息，貼上修改後的詞庫，網關自動全量熱更新並同步至 Cloudflare KV；
 - **發送 `/routes`、`/add`、`/del`**：在手機端隨時添加新地址路由分流規則，刪除規則自帶 Inline Keyboard 二次確認。
 
-### 5. 🌐 8 種主流語言國際化與一鍵切換 (i18n)
-- **支援 8 種主流語言**：🇨🇳 簡體中文 (`zh-CN`)、🇺🇸 English (`en-US`)、🇭🇰 繁體中文 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇷🇺 Русский (`ru-RU`)、🇪🇸 Español (`es-ES`)、🇫🇷 Français (`fr-FR`)、🇩🇪 Deutsch (`de-DE`)；
+### 5. 🌐 10 種主流語言國際化與一鍵切換 (i18n)
+- **支援 10 種主流語言**：🇨🇳 簡體中文 (`zh-CN`)、🇺🇸 English (`en-US`)、🇭🇰 繁體中文 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇰🇷 한국어 (`ko-KR`)、🇧🇷 Português (`pt-BR`)、🇷🇺 Русский (`ru-RU`)、🇪🇸 Español (`es-ES`)、🇫🇷 Français (`fr-FR`)、🇩🇪 Deutsch (`de-DE`)；
 - **全鏈路本地化覆蓋**：包括入站郵件卡片推播、驗證碼擷取模組、安全與熔斷警報、互動式配置引導、控制面板與 Telegram 原生 Bot 選單指令；
-- **即時互動切換 (`/lang`)**：在 Telegram 中發送 `/lang` 即可呼出 4x2 緊湊內聯鍵盤一鍵切換（當前語言附帶 `✓` 標記），或直接傳參快捷設定（如 `/lang en`、`/lang ja`）；
+- **即時互動切換 (`/lang`)**：在 Telegram 中發送 `/lang` 即可呼出 5x2 緊湊內聯鍵盤一鍵切換（當前語言附帶 `✓` 標記），或直接傳參快捷設定（如 `/lang ko`、`/lang pt`、`/lang en`）；
 - **四級無縫優先級解析**：`Cloudflare KV 動態配置 (config:sys:system_language)` > `環境變數 (DEFAULT_LANGUAGE)` > `Telegram 客戶端語言上報 (language_code)` > `保底 (zh-CN)`；
 - **零外部依賴與極致效能**：基於純 TypeScript 靜態型別字典樹構建，亞毫秒級（< 0.1ms）邊緣零記憶體開銷查找。
 
@@ -169,7 +171,7 @@ flowchart TD
 
 | 指令 | 參數格式 | 功能描述 |
 | :--- | :--- | :--- |
-| `/lang` | `[語言代號]` | 切換系統顯示語言，支援 4x2 互動式內嵌鍵盤切換或直接傳參 (如 `/lang en`、`/lang ja`) |
+| `/lang` | `[語言代號]` | 切換系統顯示語言，支援 5x2 互動式內嵌鍵盤切換或直接傳參 (如 `/lang ko`、`/lang pt`、`/lang en`) |
 | `/setup` | - | 啟動互動式分步極速配置引導 (1 分鐘帶你完成核心憑證綁定) |
 | `/cancel` | - | 退出當前引導或對話，重設互動狀態 |
 | `/config` | - | 查看網關就緒狀態與金鑰綁定情況 (帶安全脫敏遮罩，僅管理員可閱) |

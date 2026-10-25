@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-143%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-6--8-mainstream-languages-i18n--instant-switching)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-6--10-mainstream-languages-i18n--instant-switching)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-zero-cost--free-quota-guarantee)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <a href="./README.es-ES.md">Español</a> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -207,10 +209,10 @@ Incoming Email
 - **Reply-to-Update**: Simply reply to the Bot's keyword message with your modified wordlist to perform an instant full hot-reload into Cloudflare KV.
 - **Routing Rules (`/routes`, `/add`, `/del`)**: Inspect domain persona rules and dynamically add/remove prefix routing with interactive confirmation buttons.
 
-### 6. 🌐 8 Mainstream Languages i18n & Instant Switching
-- **8 Supported Languages**: 🇨🇳 Simplified Chinese (`zh-CN`), 🇺🇸 English (`en-US`), 🇭🇰 Traditional Chinese (`zh-TW`), 🇯🇵 Japanese (`ja-JP`), 🇷🇺 Russian (`ru-RU`), 🇪🇸 Spanish (`es-ES`), 🇫🇷 French (`fr-FR`), 🇩🇪 German (`de-DE`).
+### 6. 🌐 10 Mainstream Languages i18n & Instant Switching
+- **10 Supported Languages**: 🇨🇳 Simplified Chinese (`zh-CN`), 🇺🇸 English (`en-US`), 🇭🇰 Traditional Chinese (`zh-TW`), 🇯🇵 Japanese (`ja-JP`), 🇰🇷 Korean (`ko-KR`), 🇧🇷 Portuguese (`pt-BR`), 🇷🇺 Russian (`ru-RU`), 🇪🇸 Spanish (`es-ES`), 🇫🇷 French (`fr-FR`), 🇩🇪 German (`de-DE`).
 - **End-to-End Localization**: Email notification cards, verification code banners, security alerts, setup wizards, control panels, and native Telegram Bot menu commands are fully localized.
-- **Instant Switcher (`/lang`)**: Send `/lang` to invoke a 4x2 inline button matrix (the active language is marked with `✓`), or supply a code directly (e.g., `/lang en`, `/lang ja`).
+- **Instant Switcher (`/lang`)**: Send `/lang` to invoke a 5x2 inline button matrix (the active language is marked with `✓`), or supply a code directly (e.g., `/lang en`, `/lang ja`, `/lang ko`, `/lang pt`).
 - **4-Tier Priority Resolution**: `Cloudflare KV dynamic setting (config:sys:system_language)` > `Environment variable (DEFAULT_LANGUAGE)` > `Telegram client language (language_code)` > `Fallback default (zh-CN)`.
 - **Sub-millisecond Zero Overhead**: Built on static TypeScript dictionary trees with sub-millisecond (< 0.1ms) execution and zero edge memory penalty.
 
@@ -226,7 +228,7 @@ Tap the **[Menu]** button at the bottom-left of the Telegram chat or send any co
 | `/menu` | - | **⚙️ Settings Dashboard**: 2x4 inline button grid to manage all settings (AI, routing, anti-spam, forwarding, language, setup wizard, guide) |
 | `/guide` | - | **📖 Detailed User Guide**: View workflow, classification, spam filtering, prefix routing docs with direct GitHub documentation link |
 | `/setup` | - | **⚡ Quick Setup Wizard**: 1-minute step-by-step interactive setup wizard (accessible via inline button in Settings) |
-| `/lang` | `[code]` | Switch system language via interactive 4x2 keyboard or direct code (e.g. `/lang en`, `/lang ja`) |
+| `/lang` | `[code]` | Switch system language via interactive 5x2 keyboard or direct code (e.g. `/lang ko`, `/lang pt`, `/lang en`) |
 | `/provider` | `[1~9\|name]` | Interactive AI provider switch (reply with 1~9 to toggle Workers AI / DeepSeek / Groq / OpenAI etc.) |
 | `/model` | `[1~2\|name]` | Interactive model switch for the active provider |
 | `/cancel` | - | Exit active setup wizard or session, resetting interactive state |

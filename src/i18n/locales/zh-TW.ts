@@ -121,7 +121,7 @@ export const zhTW: TranslationDict = {
       `💡 <i>發送 /help 可查看目前語言的完整指令字典。</i>`,
     invalidArg:
       '❌ <b>無效的語言代碼！</b>\n' +
-      '可用語言選項: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      '可用語言選項: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       '範例: <code>/lang tw</code> 或直接發送 <code>/lang</code> 開啟互動式選單。',
   },
 
@@ -234,7 +234,7 @@ export const zhTW: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;信箱地址&gt;</code> - 熱更新備份信箱',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - 清除金鑰動態覆蓋並回退',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - 清除備份信箱動態覆蓋',
-    shortcutLang: '• <code>/lang</code> - 切換系統顯示語言 (支援8種語言)',
+    shortcutLang: '• <code>/lang</code> - 切換系統顯示語言 (支援10種主流語言)',
   },
 
   setkeyCommand: {

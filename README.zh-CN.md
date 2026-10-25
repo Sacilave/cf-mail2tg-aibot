@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-143%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-6-🌐-8-种主流语言国际化与一键切换-i18n)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-6-🌐-10-种主流语言国际化与一键切换-i18n)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本与免费配额保证)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <b>简体中文</b> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <a href="./README.es-ES.md">Español</a> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -206,10 +208,10 @@ flowchart TD
 - **回复即改**：直接在 Telegram 里选择「回复 (Reply)」Bot 的消息，粘贴修改后的词库，网关自动全量热更新并同步至 Cloudflare KV；
 - **发送 `/routes`、`/add`、`/del`**：在手机端随时添加新地址路由分流规则，删除规则自带 Inline Keyboard 二次确认。
 
-### 6. 🌐 8 种主流语言国际化与一键切换 (i18n)
-- **支持 8 种主流语言**：🇨🇳 简体中文 (`zh-CN`)、🇺🇸 English (`en-US`)、🇭🇰 繁體中文 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇷🇺 Русский (`ru-RU`)、🇪🇸 Español (`es-ES`)、🇫🇷 Français (`fr-FR`)、🇩🇪 Deutsch (`de-DE`)；
+### 6. 🌐 10 种主流语言国际化与一键切换 (i18n)
+- **支持 10 种主流语言**：🇨🇳 简体中文 (`zh-CN`)、🇺🇸 English (`en-US`)、🇭🇰 繁體中文 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇰🇷 한국어 (`ko-KR`)、🇧🇷 Português (`pt-BR`)、🇷🇺 Русский (`ru-RU`)、🇪🇸 Español (`es-ES`)、🇫🇷 Français (`fr-FR`)、🇩🇪 Deutsch (`de-DE`)；
 - **全链路本地化覆盖**：包括入站邮件卡片推播、验证码提取模块、安全与熔断警报、交互式配置向导、控制面板与 Telegram 原生 Bot 菜单指令；
-- **即时交互切换 (`/lang`)**：在 Telegram 中发送 `/lang` 即可呼出 4x2 紧凑内联键盘一键切换（当前语言附带 `✓` 标记），或直接传参快捷设置（如 `/lang en`、`/lang ja`）；
+- **即时交互切换 (`/lang`)**：在 Telegram 中发送 `/lang` 即可呼出 5x2 紧凑内联键盘一键切换（当前语言附带 `✓` 标记），或直接传参快捷设置（如 `/lang ko`、`/lang pt`、`/lang en`）；
 - **四级无缝优先级解析**：`Cloudflare KV 动态配置 (config:sys:system_language)` > `环境变量 (DEFAULT_LANGUAGE)` > `Telegram 客户端语言上报 (language_code)` > `保底 (zh-CN)`；
 - **零外部依赖与极致性能**：基于纯 TypeScript 静态类型字典树构建，亚毫秒级（< 0.1ms）边缘零内存开销查找。
 
@@ -225,7 +227,7 @@ flowchart TD
 | `/menu` | - | **⚙️ 设置中心仪表盘**：以 2x4 内联按键面板层级化管理所有设置（AI、路由、拦截词、转发、语言、配置向导、使用指南） |
 | `/guide` | - | **📖 详细使用指南**：查看工作流程、邮件分类、垃圾拦截、前缀路由说明与 GitHub 文档直达按钮 |
 | `/setup` | - | **⚡ 极速配置向导**：启动交互式分步引导（1 分钟带你完成核心凭证绑定，面板中亦有专属按钮） |
-| `/lang` | `[语言代号]` | 切换系统显示语言，支持 4x2 交互式内联键盘切换或直接传参 (如 `/lang en`、`/lang ja`) |
+| `/lang` | `[语言代号]` | 切换系统显示语言，支持 5x2 交互式内联键盘切换或直接传参 (如 `/lang ko`、`/lang pt`、`/lang en`) |
 | `/provider` | `[1~9\|厂商名]` | 交互式切换大模型厂商 (回复数字 1~9 秒切 Workers AI / DeepSeek / Groq / OpenAI 等) |
 | `/model` | `[1~2\|模型名]` | 交互式切换当前厂商的运行模型版本 |
 | `/cancel` | - | 退出当前向导或会话，重置交互状态 |

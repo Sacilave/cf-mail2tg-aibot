@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5--internacionalización-i18n-en-8-idiomas-y-cambio-inmediato)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--internacionalización-i18n-en-10-idiomas-y-cambio-inmediato)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-coste-cero-y-garantía-de-cuota-gratuita)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <a href="./README.ja-JP.md">日本語</a> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <b>Español</b> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -154,10 +156,10 @@ flowchart TD
 - **Actualización por Respuesta**: Responde al mensaje de palabras clave del bot con tu lista editada para sincronizarla en caliente con Cloudflare KV.
 - **Reglas de Enrutamiento (`/routes`, `/add`, `/del`)**: Inspecciona y administra reglas de alias con botones interactivos de confirmación.
 
-### 5. 🌐 Internacionalización (i18n) en 8 Idiomas y Cambio Inmediato
-- **8 Idiomas Compatibles**: 🇨🇳 Chino Simplificado (`zh-CN`), 🇺🇸 Inglés (`en-US`), 🇭🇰 Chino Tradicional (`zh-TW`), 🇯🇵 Japonés (`ja-JP`), 🇷🇺 Ruso (`ru-RU`), 🇪🇸 Español (`es-ES`), 🇫🇷 Francés (`fr-FR`), 🇩🇪 Alemán (`de-DE`).
+### 5. 🌐 Internacionalización (i18n) en 10 Idiomas y Cambio Inmediato
+- **10 Idiomas Compatibles**: 🇨🇳 Chino Simplificado (`zh-CN`), 🇺🇸 Inglés (`en-US`), 🇭🇰 Chino Tradicional (`zh-TW`), 🇯🇵 Japonés (`ja-JP`), 🇰🇷 Coreano (`ko-KR`), 🇧🇷 Portugués (`pt-BR`), 🇷🇺 Ruso (`ru-RU`), 🇪🇸 Español (`es-ES`), 🇫🇷 Francés (`fr-FR`), 🇩🇪 Alemán (`de-DE`).
 - **Localización Completa**: Tarjetas de notificación, módulos de verificación, avisos de seguridad, asistentes de configuración y menús nativos traducidos en su totalidad.
-- **Cambio Inmediato (`/lang`)**: Muestra una cuadrícula táctil 4x2 con indicador `✓` del idioma activo o acepta argumentos directos (como `/lang es`, `/lang en`).
+- **Cambio Inmediato (`/lang`)**: Muestra una cuadrícula táctil 5x2 con indicador `✓` del idioma activo o acepta argumentos directos (como `/lang ko`, `/lang pt`, `/lang es`).
 - **Resolución en 4 Niveles**: `Configuración dinámica en KV` > `Variable de entorno (DEFAULT_LANGUAGE)` > `Idioma del cliente de Telegram` > `Por defecto (zh-CN)`.
 - **Rendimiento Submilimétrico**: Árboles de diccionarios tipados en TypeScript con tiempo de resolución menor a 0.1ms sin impacto en memoria.
 
@@ -169,7 +171,7 @@ Pulsa el botón **[Menu]** abajo a la izquierda en el chat o envía los siguient
 
 | Comando | Parámetros | Descripción |
 | :--- | :--- | :--- |
-| `/lang` | `[código]` | Cambia el idioma mediante teclado interactivo 4x2 o código directo (p. ej. `/lang es`) |
+| `/lang` | `[código]` | Cambia el idioma mediante teclado interactivo 5x2 o código directo (p. ej. `/lang ko`, `/lang pt`, `/lang es`) |
 | `/setup` | - | Inicia el asistente interactivo de configuración paso a paso en 1 minuto |
 | `/cancel` | - | Cancela el asistente o la conversación activa y restablece el estado |
 | `/config` | - | Consulta el estado general de la pasarela y las credenciales enmascaradas |

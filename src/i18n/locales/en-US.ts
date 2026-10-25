@@ -121,7 +121,7 @@ export const enUS: TranslationDict = {
       `💡 <i>Send /help to explore all commands in your selected language.</i>`,
     invalidArg:
       '❌ <b>Invalid Language Code!</b>\n' +
-      'Available options: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      'Available options: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       'Example: <code>/lang en</code> or send <code>/lang</code> to open interactive menu.',
   },
 
@@ -240,7 +240,7 @@ export const enUS: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - Hot-update backup inbox',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - Clear LLM key override',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - Clear forward inbox override',
-    shortcutLang: '• <code>/lang</code> - Switch display language (8 languages supported)',
+    shortcutLang: '• <code>/lang</code> - Switch display language (10 languages supported)',
   },
 
   setkeyCommand: {

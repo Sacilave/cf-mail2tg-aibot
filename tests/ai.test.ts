@@ -185,6 +185,7 @@ describe('MiniMax AI - 端到端邮件转发与静默/响铃策略集成测试',
       FORWARD_TO_EMAIL: 'backup@example.com',
       ENABLE_GMAIL_ALIASES: 'true',
       MINIMAX_API_KEY: 'mock-minimax-key',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -250,6 +251,7 @@ describe('MiniMax AI - 端到端邮件转发与静默/响铃策略集成测试',
       FORWARD_TO_EMAIL: 'backup@example.com',
       ENABLE_GMAIL_ALIASES: 'true',
       MINIMAX_API_KEY: 'mock-minimax-key',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -303,6 +305,7 @@ describe('MiniMax AI - 端到端邮件转发与静默/响铃策略集成测试',
       FORWARD_TO_EMAIL: 'backup@example.com',
       ENABLE_GMAIL_ALIASES: 'true',
       MINIMAX_API_KEY: 'mock-minimax-key',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);

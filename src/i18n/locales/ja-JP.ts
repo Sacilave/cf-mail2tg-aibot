@@ -121,7 +121,7 @@ export const jaJP: TranslationDict = {
       `💡 <i>/help を送信すると、コマンド一覧を確認できます。</i>`,
     invalidArg:
       '❌ <b>無効な言語コードです！</b>\n' +
-      '利用可能な言語: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
+      '利用可能な言語: <code>zh-CN</code> (简体中文), <code>en-US</code> (English), <code>zh-TW</code> (繁體中文), <code>ja-JP</code> (日本語), <code>ko-KR</code> (한국어), <code>pt-BR</code> (Português), <code>ru-RU</code> (Русский), <code>es-ES</code> (Español), <code>fr-FR</code> (Français), <code>de-DE</code> (Deutsch)\n' +
       '例: <code>/lang ja</code> または <code>/lang</code> で選択メニューを開きます。',
   },
 
@@ -234,7 +234,7 @@ export const jaJP: TranslationDict = {
     shortcutSetkeyForward: '• <code>/setkey forward &lt;email&gt;</code> - 転送先アドレスを更新',
     shortcutResetkeyMinimax: '• <code>/resetkey minimax</code> - APIキーの上書きを解除',
     shortcutResetkeyForward: '• <code>/resetkey forward</code> - 転送先の上書きを解除',
-    shortcutLang: '• <code>/lang</code> - 言語を切り替える (8言語対応)',
+    shortcutLang: '• <code>/lang</code> - 言語を切り替える (全10言語対応)',
   },
 
   setkeyCommand: {

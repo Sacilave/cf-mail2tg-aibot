@@ -48,7 +48,7 @@ export interface Env {
   MINIMAX_MODEL?: string;
   /** MiniMax Custom API Endpoint (optional) */
   MINIMAX_API_URL?: string;
-  /** Default display language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE' */
+  /** Default display language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR' | 'pt-BR' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE' */
   DEFAULT_LANGUAGE?: string;
 }
 

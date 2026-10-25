@@ -129,6 +129,7 @@ describe('EmailForwarder - 邮件清洗与编码鲁棒性测试', () => {
       TELEGRAM_BOT_TOKEN: '123456:mock_token',
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -175,6 +176,7 @@ describe('EmailForwarder - 邮件清洗与编码鲁棒性测试', () => {
       TELEGRAM_BOT_TOKEN: '123456:mock_token',
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -225,6 +227,7 @@ describe('EmailForwarder - 邮件清洗与编码鲁棒性测试', () => {
       TELEGRAM_BOT_TOKEN: '123456:mock_token',
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -271,6 +274,7 @@ describe('EmailForwarder - 邮件清洗与编码鲁棒性测试', () => {
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
       ENABLE_GMAIL_ALIASES: 'false',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -323,6 +327,7 @@ describe('EmailRateLimiter - 多站点隔离与智能防轰炸频控测试', () 
       TELEGRAM_BOT_TOKEN: 'token',
       TELEGRAM_ADMIN_CHAT_ID: 'chat_id',
       FORWARD_TO_EMAIL: 'backup@example.com',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(createMessage('service@verify.com'), env, null);
@@ -409,6 +414,7 @@ describe('Attachment Armor & Quota Hardening - 附件防御与额度保护测试
       TELEGRAM_ADMIN_CHAT_ID: 'chat_id',
       FORWARD_TO_EMAIL: 'backup@example.com',
       MAX_EMAIL_SIZE_BYTES: 5 * 1024 * 1024,
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(oversizedMessage, env, null);
@@ -476,6 +482,7 @@ describe('Attachment Armor & Quota Hardening - 附件防御与额度保护测试
       TELEGRAM_ADMIN_CHAT_ID: 'chat_id',
       FORWARD_TO_EMAIL: 'backup@example.com',
       BLOCK_ALL_ATTACHMENTS: 'true',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -567,6 +574,7 @@ describe('Anti-Marketing & Long Email - 营销过滤与长邮件体验增强测�
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
       ENABLE_GMAIL_ALIASES: 'true',
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);
@@ -616,6 +624,7 @@ describe('Anti-Marketing & Long Email - 营销过滤与长邮件体验增强测�
       TELEGRAM_ADMIN_CHAT_ID: '987654321',
       FORWARD_TO_EMAIL: 'backup@example.com',
       MAX_SNIPPET_LENGTH: 1200,
+      DEFAULT_LANGUAGE: 'zh-CN',
     };
 
     await worker.email(mockMessage, env, null);

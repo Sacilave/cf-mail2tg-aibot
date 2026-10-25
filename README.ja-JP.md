@@ -9,8 +9,8 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-114%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![i18n](https://img.shields.io/badge/i18n-8%20Languages-blueviolet)](#-5--8つの主要言語に対応した国際化--ワンタップ切替)
+[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--10の主要言語に対応した国際化--ワンタップ切替)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-完全無料--無料枠保証)
 
 <p align="center">
@@ -18,6 +18,8 @@
   <a href="./README.zh-CN.md">简体中文</a> •
   <a href="./README.zh-TW.md">繁體中文</a> •
   <b>日本語</b> •
+  <a href="./README.ko-KR.md">한국어</a> •
+  <a href="./README.pt-BR.md">Português</a> •
   <a href="./README.ru-RU.md">Русский</a> •
   <a href="./README.es-ES.md">Español</a> •
   <a href="./README.fr-FR.md">Français</a> •
@@ -154,10 +156,10 @@ flowchart TD
 - **返信による即時更新**：Bot のキーワード一覧メッセージに「返信 (Reply)」して新しい単語リストを送信するだけで、自動で全量ホットリロードされます。
 - **ルーティング管理 (`/routes`, `/add`, `/del`)**：ドメイン別のエイリアス振り分けルールをスマホから柔軟に追加・削除可能（削除時は確認ボタン付き）。
 
-### 5. 🌐 8つの主要言語に対応した国際化 & ワンタップ切替
-- **対応言語（全 8 言語）**：🇨🇳 簡体字中国語 (`zh-CN`)、🇺🇸 英語 (`en-US`)、🇭🇰 繁体字中国語 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇷🇺 ロシア語 (`ru-RU`)、🇪🇸 スペイン語 (`es-ES`)、🇫🇷 フランス語 (`fr-FR`)、🇩🇪 ドイツ語 (`de-DE`)。
+### 5. 🌐 10の主要言語に対応した国際化 & ワンタップ切替
+- **対応言語（全 10 言語）**：🇨🇳 簡体字中国語 (`zh-CN`)、🇺🇸 英語 (`en-US`)、🇭🇰 繁体字中国語 (`zh-TW`)、🇯🇵 日本語 (`ja-JP`)、🇰🇷 韓国語 (`ko-KR`)、🇧🇷 ポルトガル語 (`pt-BR`)、🇷🇺 ロシア語 (`ru-RU`)、🇪🇸 スペイン語 (`es-ES`)、🇫🇷 フランス語 (`fr-FR`)、🇩🇪 ドイツ語 (`de-DE`)。
 - **全機能の完全ローカライズ**：メール通知カード、認証コード枠、エラー警告、初期設定ウィザード、コントロールパネル、Telegram 公式メニューコマンドのすべてが多言語対応。
-- **ワンタップ言語切替 (`/lang`)**：`/lang` コマンドで 4x2 インラインキーボードを表示して切り替え可能（現在の言語には `✓` が表示）。引数による直接指定（例: `/lang ja`、`/lang en`）にも対応。
+- **ワンタップ言語切替 (`/lang`)**：`/lang` コマンドで 5x2 インラインキーボードを表示して切り替え可能（現在の言語には `✓` が表示）。引数による直接指定（例: `/lang ko`、`/lang pt`、`/lang ja`）にも対応。
 - **4段階の優先順位解決**：`Cloudflare KV 動的設定` > `環境変数 (DEFAULT_LANGUAGE)` > `Telegram クライアント言語設定` > `デフォルトフォールバック (zh-CN)`。
 - **サブミリ秒・ゼロメモリ消費**：純粋な TypeScript 型付き辞書ツリーにより、0.1ms 未満の超高速処理を実現。
 
@@ -169,7 +171,7 @@ Telegram チャット画面左下の **[Menu]** ボタンをタップするか�
 
 | コマンド | パラメータ | 機能概要 |
 | :--- | :--- | :--- |
-| `/lang` | `[言語コード]` | 表示言語を切り替え（4x2 インラインキーボードまたは直接引数 `/lang ja` で指定） |
+| `/lang` | `[言語コード]` | 表示言語を切り替え（5x2 インラインキーボードまたは直接引数 `/lang ko`、`/lang pt` で指定） |
 | `/setup` | - | 対話型初期設定ウィザードを開始（1分で主要設定を完了） |
 | `/cancel` | - | 進行中のウィザードや対話を中止し、初期状態にリセット |
 | `/config` | - | ゲートウェイの稼働状態とマスキングされた設定値を確認 |
