@@ -74,10 +74,14 @@
 
 ## 🚀 Быстрый старт (за 3 шага)
 
+**Что нужно заранее:**
+- Бесплатный аккаунт Cloudflare и домен, добавленный в Cloudflare (Email Routing включается отдельно для каждого домена; шаг 3 активирует его для вашего).
+- Node.js 22 или новее и Git, установленные на компьютере (первая команда wrangler в шаге 3 откроет браузер для входа в Cloudflare).
+
 ### 1. Получение учетных данных Telegram
 - Напишите [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ скопируйте `TELEGRAM_BOT_TOKEN`.
 - Напишите [@userinfobot](https://t.me/userinfobot) ➔ скопируйте числовой ID как `TELEGRAM_ADMIN_CHAT_ID`.
-- Выполните `openssl rand -hex 32` ➔ скопируйте результат как `TELEGRAM_WEBHOOK_SECRET`.
+- Выполните `openssl rand -hex 32` ➔ скопируйте результат как `TELEGRAM_WEBHOOK_SECRET` (необязательно, но рекомендуется; в Windows запускайте в Git Bash).
 
 ### 2. Подтверждение адреса пересылки в Cloudflare
 - В панели Cloudflare: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ добавьте и подтвердите личный email (например, `you@gmail.com`).
@@ -85,7 +89,7 @@
 ### 3. Деплой и активация
 ```bash
 # Клонирование и установка зависимостей
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # Создайте KV и укажите полученный ID в wrangler.jsonc (kv_namespaces[0].id)
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **Активация вебхука**: откройте в браузере `https://<ваш-воркер>.<поддомен>.workers.dev/setup-webhook?secret=<ВАШ_СЕКРЕТ>` (ответ `{"ok":true}` подтверждает успех; `<ВАШ_СЕКРЕТ>` должен точно совпадать с `TELEGRAM_WEBHOOK_SECRET` из шага 1, а URL воркера показан в выводе `npm run deploy`).
-- **Настройка маршрута**: в Cloudflare **Email Routing** ➔ **Routing rules** добавьте Catch-all: **Send to Worker** ➔ выберите `cf-mail2tg-aibot`.
-- **Завершение настройки с телефона**: отправьте боту `/setup` в Telegram — мастер за 1 минуту привяжет резервную почту и ключ LLM без терминала!
+- **Настройка маршрута**: в панели Cloudflare выберите ваш домен ➔ **Email** ➔ **Email Routing** ➔ включите его (нужные MX-записи добавятся автоматически) ➔ **Routing rules** ➔ добавьте Catch-all: **Send to Worker** ➔ выберите `cf-mail2tg-aibot`.
+- **Завершение настройки с телефона**: отправьте боту `/setup` в Telegram — мастер за 1 минуту привяжет резервную почту (ту самую, что подтверждена на шаге 2) и ключ LLM без терминала!
 
 #### 🤖 Опционально: Непрерывное развертывание (Vibe Coding / GitHub Actions)
 Если вы форкнули этот репозиторий для собственной разработки (vibe coding) и хотите, чтобы коммиты в `main` автоматически деплоились в Cloudflare:
 1. Переименуйте [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) в `.github/workflows/deploy.yml`.
-2. В репозитории GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ добавьте секрет `CLOUDFLARE_API_TOKEN`.
+2. В репозитории GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ добавьте секрет `CLOUDFLARE_API_TOKEN` (как получить: панель Cloudflare ➔ My Profile ➔ API Tokens ➔ создать токен по шаблону «Edit Cloudflare Workers»).
 3. Готово! Каждый пуш в `main` запустит автоматические тесты и выполнит деплой в Cloudflare Workers.
 *(Примечание: в качестве открытого шаблона автоматический деплой по умолчанию отключен, чтобы избежать ошибок CI до настройки секретов.)*
 
@@ -237,7 +241,7 @@ flowchart TD
 
 <details>
 <summary><b>Q: Можно ли запускать бота без API-ключа LLM?</b></summary>
-Да! Без ключа <code>MINIMAX_API_KEY</code> шлюз переключается на <b>высокопроизводительный движок регулярных выражений и базу правил RFC</b>, точно распознавая проверочные коды и рекламные рассылки.
+Да! Ключ не нужен вовсе: по умолчанию шлюз работает на предустановленном <b>Cloudflare Workers AI</b> — 100 % бесплатно и без API-ключа. Если LLM временно недоступен, встроенный <b>высокопроизводительный движок регулярных выражений и база правил RFC</b> всё равно распознаёт проверочные коды и рекламные рассылки, а ключ DeepSeek / OpenAI можно привязать в любой момент через <code>/setup</code>.
 </details>
 
 <details>

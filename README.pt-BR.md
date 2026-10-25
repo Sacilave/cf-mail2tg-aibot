@@ -74,10 +74,14 @@ Todas as capturas abaixo são de uma instância real em execução. Os campos se
 
 ## 🚀 Início Rápido (em 3 Etapas)
 
+**Pré-requisitos:**
+- Uma conta gratuita da Cloudflare e um domínio adicionado à Cloudflare (o Email Routing é ativado por domínio; a Etapa 3 o habilitará para o seu).
+- Node.js 22 ou posterior e Git instalados no seu computador (o primeiro comando wrangler da Etapa 3 abrirá o navegador para login na Cloudflare).
+
 ### 1. Obter Credenciais do Telegram
 - Inicie conversa com [@BotFather](https://t.me/BotFather) ➔ envie `/newbot` ➔ copie o `TELEGRAM_BOT_TOKEN`.
 - Inicie conversa com [@userinfobot](https://t.me/userinfobot) ➔ copie seu ID numérico de usuário como `TELEGRAM_ADMIN_CHAT_ID`.
-- Execute `openssl rand -hex 32` ➔ copie o resultado como `TELEGRAM_WEBHOOK_SECRET`.
+- Execute `openssl rand -hex 32` ➔ copie o resultado como `TELEGRAM_WEBHOOK_SECRET` (opcional, mas recomendado; no Windows, execute no Git Bash).
 
 ### 2. Verificar Endereço de Destino na Cloudflare
 - No painel da Cloudflare: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ adicione e confirme seu e-mail pessoal (ex: `voce@gmail.com`).
@@ -85,7 +89,7 @@ Todas as capturas abaixo são de uma instância real em execução. Os campos se
 ### 3. Implantar e Ativar
 ```bash
 # Clonar repositório e instalar dependências
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # Criar namespace KV e colar o ID retornado no wrangler.jsonc (kv_namespaces[0].id)
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **Ativar Webhook**: Acesse no navegador `https://<seu-worker>.<subdominio>.workers.dev/setup-webhook?secret=<SEU_SEGREDO>` (retornará `{"ok":true}`; `<SEU_SEGREDO>` deve ser exatamente o `TELEGRAM_WEBHOOK_SECRET` da Etapa 1, e a URL do Worker aparece na saída de `npm run deploy`).
-- **Roteamento de E-mails**: Em Cloudflare **Email Routing** ➔ **Routing rules** ➔ Adicione Catch-all: **Send to Worker** ➔ Selecione `cf-mail2tg-aibot`.
-- **Concluir no Celular**: No Telegram, envie `/setup` ao Bot para vincular seu Gmail de backup e sua Chave de IA em 1 minuto — sem precisar de terminal!
+- **Roteamento de E-mails**: No painel da Cloudflare, selecione seu domínio ➔ **Email** ➔ **Email Routing** ➔ ative-o (os registros MX necessários são adicionados automaticamente) ➔ **Routing rules** ➔ Adicione Catch-all: **Send to Worker** ➔ Selecione `cf-mail2tg-aibot`.
+- **Concluir no Celular**: No Telegram, envie `/setup` ao Bot para vincular seu Gmail de backup (deve ser o endereço verificado na Etapa 2) e sua Chave de IA em 1 minuto — sem precisar de terminal!
 
 #### 🤖 Opcional: Implantação Contínua (CI/CD · GitHub Actions)
 Se você clonar ou fizer fork deste repositório para desenvolvimento personalizado e desejar que os pushes para `main` sejam implantados automaticamente:
 1. Renomeie [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) para `.github/workflows/deploy.yml`.
-2. No seu repositório GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ adicione o segredo `CLOUDFLARE_API_TOKEN`.
+2. No seu repositório GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ adicione o segredo `CLOUDFLARE_API_TOKEN` (para obter um: painel da Cloudflare ➔ My Profile ➔ API Tokens ➔ crie um token com o modelo “Edit Cloudflare Workers”).
 3. Cada push para `main` executará os testes automatizados e fará o deploy automático no Cloudflare Workers!
 
 ---

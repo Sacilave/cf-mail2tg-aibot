@@ -74,10 +74,14 @@
 
 ## 🚀 极速上手 (3 步搞定)
 
+**准备工作：**
+- 一个免费的 Cloudflare 账号，以及一个已添加到 Cloudflare 的域名（Email Routing 按域名启用，第 3 步会为你的域名开启）；
+- 电脑已安装 Node.js 22 或更高版本和 Git（第 3 步第一条 wrangler 命令会自动打开浏览器让你登录 Cloudflare）。
+
 ### 1. 获取 Telegram 凭据
 - 私聊 [@BotFather](https://t.me/BotFather) ➔ `/newbot` 获取 `TELEGRAM_BOT_TOKEN`；
 - 私聊 [@userinfobot](https://t.me/userinfobot) ➔ 获取数字 ID 作为 `TELEGRAM_ADMIN_CHAT_ID`；
-- 运行 `openssl rand -hex 32` ➔ 生成随机字符串作为 `TELEGRAM_WEBHOOK_SECRET`。
+- 运行 `openssl rand -hex 32` ➔ 生成随机字符串作为 `TELEGRAM_WEBHOOK_SECRET`（可选但推荐；Windows 请在 Git Bash 里运行）。
 
 ### 2. 验证 Cloudflare 目标邮箱
 - 进入 Cloudflare 控制台：**Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 添加并验证你的个人邮箱（如 `you@gmail.com`）。
@@ -85,7 +89,7 @@
 ### 3. 一键部署与激活
 ```bash
 # 克隆与安装依赖
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # 创建 KV 并将输出的 ID 填入 wrangler.jsonc (kv_namespaces[0].id)
@@ -101,8 +105,8 @@ npm run deploy
 ```
 
 - **激活 Webhook**：浏览器访问 `https://<你的Worker>.<子域>.workers.dev/setup-webhook?secret=<密钥>`（返回 `{"ok":true}` 即注册成功，`<密钥>` 即第 1 步的 `TELEGRAM_WEBHOOK_SECRET`、须完全一致，Worker 地址见 `npm run deploy` 输出）；
-- **绑定路由**：在 Cloudflare **Email Routing** ➔ **Routing rules** 中添加 Catch-all 规则：动作选 **Send to Worker** ➔ 绑定 `cf-mail2tg-aibot`；
-- **手机完成配置**：在 Telegram 中对 Bot 发送 `/setup`，1 分钟交互式绑定备份邮箱和大模型 Key，无需回电脑打命令！
+- **绑定路由**：在 Cloudflare 控制台选中你的域名 ➔ **Email** ➔ **Email Routing** ➔ 启用（所需 MX 记录会自动添加）➔ 在 **Routing rules** 中添加 Catch-all 规则：动作选 **Send to Worker** ➔ 绑定 `cf-mail2tg-aibot`；
+- **手机完成配置**：在 Telegram 中对 Bot 发送 `/setup`，1 分钟交互式绑定备份邮箱（须为第 2 步验证过的那个）和大模型 Key，无需回电脑打命令！
 
 #### 🤖 可选：配置自动持续部署（Vibe Coding / GitHub Actions）
 如果你 Fork 本仓库用于二次开发（Vibe Coding），并希望每次向 `main` 分支提交代码时由 GitHub 自动部署到 Cloudflare：
@@ -294,7 +298,7 @@ flowchart TD
 
 <details>
 <summary><b>Q: 不配置大模型 API Key 还可以使用吗？</b></summary>
-可以！未配置 <code>MINIMAX_API_KEY</code> 时，网关会自动启用内置的<b>高性能正则嗅探引擎与本地 RFC 规则库</b>，依然可以精准识别验证码与大部分营销推广邮件，零成本即刻起步。
+可以！完全不需要 Key：网关默认使用预配置的 <b>Cloudflare Workers AI</b>，100% 免费、零 API Key。即便大模型临时不可用，内置的<b>高性能正则嗅探引擎与本地 RFC 规则库</b>依然可以精准识别验证码与大部分营销推广邮件；想换 DeepSeek / OpenAI 等服务商，随时用 <code>/setup</code> 绑定 Key 即可。
 </details>
 
 <details>

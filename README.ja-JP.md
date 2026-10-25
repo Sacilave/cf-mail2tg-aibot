@@ -74,10 +74,14 @@ Cloudflare Workers のエッジコンピューティングと無料の Email Rou
 
 ## 🚀 クイックスタート (3ステップ)
 
+**前提条件：**
+- 無料の Cloudflare アカウントと、Cloudflare に追加済みのドメイン（Email Routing はドメインごとに有効化します。ステップ 3 で設定）。
+- パソコンに Node.js 22 以降と Git がインストール済みであること（ステップ 3 の最初の wrangler コマンドでブラウザが開き、Cloudflare へのログインを求められます）。
+
 ### 1. Telegram 認証情報の取得
 - [@BotFather](https://t.me/BotFather) ➔ `/newbot` で `TELEGRAM_BOT_TOKEN` を取得。
 - [@userinfobot](https://t.me/userinfobot) ➔ 自身の数値 ID を `TELEGRAM_ADMIN_CHAT_ID` として取得。
-- `openssl rand -hex 32` を実行 ➔ 出力を `TELEGRAM_WEBHOOK_SECRET` として取得。
+- `openssl rand -hex 32` を実行 ➔ 出力を `TELEGRAM_WEBHOOK_SECRET` として取得（任意ですが推奨。Windows では Git Bash で実行）。
 
 ### 2. Cloudflare 転送先メールアドレスの認証
 - Cloudflare ダッシュボード：**Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 個人メール（例: `you@gmail.com`）を追加して認証。
@@ -85,7 +89,7 @@ Cloudflare Workers のエッジコンピューティングと無料の Email Rou
 ### 3. デプロイと有効化
 ```bash
 # クローンと依存パッケージのインストール
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # KV ネームスペースを作成し、出力された ID を wrangler.jsonc (kv_namespaces[0].id) に入力
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **Webhook の有効化**：ブラウザで `https://<Worker名>.<サブドメイン>.workers.dev/setup-webhook?secret=<シークレットキー>` を開く（`{"ok":true}` で登録完了。`<シークレットキー>` はステップ 1 の `TELEGRAM_WEBHOOK_SECRET` と完全一致が必要。Worker の URL は `npm run deploy` の出力に表示）。
-- **ルーティング設定**：Cloudflare **Email Routing** ➔ **Routing rules** で Catch-all ルールを追加：アクション **Send to Worker** ➔ `cf-mail2tg-aibot` を選択。
-- **スマホで仕上げ設定**：Telegram で Bot に `/setup` を送信し、1分でバックアップ先 Gmail と LLM キーを対話設定。PC 操作は不要です！
+- **ルーティング設定**：Cloudflare ダッシュボードで自分のドメインを選択 ➔ **Email** ➔ **Email Routing** ➔ 有効化（必要な MX レコードは自動追加されます）➔ **Routing rules** で Catch-all ルールを追加：アクション **Send to Worker** ➔ `cf-mail2tg-aibot` を選択。
+- **スマホで仕上げ設定**：Telegram で Bot に `/setup` を送信し、1分でバックアップ先 Gmail（ステップ 2 で認証したアドレス）と LLM キーを対話設定。PC 操作は不要です！
 
 #### 🤖 オプション: 自動継続的デプロイ (Vibe Coding / GitHub Actions)
 本リポジトリを Fork してカスタマイズ開発（Vibe Coding）を行い、`main` ブランチへのプッシュ時に Cloudflare へ自動デプロイしたい場合：
 1. [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) を `.github/workflows/deploy.yml` に名前変更します。
-2. GitHub リポジトリの **Settings** ➔ **Secrets and variables** ➔ **Actions** で `CLOUDFLARE_API_TOKEN` を追加します。
+2. GitHub リポジトリの **Settings** ➔ **Secrets and variables** ➔ **Actions** で `CLOUDFLARE_API_TOKEN` を追加します（取得方法：Cloudflare ダッシュボード ➔ My Profile ➔ API Tokens ➔ 「Edit Cloudflare Workers」テンプレートでトークンを作成）。
 3. これで完了です！`main` へのプッシュ（または Actions タブからの手動実行）のたびに自動テストが実行され、自動デプロイされます。
 *(注: オープンテンプレートとして、シークレット未設定による CI エラーの赤バツを防ぐため、デフォルトでは自動デプロイを無効にしています。)*
 
@@ -237,7 +241,7 @@ Telegram チャット画面左下の **[Menu]** ボタンをタップするか�
 
 <details>
 <summary><b>Q: LLM の API キーを設定しなくても利用できますか？</b></summary>
-はい、利用可能です！<code>MINIMAX_API_KEY</code> を設定しない場合、内蔵の<b>高速正規表現スニッフィングエンジンとローカル RFC ルール</b>が自動的に有効になり、認証コードの抽出や代表的な宣伝メールの判定を無料で行えます。
+はい、利用可能です！キー自体が不要です：ゲートウェイは初期設定の <b>Cloudflare Workers AI</b> で動作し、100% 無料・API キー不要です。LLM に接続できない場合でも、内蔵の<b>高速正規表現スニッフィングエンジンとローカル RFC ルール</b>が認証コードの抽出や代表的な宣伝メールの判定を行います。DeepSeek / OpenAI などに切り替えたい場合は <code>/setup</code> でいつでもキーを登録できます。
 </details>
 
 <details>

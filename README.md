@@ -74,10 +74,14 @@ Real screenshots from a running instance. All sensitive fields (email addresses,
 
 ## 🚀 Quick Start (3 Steps)
 
+**Prerequisites:**
+- A free Cloudflare account and a domain added to Cloudflare (Email Routing is enabled per domain — Step 3 turns it on for yours).
+- Node.js 22 or later and Git installed on your computer (the first `wrangler` command in Step 3 opens a browser to log in to Cloudflare).
+
 ### 1. Get Telegram Credentials
 - Message [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ copy `TELEGRAM_BOT_TOKEN`.
 - Message [@userinfobot](https://t.me/userinfobot) ➔ copy your user ID as `TELEGRAM_ADMIN_CHAT_ID`.
-- Run `openssl rand -hex 32` ➔ copy the output as `TELEGRAM_WEBHOOK_SECRET`.
+- Run `openssl rand -hex 32` ➔ copy the output as `TELEGRAM_WEBHOOK_SECRET` (optional but recommended — Windows users: run it in Git Bash).
 
 ### 2. Verify Cloudflare Destination Address
 - In Cloudflare Dashboard: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ Add and verify your personal email (e.g. `you@gmail.com`).
@@ -85,7 +89,7 @@ Real screenshots from a running instance. All sensitive fields (email addresses,
 ### 3. Deploy & Activate
 ```bash
 # Clone & install dependencies
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # Create KV and paste returned ID into wrangler.jsonc (kv_namespaces[0].id)
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **Activate Webhook**: Open `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` in browser (returns `{"ok":true}`; `<YOUR_SECRET>` must be exactly the `TELEGRAM_WEBHOOK_SECRET` from Step 1, and the Worker URL is shown in the `npm run deploy` output).
-- **Route Emails**: In Cloudflare **Email Routing** ➔ **Routing rules** ➔ Add Catch-all: **Send to Worker** ➔ Select `cf-mail2tg-aibot`.
-- **Finish on Mobile**: In Telegram, send `/setup` to Bot to bind your backup Gmail and LLM Key in 1 minute—no terminal required!
+- **Route Emails**: In Cloudflare Dashboard, select your domain ➔ **Email** ➔ **Email Routing** ➔ Enable it (the required MX records are added automatically) ➔ **Routing rules** ➔ Add Catch-all: **Send to Worker** ➔ Select `cf-mail2tg-aibot`.
+- **Finish on Mobile**: In Telegram, send `/setup` to Bot to bind your backup Gmail (it must be the destination address verified in Step 2) and LLM Key in 1 minute—no terminal required!
 
 #### 🤖 Optional: Continuous Deployment (Vibe Coding / GitHub Actions)
 If you fork or clone this repository for customized development (vibe coding) and want pushes to `main` to automatically deploy to Cloudflare:
 1. Rename [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) to `.github/workflows/deploy.yml`.
-2. In your GitHub repository: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ Add repository secret `CLOUDFLARE_API_TOKEN`.
+2. In your GitHub repository: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ Add repository secret `CLOUDFLARE_API_TOKEN` (to get one: Cloudflare Dashboard ➔ My Profile ➔ API Tokens ➔ Create Token using the “Edit Cloudflare Workers” template).
 3. Every push to `main` (or manual trigger in the Actions tab) will run automated tests and deploy to Cloudflare Workers automatically!
 *(Note: As an open template, automatic deployment is intentionally disabled by default to prevent failed CI checks before Cloudflare secrets are configured.)*
 
@@ -295,7 +299,7 @@ This is an automated security advisory. Certain notifications or poorly configur
 
 <details>
 <summary><b>Q: Can I use the bot without an LLM API Key?</b></summary>
-Yes! If <code>MINIMAX_API_KEY</code> is not provided, the gateway automatically falls back to its built-in <b>high-performance regex sniffing engine and local RFC rule library</b>, accurately detecting verification codes and common marketing emails at zero cost.
+Yes! No key is needed at all: the gateway runs on the pre-configured <b>Cloudflare Workers AI</b> by default — 100% free and zero API key. If the LLM is ever unreachable, the built-in <b>high-performance regex sniffing engine and local RFC rule library</b> still detect verification codes and common marketing emails at zero cost, and you can bind a DeepSeek / OpenAI / other provider key anytime via <code>/setup</code>.
 </details>
 
 <details>
