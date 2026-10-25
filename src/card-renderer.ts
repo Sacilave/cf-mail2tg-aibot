@@ -318,24 +318,46 @@ export function renderMasterDashboardHtml(options: RenderDashboardOptions): stri
     langName,
   } = options;
 
-  const keyStatus = keyConfigured ? '🟢 已就绪 (Ready)' : '⚪ 未绑定 (None)';
-  const aliasStatus = gmailAliasesEnabled ? '🟢 已开启 (+tag)' : '⚪ 已停用 (直转)';
-  const fwdDisplay = forwardEmail ? `<code>${escapeHtml(forwardEmail)}</code>` : '⚪ 纯TG模式 (未设置)';
+  const isEn = dict.langCode === 'en-US';
+
+  const engineLabel = dict.dashboard.statusEngineLabel || (isEn ? 'AI Engine' : 'AI 审信引擎');
+  const keyLabel = dict.dashboard.statusKeyLabel || (isEn ? 'API Key Status' : '密钥状态');
+  const keyStatus = keyConfigured
+    ? (dict.dashboard.statusKeyReady || (isEn ? '🟢 Ready' : '🟢 已就绪 (Ready)'))
+    : (dict.dashboard.statusKeyNone || (isEn ? '⚪ Not Set (None)' : '⚪ 未绑定 (None)'));
+
+  const forwardLabel = dict.dashboard.statusForwardLabel || (isEn ? 'Backup Forward' : '备份邮箱');
+  const forwardNone = dict.dashboard.statusForwardNone || (isEn ? '⚪ TG-Only Mode (Not Set)' : '⚪ 纯TG模式 (未设置)');
+  const fwdDisplay = forwardEmail ? `<code>${escapeHtml(forwardEmail)}</code>` : forwardNone;
+
+  const aliasLabel = dict.dashboard.statusAliasLabel || (isEn ? 'Gmail Aliases' : 'Gmail 别名');
+  const aliasStatus = gmailAliasesEnabled
+    ? (dict.dashboard.statusAliasOn || (isEn ? '🟢 Enabled (+tag)' : '🟢 已开启 (+tag)'))
+    : (dict.dashboard.statusAliasOff || (isEn ? '⚪ Disabled (Direct)' : '⚪ 已停用 (直转)'));
+
+  const rulesLabel = dict.dashboard.statusRulesLabel || (isEn ? 'Custom Rules' : '自定义规则');
+  const rulesUnit = dict.dashboard.statusRulesUnit !== undefined ? ` ${dict.dashboard.statusRulesUnit}` : (isEn ? ' rule(s)' : ' 条');
+
+  const keywordsLabel = dict.dashboard.statusKeywordsLabel || (isEn ? 'Spam Keywords' : '垃圾拦截词');
+  const keywordsUnit = dict.dashboard.statusKeywordsUnit !== undefined ? ` ${dict.dashboard.statusKeywordsUnit}` : (isEn ? ' keyword(s)' : ' 个');
+
+  const langLabel = dict.dashboard.statusLangLabel || (isEn ? 'Display Language' : '显示语言');
+  const tipText = dict.dashboard.tipTapButtons || (isEn ? '💡 Tap buttons below to enter corresponding control panels' : '💡 轻触下方按钮直接进入对应控制面板');
 
   return [
     dict.dashboard.title,
     `━━━━━━━━━━━━━━━━━━`,
     dict.dashboard.desc,
     ``,
-    `🤖 <b>AI 审信引擎:</b> <b>${escapeHtml(provider)}</b> (<code>${escapeHtml(model)}</code>)`,
-    `🔑 <b>密钥状态:</b> ${keyStatus}`,
-    `📬 <b>备份邮箱:</b> ${fwdDisplay}`,
-    `🏷️ <b>Gmail 别名:</b> ${aliasStatus}`,
-    `📂 <b>自定义规则:</b> <code>${customRulesCount}</code> 条`,
-    `🚫 <b>垃圾拦截词:</b> <code>${keywordsCount}</code> 个`,
-    `🌐 <b>显示语言:</b> <b>${escapeHtml(langName)}</b>`,
+    `🤖 <b>${escapeHtml(engineLabel)}:</b> <b>${escapeHtml(provider)}</b> (<code>${escapeHtml(model)}</code>)`,
+    `🔑 <b>${escapeHtml(keyLabel)}:</b> ${keyStatus}`,
+    `📬 <b>${escapeHtml(forwardLabel)}:</b> ${fwdDisplay}`,
+    `🏷️ <b>${escapeHtml(aliasLabel)}:</b> ${aliasStatus}`,
+    `📂 <b>${escapeHtml(rulesLabel)}:</b> <code>${customRulesCount}</code>${rulesUnit}`,
+    `🚫 <b>${escapeHtml(keywordsLabel)}:</b> <code>${keywordsCount}</code>${keywordsUnit}`,
+    `🌐 <b>${escapeHtml(langLabel)}:</b> <b>${escapeHtml(langName)}</b>`,
     `━━━━━━━━━━━━━━━━━━`,
-    `<i>💡 轻触下方按钮直接进入对应控制面板</i>`,
+    `<i>${tipText}</i>`,
   ].join('\n');
 }
 

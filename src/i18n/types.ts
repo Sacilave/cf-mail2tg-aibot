@@ -105,6 +105,21 @@ export interface TranslationDict {
     fwdTitle: string;
     toastUpdated: string;
     toastCancelled: string;
+    statusEngineLabel?: string;
+    statusKeyLabel?: string;
+    statusKeyReady?: string;
+    statusKeyNone?: string;
+    statusForwardLabel?: string;
+    statusForwardNone?: string;
+    statusAliasLabel?: string;
+    statusAliasOn?: string;
+    statusAliasOff?: string;
+    statusRulesLabel?: string;
+    statusRulesUnit?: string;
+    statusKeywordsLabel?: string;
+    statusKeywordsUnit?: string;
+    statusLangLabel?: string;
+    tipTapButtons?: string;
   };
 
   // /lang command

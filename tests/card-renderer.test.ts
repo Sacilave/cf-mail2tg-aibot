@@ -5,6 +5,7 @@ import {
   renderAttachmentRejectCard,
   renderEmailCardHtml,
   renderEmailCardPlainText,
+  renderMasterDashboardHtml,
 } from '../src/card-renderer';
 import { getTranslation } from '../src/i18n';
 
@@ -118,5 +119,63 @@ describe('Card Renderer - Presentation Layer Unit Tests', () => {
     expect(plain).toContain('store.com');
     expect(plain).toContain('Invoice #10023 Paid');
     expect(plain).toContain('invoice.pdf (120 KB)');
+  });
+
+  it('renderMasterDashboardHtml 应在英语下输出纯正英文，不夹杂中文且语言切换按钮为纯英文', () => {
+    // 1. 语言切换按钮名称在英语下不需要显示中文出来
+    expect(dictEn.dashboard.btnLang).toBe('🌐 Language');
+    expect(dictEn.dashboard.btnLang).not.toContain('语言');
+
+    // 2. 渲染 Settings 主页
+    const cardEn = renderMasterDashboardHtml({
+      dict: dictEn,
+      provider: 'minimax',
+      model: 'MiniMax-Text-01',
+      keyConfigured: true,
+      forwardEmail: 'test@example.com',
+      gmailAliasesEnabled: false,
+      customRulesCount: 0,
+      keywordsCount: 67,
+      langName: 'English',
+    });
+
+    // 验证核心英文字段已展示
+    expect(cardEn).toContain('AI Engine:');
+    expect(cardEn).toContain('API Key Status:');
+    expect(cardEn).toContain('🟢 Ready');
+    expect(cardEn).toContain('Backup Forward:');
+    expect(cardEn).toContain('Gmail Aliases:');
+    expect(cardEn).toContain('⚪ Disabled (Direct)');
+    expect(cardEn).toContain('Custom Rules:');
+    expect(cardEn).toContain('Spam Keywords:');
+    expect(cardEn).toContain('Display Language:');
+    expect(cardEn).toContain('Tap buttons below to enter control panels');
+
+    // 验证严格不包含中文硬编码残留
+    expect(cardEn).not.toContain('审信引擎');
+    expect(cardEn).not.toContain('密钥状态');
+    expect(cardEn).not.toContain('备份邮箱');
+    expect(cardEn).not.toContain('已就绪');
+    expect(cardEn).not.toContain('已停用');
+    expect(cardEn).not.toContain('自定义规则');
+    expect(cardEn).not.toContain('垃圾拦截词');
+    expect(cardEn).not.toContain('轻触下方按钮');
+
+    // 3. 验证中文模式下依然保持正常的中文展示
+    const cardZh = renderMasterDashboardHtml({
+      dict: dictZh,
+      provider: 'minimax',
+      model: 'MiniMax-Text-01',
+      keyConfigured: true,
+      forwardEmail: 'test@example.com',
+      gmailAliasesEnabled: false,
+      customRulesCount: 0,
+      keywordsCount: 67,
+      langName: '简体中文',
+    });
+    expect(cardZh).toContain('AI 审信引擎:');
+    expect(cardZh).toContain('密钥状态:');
+    expect(cardZh).toContain('🟢 已就绪 (Ready)');
+    expect(cardZh).toContain('备份邮箱:');
   });
 });
