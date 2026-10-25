@@ -340,7 +340,24 @@ export default {
     const baseForwardTarget = env?.FORWARD_TO_EMAIL?.trim() || '';
 
     // Endpoint helper: One-click setup for Webhook & official Menu button commands
-    if ((url.pathname === '/setup-webhook' || url.pathname === '/setup-commands') && botToken) {
+    if (url.pathname === '/setup-webhook' || url.pathname === '/setup-commands') {
+      if (!botToken) {
+        return new Response(
+          JSON.stringify(
+            {
+              ok: false,
+              error: 'Missing TELEGRAM_BOT_TOKEN. Please configure TELEGRAM_BOT_TOKEN in your Cloudflare Worker Settings -> Variables and Secrets first.',
+              hint: '请先在 Cloudflare 控制台的 Worker 设置 -> 变量和机密中配置 TELEGRAM_BOT_TOKEN',
+            },
+            null,
+            2
+          ),
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+          }
+        );
+      }
       if (webhookSecret) {
         const querySecret = url.searchParams.get('secret')?.trim();
         if (querySecret !== webhookSecret) {

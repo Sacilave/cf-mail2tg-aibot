@@ -9,9 +9,10 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--10の主要言語に対応した国際化--ワンタップ切替)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-完全無料--無料枠保証)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -28,7 +29,8 @@
 
 <p align="center">
   <a href="#-スクリーンショット">スクリーンショット</a> •
-  <a href="#-クイックスタート-3ステップ">クイックスタート</a> •
+  <a href="#-2分で完了するワンクリック高速デプロイ-zero-cli--web-ui">ワンクリックデプロイ</a> •
+  <a href="#-クイックスタート-3ステップ">CLI デプロイ</a> •
   <a href="#-なぜ-cf-mail2tg-aibot-なのか-比較表">比較表</a> •
   <a href="#️-システム構成">システム構成</a> •
   <a href="#-主な機能">主な機能</a> •
@@ -72,7 +74,46 @@ Cloudflare Workers のエッジコンピューティングと無料の Email Rou
 
 ---
 
-## 🚀 クイックスタート (3ステップ)
+## ⚡ 2分で完了するワンクリック高速デプロイ (Zero CLI / Web UI)
+
+> **💡 非エンジニア向け設計**：PC への Node.js や Git のインストール、ターミナルでのコマンド実行は一切不要！Cloudflare の公式 Web 画面からわずか 3 ステップで本番グレードのメールゲートウェイを構築できます。
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+  </a>
+</p>
+
+### ステップ 1: Telegram Bot の認証情報を取得 (1分)
+1. Telegram で [@BotFather](https://t.me/BotFather) を開き、`/newbot` を送信して案内に沿って Bot を作成し、発行された **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`) をコピーします；
+2. [@userinfobot](https://t.me/userinfobot) にメッセージを送り、ご自身の数値 ID (`TELEGRAM_ADMIN_CHAT_ID`) を取得します（管理者本人のみが Bot を操作できるように保護されます）。
+
+### ステップ 2: 上記ボタンをクリックして Web 上で一発デプロイ (30秒)
+1. 上部の **`[Deploy to Cloudflare Workers]`** ボタンをクリックします（または[ここをクリックして Web デプロイ画面を開く](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)）；
+2. Cloudflare アカウントにログインし、GitHub との連携を承認します；
+3. Cloudflare が自動的に専用 KV ストレージ（`MAIL_ROUTES_KV`）と初期設定を構成します。画面にステップ 1 で取得した認証情報を入力します：
+   - `TELEGRAM_BOT_TOKEN`: お使いの Bot Token
+   - `TELEGRAM_ADMIN_CHAT_ID`: お使いの Telegram 数値 Chat ID
+4. **Save and Deploy** をクリックし、約10秒待つだけでデプロイ完了！割り当てられた Worker の URL（例: `https://cf-mail2tg-aibot.xxx.workers.dev`）を控えます。
+
+### ステップ 3: ドメインの Email Routing で Worker をバインド (30秒)
+1. Cloudflare ダッシュボードで対象ドメインを選択し、**Email** ➔ **Email Routing** に進みます；
+2. 未有効化の場合は画面の指示に従って有効化をクリックします（必要な DNS MX レコードは全自動で追加されます）；
+3. **Routing rules** タブで **Add rule** をクリック（または Catch-all ルールを編集）：
+   - **Type**: **Catch-all rule** を選択；
+   - **Action**: **Send to Worker** を選択；
+   - **Destination**: デプロイした **`cf-mail2tg-aibot`** を選択して保存；
+4. **有効化とテスト**:
+   - ブラウザで `https://<WorkerのURL>/setup-webhook` に 1 回アクセスして Telegram Webhook を登録します；
+   - Telegram で作成した Bot に `/start` または `/setup` を送信すれば、スマホから直接バックアップ転送先メールや AI エンジンの初期設定が完了します！
+
+---
+
+> 💻 **開発者向けメモ**: CLI ターミナルでのデプロイやローカル開発・カスタマイズを行いたい場合は、下記の [CLI クイックスタート (3ステップ)](#-クイックスタート-3ステップ) を参照してください。
+
+---
+
+## 🚀 クイックスタート (3ステップ) [CLI デプロイ]
 
 **前提条件：**
 - 無料の Cloudflare アカウントと、Cloudflare に追加済みのドメイン（Email Routing はドメインごとに有効化します。ステップ 3 で設定）。

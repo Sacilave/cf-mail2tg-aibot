@@ -9,9 +9,10 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-6--10-mainstream-languages-i18n--instant-switching)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-zero-cost--free-quota-guarantee)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <b>English</b> •
@@ -28,7 +29,8 @@
 
 <p align="center">
   <a href="#-screenshots">Screenshots</a> •
-  <a href="#-quick-start-3-steps">Quick Start</a> •
+  <a href="#-2-minute-1-click-fast-deploy-zero-cli--web-ui">1-Click Deploy</a> •
+  <a href="#-quick-start-3-steps">CLI Deploy</a> •
   <a href="#-why-cf-mail2tg-aibot-comparison-matrix">Comparison Matrix</a> •
   <a href="#️-system-architecture">Architecture</a> •
   <a href="#-key-features">Key Features</a> •
@@ -72,7 +74,46 @@ Real screenshots from a running instance. All sensitive fields (email addresses,
 
 ---
 
-## 🚀 Quick Start (3 Steps)
+## ⚡ 2-Minute 1-Click Fast Deploy (Zero CLI / Web UI)
+
+> **💡 Designed for Non-Technical Users**: No need to install Node.js, Git, or touch the command line. Deploy your own production-ready mail-to-Telegram bot directly in your browser with 3 simple steps!
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+  </a>
+</p>
+
+### Step 1: Obtain Telegram Bot Credentials (1 min)
+1. Message [@BotFather](https://t.me/BotFather) on Telegram, send `/newbot`, follow the prompts to name your bot, and copy the **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`);
+2. Message [@userinfobot](https://t.me/userinfobot) to get your numeric ID (`TELEGRAM_ADMIN_CHAT_ID` — ensures only you can manage your bot).
+
+### Step 2: 1-Click Deploy via Cloudflare Web (30 sec)
+1. Click the **`[Deploy to Cloudflare Workers]`** button above (or [open web deploy directly](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot));
+2. Log in to your Cloudflare account and authorize GitHub access;
+3. Cloudflare will automatically provision a new KV storage (`MAIL_ROUTES_KV`) and set default variables. Fill in the credentials:
+   - `TELEGRAM_BOT_TOKEN`: Your Bot Token from Step 1
+   - `TELEGRAM_ADMIN_CHAT_ID`: Your Telegram numeric Chat ID from Step 1
+4. Click **Save and Deploy**. In ~10 seconds, your worker will be live! Note the assigned worker URL (e.g., `https://cf-mail2tg-aibot.xxx.workers.dev`).
+
+### Step 3: Route Emails to Worker in Cloudflare (30 sec)
+1. In Cloudflare Dashboard, navigate to your domain ➔ **Email** ➔ **Email Routing**;
+2. If not already enabled, click to enable Email Routing (Cloudflare will automatically configure the required DNS MX records);
+3. Go to **Routing rules** ➔ click **Add rule** (or configure the Catch-all rule):
+   - **Type**: Select **Catch-all rule**;
+   - **Action**: Select **Send to Worker**;
+   - **Destination**: Choose **`cf-mail2tg-aibot`** and click Save;
+4. **Activate & Test**:
+   - Open `https://<YOUR_WORKER_URL>/setup-webhook` in your browser once to register the Telegram Webhook;
+   - Open Telegram, send `/start` or `/setup` to your bot, and finish setting up backup forwarding and AI options directly from your phone!
+
+---
+
+> 💻 **Developer Note**: If you prefer deploying via terminal CLI or wish to contribute code, refer to [CLI Deployment (3 Steps)](#-quick-start-3-steps) below.
+
+---
+
+## 🚀 Quick Start (3 Steps) [CLI Deployment]
 
 **Prerequisites:**
 - A free Cloudflare account and a domain added to Cloudflare (Email Routing is enabled per domain — Step 3 turns it on for yours).

@@ -12,9 +12,9 @@
   },
   "kv_namespaces": [
     {
-      "binding": "MAIL_ROUTES_KV",
-      // Execute `npx wrangler kv namespace create MAIL_ROUTES_KV` and replace with your ID
-      "id": "YOUR_KV_NAMESPACE_ID"
+      "binding": "MAIL_ROUTES_KV"
+      // Cloudflare 1-Click Web Deploy automatically creates and binds this KV namespace.
+      // CLI manual deployment: execute `npx wrangler kv namespace create MAIL_ROUTES_KV` and optionally append "id": "<YOUR_ID>".
     }
   ],
   "vars": {
@@ -27,10 +27,10 @@
     // Size Cap: Reject emails larger than 5MB (SMTP 552) to prevent memory & quota exhaustion
     "MAX_EMAIL_SIZE_BYTES": "5242880",
     
-    // LLM Model Config (Default: MiniMax-Text-01)
-    "MINIMAX_MODEL": "MiniMax-Text-01",
+    // Default AI Provider: 'workers-ai' (Free, Zero-Key, Native Edge AI)
+    "AI_PROVIDER": "workers-ai",
     
     // Default system language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR' | 'pt-BR' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE'
-    "DEFAULT_LANGUAGE": "en-US"
+    "DEFAULT_LANGUAGE": "zh-CN"
   }
 }

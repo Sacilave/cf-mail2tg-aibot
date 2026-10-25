@@ -9,9 +9,10 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--internacionalización-i18n-en-10-idiomas-y-cambio-inmediato)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-coste-cero-y-garantía-de-cuota-gratuita)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -28,7 +29,8 @@
 
 <p align="center">
   <a href="#-capturas-de-pantalla">Capturas</a> •
-  <a href="#-inicio-rápido-en-3-pasos">Inicio Rápido</a> •
+  <a href="#-despliegue-rápido-en-1-clic-en-2-minutos-zero-cli--interfaz-web">Despliegue en 1 clic</a> •
+  <a href="#-inicio-rápido-en-3-pasos">Despliegue CLI</a> •
   <a href="#-por-qué-elegir-cf-mail2tg-aibot-matriz-comparativa">Comparativa</a> •
   <a href="#️-arquitectura-del-sistema">Arquitectura</a> •
   <a href="#-características-principales">Características</a> •
@@ -72,7 +74,46 @@ Todas las capturas siguientes proceden de una instancia real en funcionamiento. 
 
 ---
 
-## 🚀 Inicio Rápido (en 3 Pasos)
+## ⚡ Despliegue Rápido en 1 Clic en 2 Minutos (Zero CLI / Interfaz Web)
+
+> **💡 Diseñado para Usuarios No Técnicos**: No requiere instalar Node.js, Git ni usar la terminal. ¡Despliega tu propio bot de correo a Telegram directamente desde el navegador en 3 sencillos pasos!
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+  </a>
+</p>
+
+### Paso 1: Obtener credenciales de Telegram (1 min)
+1. Habla con [@BotFather](https://t.me/BotFather) en Telegram, envía `/newbot`, ponle nombre a tu bot y copia el **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`);
+2. Habla con [@userinfobot](https://t.me/userinfobot) para obtener tu ID numérico (`TELEGRAM_ADMIN_CHAT_ID` — garantiza que solo tú administres el bot).
+
+### Paso 2: Despliegue web en un clic en Cloudflare (30 seg)
+1. Haz clic en el botón superior **`[Deploy to Cloudflare Workers]`** (o [abre el despliegue web directo](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot));
+2. Inicia sesión en tu cuenta de Cloudflare y autoriza el acceso a GitHub;
+3. Cloudflare creará automáticamente una base de datos KV (`MAIL_ROUTES_KV`) y las variables predeterminadas. Rellena los datos:
+   - `TELEGRAM_BOT_TOKEN`: El token de tu bot obtenido en el Paso 1
+   - `TELEGRAM_ADMIN_CHAT_ID`: Tu ID numérico de chat de Telegram
+4. Haz clic en **Save and Deploy**. ¡En ~10 segundos tu Worker estará en línea! Copia la URL asignada a tu Worker (ej. `https://cf-mail2tg-aibot.xxx.workers.dev`).
+
+### Paso 3: Enrutar correos hacia el Worker (30 seg)
+1. En el panel de Cloudflare, ve a tu dominio ➔ **Email** ➔ **Email Routing**;
+2. Si no está activado, actívalo con un clic (Cloudflare añadirá automáticamente los registros DNS MX necesarios);
+3. Ve a la pestaña **Routing rules** ➔ haz clic en **Add rule** (o edita la regla Catch-all):
+   - **Tipo**: Selecciona **Catch-all rule**;
+   - **Acción**: Selecciona **Send to Worker**;
+   - **Destino**: Selecciona **`cf-mail2tg-aibot`** y guarda;
+4. **Activar y Probar**:
+   - Visita `https://<TU_URL_DE_WORKER>/setup-webhook` en tu navegador una vez para registrar el webhook de Telegram;
+   - En Telegram, envía `/start` o `/setup` a tu bot y configura el buzón de respaldo y el modelo de IA cómodamente desde tu móvil.
+
+---
+
+> 💻 **Nota para Desarrolladores**: Si prefieres desplegar mediante la terminal CLI o deseas modificar el código, consulta [Inicio Rápido CLI (en 3 Pasos)](#-inicio-rápido-en-3-pasos).
+
+---
+
+## 🚀 Inicio Rápido (en 3 Pasos) [Despliegue CLI]
 
 **Requisitos previos:**
 - Una cuenta gratuita de Cloudflare y un dominio añadido a Cloudflare (el enrutamiento de correo se activa por dominio; el Paso 3 lo habilita para el tuyo).

@@ -9,9 +9,10 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5--интернационализация-i18n-на-10-языках-и-мгновенное-переключение)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-нулевая-стоимость-и-гарантия-бесплатного-тарифа)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -28,7 +29,8 @@
 
 <p align="center">
   <a href="#-скриншоты">Скриншоты</a> •
-  <a href="#-быстрый-старт-за-3-шага">Быстрый старт</a> •
+  <a href="#-быстрое-развертывание-в-1-клик-за-2-минуты-без-cli--через-веб-интерфейс">Развертывание в 1 клик</a> •
+  <a href="#-быстрый-старт-за-3-шага">CLI-развертывание</a> •
   <a href="#-почему-cf-mail2tg-aibot-таблица-сравнения">Сравнение</a> •
   <a href="#️-архитектура-системы">Архитектура</a> •
   <a href="#-ключевые-возможности">Возможности</a> •
@@ -72,7 +74,46 @@
 
 ---
 
-## 🚀 Быстрый старт (за 3 шага)
+## ⚡ Быстрое развертывание в 1 клик за 2 минуты (Без CLI / Через веб-интерфейс)
+
+> **💡 Специально для обычных пользователей**: Никакой установки Node.js, Git или ввода команд в терминале! Разверните собственный почтовый шлюз в Telegram прямо в браузере за 3 простых шага.
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+  </a>
+</p>
+
+### Шаг 1: Получение токена и Chat ID в Telegram (1 мин)
+1. Напишите боту [@BotFather](https://t.me/BotFather) в Telegram команду `/newbot`, укажите имя бота и скопируйте выданный **`HTTP API Token`** (`TELEGRAM_BOT_TOKEN`);
+2. Напишите боту [@userinfobot](https://t.me/userinfobot), чтобы узнать свой цифровой ID (`TELEGRAM_ADMIN_CHAT_ID` — только вы сможете управлять ботом).
+
+### Шаг 2: Развертывание в веб-интерфейсе Cloudflare (30 сек)
+1. Нажмите кнопку **`[Deploy to Cloudflare Workers]`** выше (или [откройте страницу развертывания](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot));
+2. Войдите в свой аккаунт Cloudflare и разрешите доступ к GitHub;
+3. Cloudflare автоматически создаст базу данных KV (`MAIL_ROUTES_KV`) и переменные окружения. Заполните поля:
+   - `TELEGRAM_BOT_TOKEN`: токен вашего бота из Шага 1
+   - `TELEGRAM_ADMIN_CHAT_ID`: ваш цифровой Telegram Chat ID из Шага 1
+4. Нажмите **Save and Deploy**. Примерно через 10 секунд ваш Worker будет запущен! Скопируйте назначенный URL воркера (например, `https://cf-mail2tg-aibot.xxx.workers.dev`).
+
+### Шаг 3: Настройка перенаправления почты на Worker (30 сек)
+1. В панели управления Cloudflare перейдите в ваш домен ➔ **Email** ➔ **Email Routing**;
+2. Если маршрутизация почты еще не включена, включите ее в один клик (все нужные записи DNS MX добавятся автоматически);
+3. Перейдите во вкладку **Routing rules** ➔ нажмите **Add rule** (или настройте Catch-all правило):
+   - **Type**: выберите **Catch-all rule**;
+   - **Action**: выберите **Send to Worker**;
+   - **Destination**: выберите **`cf-mail2tg-aibot`** и сохраните;
+4. **Активация и проверка**:
+   - Откройте в браузере `https://<URL_ВАШЕГО_WORKER>/setup-webhook`, чтобы зарегистрировать вебхук Telegram;
+   - Отправьте вашему боту в Telegram команду `/start` или `/setup` и завершите настройку резервного ящика и параметров ИИ прямо со смартфона!
+
+---
+
+> 💻 **Для разработчиков**: Если вы предпочитаете установку через терминал или хотите дорабатывать исходный код, см. [Быстрый старт через CLI (за 3 шага)](#-быстрый-старт-за-3-шага).
+
+---
+
+## 🚀 Быстрый старт (за 3 шага) [CLI-развертывание]
 
 **Что нужно заранее:**
 - Бесплатный аккаунт Cloudflare и домен, добавленный в Cloudflare (Email Routing включается отдельно для каждого домена; шаг 3 активирует его для вашего).

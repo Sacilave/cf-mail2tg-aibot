@@ -10,8 +10,8 @@
 #    Settings ➔ Secrets and variables ➔ Actions ➔ New repository secret
 #    Add secret name: `CLOUDFLARE_API_TOKEN`
 #    (Get token from: Cloudflare Dashboard ➔ My Profile ➔ API Tokens ➔ Create "Edit Cloudflare Workers" Token)
-# 3. Ensure your `wrangler.jsonc` has your actual KV ID (`MAIL_ROUTES_KV`).
-#    确保 `wrangler.jsonc` 中的 KV ID 已填入真实的 ID。
+# 3. Ensure your `wrangler.jsonc` has your actual KV ID (`MAIL_ROUTES_KV`) if managing bindings manually.
+#    确保 `wrangler.jsonc` 中的 KV 已正确绑定（若手动管理 KV，可填入真实的 ID）。
 # 4. Push to `main` branch or click "Run workflow" in GitHub Actions tab to deploy!
 #    推送到 `main` 分支或在 GitHub Actions 页面手动点击 "Run workflow" 即可部署！
 # ==============================================================================

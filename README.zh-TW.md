@@ -9,9 +9,10 @@
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![Telegram Bot API](https://img.shields.io/badge/Telegram-Bot%20API-2CA5E0?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Tests-147%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-148%20Passed-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![i18n](https://img.shields.io/badge/i18n-10%20Languages-blueviolet)](#-5-🌐-10-種主流語言國際化-i18n)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmo%20Free-brightgreen)](#-零成本與免費配額保證)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)
 
 <p align="center">
   <a href="./README.md">English</a> •
@@ -28,7 +29,8 @@
 
 <p align="center">
   <a href="#-截圖演示">截圖演示</a> •
-  <a href="#-極速上手-3-步搞定">快速開始</a> •
+  <a href="#-2分鐘極速一鍵部署-zero-cli--網頁即點即用">極速一鍵部署</a> •
+  <a href="#-極速上手-3-步搞定">CLI 部署</a> •
   <a href="#-核心特性">核心特性</a> •
   <a href="#-為什麼選擇-cf-mail2tg-aibot-對比矩陣">方案對比</a> •
   <a href="#-系統架構">系統架構</a> •
@@ -72,7 +74,46 @@
 
 ---
 
-## 🚀 極速上手 (3 步搞定)
+## ⚡ 2分鐘極速一鍵部署 (Zero CLI / 網頁即點即用)
+
+> **💡 專為非技術新手設計**：全程無需在電腦安裝 Node.js、Git 或執行任何終端機指令，直接在 Cloudflare 官方網頁後台點選即可完成全部部署！
+
+<p align="center">
+  <a href="https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot">
+    <img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers" />
+  </a>
+</p>
+
+### 步驟 1：取得 Telegram 機器人憑據 (1 分鐘)
+1. 在 Telegram 中私訊 [@BotFather](https://t.me/BotFather)，發送 `/newbot`，依提示為機器人命名，複製產生的 **`HTTP API Token`**（即 `TELEGRAM_BOT_TOKEN`）；
+2. 私訊 [@userinfobot](https://t.me/userinfobot)，取得你個人的純數字 ID（即 `TELEGRAM_ADMIN_CHAT_ID`，僅你本人有權控制機器人）。
+
+### 步驟 2：點擊上方按鈕，網頁一鍵授權部署 (30 秒)
+1. 點擊上方的 **`[Deploy to Cloudflare Workers]`** 按鈕（或[點擊此處直達網頁部署](https://deploy.workers.cloudflare.com/?url=https://github.com/Sacilave/cf-mail2tg-aibot)）；
+2. 登入你的 Cloudflare 帳號，授權關聯 GitHub；
+3. Cloudflare 會全自動建立全新的 KV 資料庫（`MAIL_ROUTES_KV`）及預設環境變數。在部署頁面填入剛才取得的兩個憑據：
+   - `TELEGRAM_BOT_TOKEN`：你的 Bot Token
+   - `TELEGRAM_ADMIN_CHAT_ID`：你的 Telegram 數字 Chat ID
+4. 點擊 **Save and Deploy (儲存並部署)**，等待約 10 秒即部署上線！部署完成後，記下系統分配的 Worker 訪問網址（例如 `https://cf-mail2tg-aibot.xxx.workers.dev`）。
+
+### 步驟 3：在網域名稱開啟郵件路由，綁定 Worker (30 秒)
+1. 在 Cloudflare 控制台左側進入你的網域名稱 ➔ **Email (電子郵件)** ➔ **Email Routing (電子郵件路由)**；
+2. 如果先前未啟用，按網頁提示一鍵點擊開啟（Cloudflare 會全自動配置好所需的 DNS MX 記錄）；
+3. 在 **Routing rules (路由規則)** 標籤頁中，點擊 **Add rule (新增規則)**（或編輯 Catch-all 規則）：
+   - **Type (類型)**：選擇 **Catch-all rule (全部接收規則)**；
+   - **Action (操作)**：選擇 **Send to Worker (發送到 Worker)**；
+   - **Destination (目標)**：選中剛剛部署的 **`cf-mail2tg-aibot`** 並儲存；
+4. **啟動並測試**：
+   - 瀏覽器訪問一次 `https://<你的Worker網址>/setup-webhook` 啟動 Telegram Webhook；
+   - 在 Telegram 中對你的 Bot 發送 `/start` 或 `/setup`，即可直接在手機端完成備份信箱與 AI 引擎配置！
+
+---
+
+> 💻 **開發者提示**：如果你習慣使用終端機 CLI 或希望進行二次開發除錯，請參考下方的 [傳統 CLI 3步部署](#-極速上手-3-步搞定)。
+
+---
+
+## 🚀 極速上手 (3 步搞定) [CLI 部署]
 
 **準備工作：**
 - 一個免費的 Cloudflare 帳號，以及一個已添加到 Cloudflare 的域名（Email Routing 按域名啟用，第 3 步會為你的域名開啟）；
