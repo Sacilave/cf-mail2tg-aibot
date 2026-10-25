@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-screenshots">Screenshots</a> •
   <a href="#-schnellstart-in-3-schritten">Schnellstart</a> •
   <a href="#-warum-cf-mail2tg-aibot-vergleichsmatrix">Vergleichsmatrix</a> •
   <a href="#️-systemarchitektur">Architektur</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** ist ein selbst gehostetes E-Mail-Gateway, das speziell für **Indie Hacker, internationale Teams und Webmaster mit mehreren Domains** entwickelt wurde.
 
 Durch den Einsatz von Cloudflare Workers Edge Computing und dem kostenlosen Cloudflare Email Routing **analysiert das Gateway eingehende E-Mails tiefgehend, filtert Spam, führt semantische Intent-Klassifizierungen mittels LLM durch und liefert ansprechende Benachrichtigungskarten in Sekundenschnelle an Telegram**. Gleichzeitig stellt die verlustfreie Dual-Track-Architektur (Zero-Drop) sicher, dass die Original-E-Mails zuverlässig an Ihr persönliches Gmail-Postfach weitergeleitet werden. Sparen Sie teure monatliche Gebühren für geschäftliche E-Mail-Postfächer (6–18 $ pro Benutzer/Monat) über mehrere Domains hinweg!
+
+---
+
+## 📸 Screenshots
+
+Alle folgenden Screenshots stammen von einer tatsächlich laufenden Instanz. Sensible Felder (E-Mail-Adressen, Bestätigungscodes, Rechnungsnummern) wurden durch Platzhalter ersetzt.
+
+### 🎛️ Bot-Bedienfeld
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="Gateway-Startseite" width="100%"><br><sub>Gateway-Startseite — Online-Status, KI-Engine und Backup-Weiterleitung auf einen Blick</sub> | <img src="docs/screenshots/settings.png" alt="Einstellungen" width="100%"><br><sub>Einstellungen — KI-Anbieter, Routing-Personas, Anti-Spam und Sprache in einem Panel</sub> |
+
+### 📬 E-Mail-Benachrichtigungen in Aktion
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="Bestätigungscodes" width="100%"><br><sub>Bestätigungscodes — automatisch extrahiert und oben angepinnt, zum Kopieren antippen</sub> | <img src="docs/screenshots/email-security-alert.png" alt="Sicherheitswarnung" width="100%"><br><sub>Sicherheitswarnung — Phishing mit SPF/DKIM-Fehler markiert</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="Rechnung" width="100%"><br><sub>Rechnung — Rechnungen werden samt Anhang-Details analysiert</sub> | <img src="docs/screenshots/email-business.png" alt="Geschäftsanfragen" width="100%"><br><sub>Geschäftsanfragen — per KI-Triage als Priorität eingestuft</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="Marketing" width="49%"><br>
+  <sub>Marketing — Werbung wird per Spam-Regel automatisch stummgeschaltet</sub>
+</p>
 
 ---
 

@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-スクリーンショット">スクリーンショット</a> •
   <a href="#-クイックスタート-3ステップ">クイックスタート</a> •
   <a href="#-なぜ-cf-mail2tg-aibot-なのか-比較表">比較表</a> •
   <a href="#️-システム構成">システム構成</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** は、**個人開発者（Indie Hackers）、グローバル展開チーム、複数ドメインの管理者**のために設計されたセルフホスト型メールゲートウェイです。
 
 Cloudflare Workers のエッジコンピューティングと無料の Email Routing を活用し、独自ドメイン宛てのメールを**ディープパース、LLM による意図判定・スパム除去を行った上で Telegram Bot へ数秒でリッチカード通知**します。同時に、Zero-Drop のデュアルトラック設計により、未圧縮の元メールを個人用 Gmail エイリアスへ無損失で自動転送します。月額 6〜18 ドルの高額なビジネスメール契約から解放され、快適な即時通知ライフを実現します。
+
+---
+
+## 📸 スクリーンショット
+
+以下はすべて実際に稼働中のインスタンスのスクリーンショットです。メールアドレス、認証コード、請求書番号などの機微な項目はすべてプレースホルダーに置き換えています。
+
+### 🎛️ Bot コントロールパネル
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="ゲートウェイ ホーム" width="100%"><br><sub>ゲートウェイ ホーム — オンライン状態、AI エンジン、バックアップ転送を一目で確認</sub> | <img src="docs/screenshots/settings.png" alt="設定" width="100%"><br><sub>設定 — AI プロバイダー、ルーティング、スパム対策、言語を一つのパネルで管理</sub> |
+
+### 📬 メール通知の実例
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="認証コード" width="100%"><br><sub>認証コード — 自動抽出して最上部に固定、タップでコピー</sub> | <img src="docs/screenshots/email-security-alert.png" alt="セキュリティ アラート" width="100%"><br><sub>セキュリティ アラート — SPF/DKIM 失敗でフィッシングを警告</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="請求" width="100%"><br><sub>請求 — 請求書を解析し、添付ファイル情報も表示</sub> | <img src="docs/screenshots/email-business.png" alt="ビジネス問い合わせ" width="100%"><br><sub>ビジネス問い合わせ — AI トリアージで優先処理に分類</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="マーケティング" width="49%"><br>
+  <sub>マーケティング — プロモーションはスパムルールで自動ミュート</sub>
+</p>
 
 ---
 

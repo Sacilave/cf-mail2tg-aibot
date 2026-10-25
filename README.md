@@ -27,6 +27,7 @@
 </p>
 
 <p align="center">
+  <a href="#-screenshots">Screenshots</a> •
   <a href="#-quick-start-3-steps">Quick Start</a> •
   <a href="#-why-cf-mail2tg-aibot-comparison-matrix">Comparison Matrix</a> •
   <a href="#️-system-architecture">Architecture</a> •
@@ -44,6 +45,30 @@
 **`cf-mail2tg-aibot`** is a self-hosted email gateway engineered specifically for **Indie Hackers, global development teams, and multi-domain webmasters**.
 
 Leveraging Cloudflare Workers edge computing and free Email Routing, it **deep-parses incoming emails, filters spam/noise, performs LLM semantic triage, and delivers beautifully formatted cards to Telegram in seconds**. Simultaneously, its Zero-Drop dual-track pipeline forwards uncompressed raw emails directly to your personal backup mailbox (e.g., Gmail aliases). Say goodbye to expensive business email subscriptions ($6–$18/user/mo across multiple domains) and embrace a lightweight, cost-free, real-time email receiving workflow.
+
+---
+
+## 📸 Screenshots
+
+Real screenshots from a running instance. All sensitive fields (email addresses, verification codes, invoice numbers) are replaced with placeholders.
+
+### 🎛️ Bot Control Panel
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/gateway-home.png" alt="Gateway home" width="100%"><br><sub>Gateway home — online status, AI engine and backup forwarding at a glance</sub> | <img src="docs/screenshots/settings.png" alt="Settings" width="100%"><br><sub>Settings — AI providers, routing personas, anti-spam and language in one panel</sub> |
+
+### 📬 Email Notifications in Action
+
+| | |
+| :---: | :---: |
+| <img src="docs/screenshots/email-verification.png" alt="Verification codes" width="100%"><br><sub>Verification codes — extracted and pinned to the top, tap to copy</sub> | <img src="docs/screenshots/email-security-alert.png" alt="Security alerts" width="100%"><br><sub>Security alerts — phishing flagged with SPF/DKIM failure</sub> |
+| <img src="docs/screenshots/email-billing.png" alt="Billing" width="100%"><br><sub>Billing — invoices parsed with attachment details</sub> | <img src="docs/screenshots/email-business.png" alt="Business inquiries" width="100%"><br><sub>Business inquiries — prioritized by AI triage</sub> |
+
+<p align="center">
+  <img src="docs/screenshots/email-marketing-muted.png" alt="Marketing" width="49%"><br>
+  <sub>Marketing — promotions auto-muted by spam rules</sub>
+</p>
 
 ---
 
