@@ -74,10 +74,14 @@ Todas las capturas siguientes proceden de una instancia real en funcionamiento. 
 
 ## 🚀 Inicio Rápido (en 3 Pasos)
 
+**Requisitos previos:**
+- Una cuenta gratuita de Cloudflare y un dominio añadido a Cloudflare (el enrutamiento de correo se activa por dominio; el Paso 3 lo habilita para el tuyo).
+- Node.js 22 o posterior y Git instalados en tu equipo (el primer comando wrangler del Paso 3 abrirá el navegador para iniciar sesión en Cloudflare).
+
 ### 1. Obtener Credenciales de Telegram
 - Abre [@BotFather](https://t.me/BotFather) ➔ `/newbot` ➔ copia el `TELEGRAM_BOT_TOKEN`.
 - Abre [@userinfobot](https://t.me/userinfobot) ➔ copia tu ID numérico como `TELEGRAM_ADMIN_CHAT_ID`.
-- Ejecuta `openssl rand -hex 32` ➔ copia el resultado como `TELEGRAM_WEBHOOK_SECRET`.
+- Ejecuta `openssl rand -hex 32` ➔ copia el resultado como `TELEGRAM_WEBHOOK_SECRET` (opcional pero recomendado; en Windows, ejecútalo en Git Bash).
 
 ### 2. Verificar Buzón de Destino en Cloudflare
 - En Cloudflare Dashboard: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ Añade y verifica tu buzón personal (p. ej. `you@gmail.com`).
@@ -85,7 +89,7 @@ Todas las capturas siguientes proceden de una instancia real en funcionamiento. 
 ### 3. Despliegue y Activación
 ```bash
 # Clonar repositorio e instalar dependencias
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # Crear namespace KV y copiar el ID resultante en wrangler.jsonc (kv_namespaces[0].id)
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **Activar Webhook**: Abre en el navegador `https://<tu-worker>.<subdominio>.workers.dev/setup-webhook?secret=<TU_SECRETO>` (verás `{"ok":true}`; `<TU_SECRETO>` debe ser exactamente el `TELEGRAM_WEBHOOK_SECRET` del Paso 1, y la URL del Worker aparece en la salida de `npm run deploy`).
-- **Enrutar Correos**: En Cloudflare **Email Routing** ➔ **Routing rules** ➔ Añade regla Catch-all: **Send to Worker** ➔ Selecciona `cf-mail2tg-aibot`.
-- **Configuración Final desde el Móvil**: Envía `/setup` al bot en Telegram para enlazar tu buzón de respaldo y clave LLM en 1 minuto. ¡Sin tocar el terminal!
+- **Enrutar Correos**: En Cloudflare Dashboard selecciona tu dominio ➔ **Email** ➔ **Email Routing** ➔ actívalo (los registros MX necesarios se añaden automáticamente) ➔ **Routing rules** ➔ Añade regla Catch-all: **Send to Worker** ➔ Selecciona `cf-mail2tg-aibot`.
+- **Configuración Final desde el Móvil**: Envía `/setup` al bot en Telegram para enlazar tu buzón de respaldo (debe ser el verificado en el Paso 2) y tu clave LLM en 1 minuto. ¡Sin tocar el terminal!
 
 #### 🤖 Opcional: Despliegue Continuo (Vibe Coding / GitHub Actions)
 Si haces un fork de este repositorio para desarrollo personalizado (vibe coding) y deseas que los cambios en `main` se desplieguen automáticamente en Cloudflare:
 1. Renombra [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example) a `.github/workflows/deploy.yml`.
-2. En tu repositorio de GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ Añade el secreto `CLOUDFLARE_API_TOKEN`.
+2. En tu repositorio de GitHub: **Settings** ➔ **Secrets and variables** ➔ **Actions** ➔ Añade el secreto `CLOUDFLARE_API_TOKEN` (para obtenerlo: Cloudflare Dashboard ➔ My Profile ➔ API Tokens ➔ crea un token con la plantilla «Edit Cloudflare Workers»).
 3. ¡Listo! Cada push a `main` ejecutará las pruebas automáticas y desplegará en Cloudflare Workers.
 *(Nota: Al ser una plantilla pública, el despliegue automático está desactivado por defecto para evitar fallos de CI antes de configurar el secreto.)*
 
@@ -237,7 +241,7 @@ Es una advertencia de seguridad rutinaria. Indica que el servidor emisor no supe
 
 <details>
 <summary><b>Q: ¿Se puede utilizar el bot sin una clave de API LLM?</b></summary>
-¡Sí! Si no configuras <code>MINIMAX_API_KEY</code>, el sistema activa su <b>motor de expresiones regulares y su biblioteca de reglas RFC locales</b>, detectando códigos y correos promocionales habituales sin ningún coste.
+¡Sí! No necesitas ninguna clave: el sistema funciona por defecto con <b>Cloudflare Workers AI</b> preconfigurado, 100 % gratuito y sin clave de API. Si el LLM no responde en algún momento, el <b>motor de expresiones regulares y la biblioteca de reglas RFC locales</b> siguen detectando códigos y correos promocionales sin coste, y puedes vincular una clave de DeepSeek / OpenAI cuando quieras con <code>/setup</code>.
 </details>
 
 <details>

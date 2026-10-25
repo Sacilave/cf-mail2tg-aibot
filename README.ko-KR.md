@@ -74,10 +74,14 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
 
 ## 🚀 빠른 시작 (3단계)
 
+**사전 준비:**
+- 무료 Cloudflare 계정과 Cloudflare에 추가된 도메인 (Email Routing은 도메인별로 활성화되며, 3단계에서 설정합니다).
+- 컴퓨터에 Node.js 22 이상과 Git 설치 (3단계의 첫 wrangler 명령 실행 시 브라우저가 열려 Cloudflare 로그인을 요청합니다).
+
 ### 1. Telegram 자격 증명 발급
 - [@BotFather](https://t.me/BotFather)에게 대화 시작 ➔ `/newbot` 입력 ➔ 발급된 `TELEGRAM_BOT_TOKEN` 복사.
 - [@userinfobot](https://t.me/userinfobot)에게 대화 시작 ➔ 사용자 ID 숫자를 복사하여 `TELEGRAM_ADMIN_CHAT_ID`로 보관.
-- 터미널에서 `openssl rand -hex 32` 실행 ➔ 출력값을 복사하여 `TELEGRAM_WEBHOOK_SECRET`로 보관.
+- 터미널에서 `openssl rand -hex 32` 실행 ➔ 출력값을 복사하여 `TELEGRAM_WEBHOOK_SECRET`로 보관 (선택 사항이지만 권장; Windows에서는 Git Bash에서 실행).
 
 ### 2. Cloudflare 목적지 주소 인증
 - Cloudflare 대시보드 접속: **Email** ➔ **Email Routing** ➔ **Destination addresses** ➔ 개인 이메일(예: `you@gmail.com`) 추가 후 인증 메일 확인.
@@ -85,7 +89,7 @@ Cloudflare Workers의 에지 컴퓨팅과 무료 Email Routing을 활용하여, 
 ### 3. 배포 및 활성화
 ```bash
 # 저장소 클론 및 패키지 설치
-git clone https://github.com/your-username/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
+git clone https://github.com/Sacilave/cf-mail2tg-aibot.git && cd cf-mail2tg-aibot
 npm install
 
 # KV 네임스페이스 생성 후 출력된 ID를 wrangler.jsonc의 kv_namespaces[0].id에 입력
@@ -101,13 +105,13 @@ npm run deploy
 ```
 
 - **웹훅 등록 활성화**: 브라우저에서 `https://<your-worker>.<subdomain>.workers.dev/setup-webhook?secret=<YOUR_SECRET>` 접속 (`{"ok":true}` 반환 확인. `<YOUR_SECRET>`은 1단계의 `TELEGRAM_WEBHOOK_SECRET`와 정확히 일치해야 하며, Worker URL은 `npm run deploy` 출력에서 확인).
-- **이메일 라우팅 연결**: Cloudflare **Email Routing** ➔ **Routing rules** ➔ Catch-all 규칙 추가: **Send to Worker** ➔ `cf-mail2tg-aibot` 선택.
-- **모바일에서 간편 마무리**: Telegram에서 봇에게 `/setup`을 전송하여 백업 Gmail과 LLM 키를 1분 만에 등록하세요 (터미널 재접속 불필요!).
+- **이메일 라우팅 연결**: Cloudflare 대시보드에서 내 도메인 선택 ➔ **Email** ➔ **Email Routing** ➔ 활성화 (필요한 MX 레코드가 자동 추가됩니다) ➔ **Routing rules** ➔ Catch-all 규칙 추가: **Send to Worker** ➔ `cf-mail2tg-aibot` 선택.
+- **모바일에서 간편 마무리**: Telegram에서 봇에게 `/setup`을 전송하여 백업 Gmail(2단계에서 인증한 주소여야 합니다)과 LLM 키를 1분 만에 등록하세요 (터미널 재접속 불필요!).
 
 #### 🤖 선택 사항: 지속적 배포 (CI/CD · GitHub Actions)
 직접 포크하거나 클론하여 커스텀 개발을 진행할 때, `main` 브랜치 푸시 시 자동 배포를 원하시면:
 1. [`.github/workflows/deploy.yml.example`](.github/workflows/deploy.yml.example)을 `.github/workflows/deploy.yml`로 변경합니다.
-2. GitHub 저장소의 **Settings** ➔ **Secrets and variables** ➔ **Actions**에 `CLOUDFLARE_API_TOKEN` 시크릿을 추가합니다.
+2. GitHub 저장소의 **Settings** ➔ **Secrets and variables** ➔ **Actions**에 `CLOUDFLARE_API_TOKEN` 시크릿을 추가합니다 (발급 방법: Cloudflare 대시보드 ➔ My Profile ➔ API Tokens ➔ 'Edit Cloudflare Workers' 템플릿으로 토큰 생성).
 3. 이후 `main`에 코드를 푸시할 때마다 자동 테스트가 실행되고 Cloudflare Workers로 자동 배포됩니다.
 
 ---
