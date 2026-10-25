@@ -97,7 +97,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     expect(res.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('添加规则命令说明');
+    expect(body.text).toContain('添加规则说明');
     expect(body.text).toContain('add &lt;标签&gt; &lt;前缀&gt;');
   });
 
@@ -185,7 +185,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     const res = await worker.fetch(req, env);
     expect(res.status).toBe(200);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('当前生效的邮件路由规则库');
+    expect(body.text).toContain('当前分流规则库');
     expect(body.text).toContain('test1');
   });
 
@@ -294,7 +294,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     expect(res.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('营销推广拦截关键词管理');
+    expect(body.text).toContain('当前垃圾拦截词库');
     expect(body.text).toContain('<pre><code>');
     expect(body.text).toContain('unsubscribe');
     expect(body.reply_markup?.force_reply).toBe(true);
@@ -332,7 +332,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
           from: { id: 987654321 },
           text: `VIP特惠\n黑五抢购\n取消订阅`,
           reply_to_message: {
-            text: `📋 【营销推广拦截关键词管理】\n当前生效关键词共 25 个...`,
+            text: `📋 【当前垃圾拦截词库】\n当前生效关键词共 25 个...`,
           },
         },
       }),
@@ -397,7 +397,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     expect(saved).toEqual(['退订', 'unsubscribe', 'appranker', 'extensionbooster']);
   });
 
-  it('发送 /config 应返回包含脱敏密钥、备份邮箱与状态的诊断卡片', async () => {
+  it('发送 /config 或 /status 应返回包含脱敏密钥、备份邮箱与状态的诊断卡片', async () => {
     store.set('config:sys:minimax_api_key', 'minimax-custom-secret-key-123456');
 
     const req = new Request('https://worker.dev/', {
@@ -406,7 +406,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       body: JSON.stringify({
         message: {
           from: { id: 987654321 },
-          text: 'config',
+          text: '/status',
         },
       }),
     });
@@ -416,7 +416,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('设置与密钥状态');
+    expect(body.text).toContain('系统运行状态');
     expect(body.text).toContain('大模型审信 (LLM)');
     expect(body.text).toContain('min***3456'); // 验证脱敏掩码
     expect(body.text).not.toContain('minimax-custom-secret-key-123456'); // 绝不能泄露明文！
@@ -553,7 +553,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(store.get('session:setup_step')).toBe('1');
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-      expect(body.text).toContain('交互式配置向导 (1/2)');
+      expect(body.text).toContain('快速配置向导 (1/2)');
       expect(body.text).toContain('配置备份转发邮箱');
       expect(body.text).toContain('skip');
     });
@@ -623,7 +623,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(body.text).toContain('备份邮箱绑定成功');
       expect(body.text).toContain('my-inbox@gmail.com');
-      expect(body.text).toContain('交互式配置向导 (2/2)');
+      expect(body.text).toContain('快速配置向导 (2/2)');
       expect(body.text).toContain('配置 MiniMax 大模型 API Key');
     });
 
@@ -648,7 +648,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(body.text).toContain('已跳过备份邮箱配置');
-      expect(body.text).toContain('交互式配置向导 (2/2)');
+      expect(body.text).toContain('快速配置向导 (2/2)');
     });
 
     it('向导第 2 步: 输入 MiniMax API Key 应存入 KV、清除会话并返回完成总结卡片', async () => {
@@ -674,7 +674,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(body.text).toContain('大模型 API Key 绑定成功');
       expect(body.text).toContain('sk-***-999');
-      expect(body.text).toContain('极速配置流程已全部完成');
+      expect(body.text).toContain('配置完成');
       expect(body.text).toContain('primary@example.com');
     });
 
@@ -699,7 +699,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(body.text).toContain('已跳过大模型 API Key 配置');
-      expect(body.text).toContain('配置流程已顺利完成');
+      expect(body.text).toContain('配置完成');
     });
 
     it('向导进行中发送 /cancel 应立即清除会话并返回退出确认', async () => {
@@ -745,7 +745,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(store.has('session:setup_step')).toBe(false);
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-      expect(body.text).toContain('设置与密钥状态');
+      expect(body.text).toContain('系统运行状态');
     });
   });
 
@@ -857,7 +857,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(res.status).toBe(200);
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-      expect(body.text).toContain('请选择大模型 API 厂商');
+      expect(body.text).toContain('选择 AI 厂商');
       expect(body.text).toContain('1️⃣ <b>Cloudflare Workers AI</b>');
       expect(body.text).toContain('2️⃣ <b>DeepSeek (深度求索)</b>');
       expect(body.text).toContain('3️⃣ <b>Groq (极速推理)</b>');
@@ -943,7 +943,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(res.status).toBe(200);
 
       const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-      expect(body.text).toContain('请选择 DeepSeek (深度求索) 运行模型');
+      expect(body.text).toContain('选择 DeepSeek (深度求索) 模型');
       expect(body.text).toContain('deepseek-chat');
       expect(body.text).toContain('deepseek-reasoner');
 
@@ -1002,14 +1002,14 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
   });
 
   describe('Telegram Dashboard & Button Navigation - 交互中枢与内联按键导航系统测试', () => {
-    it('/menu 指令应展示主控制面板及 2x3 快捷导航按键', async () => {
+    it('/menu 与 /settings 指令应展示主控制面板及 2x3 快捷导航按键', async () => {
       const req = new Request('https://worker.dev/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: {
             from: { id: 987654321 },
-            text: '/menu',
+            text: '/settings',
           },
         }),
       });
@@ -1081,7 +1081,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(res.status).toBe(200);
 
       const editCall = JSON.parse(fetchMock.mock.calls[1][1].body);
-      expect(editCall.text).toContain('AI 审信与意图引擎设置');
+      expect(editCall.text).toContain('AI 审信模型');
       const allButtons = editCall.reply_markup.inline_keyboard.flat().map((b: any) => b.callback_data);
       expect(allButtons).toContain('p:workers-ai');
       expect(allButtons).toContain('p:deepseek');
@@ -1439,7 +1439,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       expect(savedKws).toContain('unsubscribe');
     });
 
-    it('自定义业务分类标签管理完整链路 (ta:start -> 输入标签 -> m:tags -> td:删除)', async () => {
+    it('自定义分类标签管理完整链路 (ta:start -> 输入标签 -> m:tags -> td:删除)', async () => {
       // 1. 点击 ta:start 发起添加自定义标签
       const req1 = new Request('https://worker.dev/', {
         method: 'POST',

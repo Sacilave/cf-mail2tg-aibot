@@ -426,7 +426,7 @@ describe('Attachment Armor & Quota Hardening - 附件防御与额度保护测试
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('超大容量熔断拦截');
+    expect(body.text).toContain('超大邮件熔断拦截');
 
     vi.unstubAllGlobals();
   });
@@ -494,7 +494,7 @@ describe('Attachment Armor & Quota Hardening - 附件防御与额度保护测试
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.text).toContain('附件安全策略拦截');
+    expect(body.text).toContain('危险附件策略拦截');
     expect(body.text).toContain('document.pdf');
 
     vi.unstubAllGlobals();

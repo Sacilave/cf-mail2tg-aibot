@@ -24,7 +24,7 @@ describe('Card Renderer - Presentation Layer Unit Tests', () => {
       maxSizeBytes: 5 * 1024 * 1024,
     });
 
-    expect(card).toContain('超大容量熔断拦截');
+    expect(card).toContain('超大邮件熔断拦截');
     expect(card).toContain('10 MB');
     expect(card).toContain('5 MB');
     expect(card).toContain('example.com');
@@ -61,7 +61,7 @@ describe('Card Renderer - Presentation Layer Unit Tests', () => {
       detectedAttachments: ['trojan.exe', 'payload.bat'],
     });
 
-    expect(card).toContain('附件安全策略拦截');
+    expect(card).toContain('危险附件策略拦截');
     expect(card).toContain('trojan.exe, payload.bat');
     expect(card).toContain('SMTP 550 拒信');
   });

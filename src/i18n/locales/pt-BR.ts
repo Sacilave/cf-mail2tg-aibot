@@ -6,24 +6,26 @@ export const ptBR: TranslationDict = {
   flag: '🇧🇷',
 
   commandDesc: {
-    start: 'Ver resumo do status do gateway',
+    start: 'Ver visão geral do sistema',
+    settings: 'Abrir painel de configurações',
+    status: 'Ver status e credenciais',
     menu: 'Abrir painel de configurações',
-    guide: 'Ver guia do usuário detalhado',
-    setup: 'Iniciar assistente de configuração rápida',
-    lang: 'Alternar idioma de exibição',
-    config: 'Ver status do sistema e credenciais',
-    provider: 'Alternar provedor de modelos de IA',
-    model: 'Alternar versão do modelo de IA',
-    routes: 'Gerenciar regras de rota e tags personalizadas',
-    keywords: 'Ver lista de palavras-chave de spam',
-    addkeywords: 'Adicionar palavras-chave de spam',
-    resetkeywords: 'Restaurar palavras-chave para o padrão',
-    add: 'Adicionar regra de rota (add <tag> <prefixo> [encam])',
-    del: 'Excluir regra de rota (del <prefixo>)',
-    setkey: 'Definir chave ou e-mail (setkey <tipo> <val>)',
-    resetkey: 'Redefinir chave dinâmica ou e-mail',
-    cancel: 'Cancelar sessão ou assistente ativo',
-    help: 'Exibir manual e ajuda de comandos',
+    config: 'Ver status e credenciais',
+    guide: 'Ver guia de utilização',
+    setup: 'Iniciar assistente de configuração',
+    lang: 'Alterar idioma (Switch language)',
+    provider: 'Alterar provedor de IA',
+    model: 'Alterar versão do modelo',
+    routes: 'Gerenciar regras de roteamento',
+    keywords: 'Ver palavras-chave anti-spam',
+    addkeywords: 'Adicionar palavras-chave anti-spam',
+    resetkeywords: 'Redefinir palavras-chave',
+    add: 'Adicionar regra de roteamento',
+    del: 'Remover regra de roteamento',
+    setkey: 'Atualizar chave ou e-mail de backup',
+    resetkey: 'Redefinir chave ou e-mail de backup',
+    cancel: 'Cancelar sessão ativa',
+    help: 'Ver ajuda dos comandos',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const ptBR: TranslationDict = {
     btnResetForward: '🗑️ Limpar E-mail de Encaminhamento',
     btnSetup: '⚡ Assistente de Configuração',
     btnCancel: '❌ Cancelar',
-    routesTitle: '📂 <b>【 Regras de Roteamento por Persona 】</b>',
+    routesTitle: '📂 <b>【 Regras de Roteamento 】</b>',
     routesSelectTagPrompt: 'Selecione uma <b>tag de categoria de negócio</b> para esta nova rota (toque no botão):',
     routesInputPrefixPrompt: (tag: string) =>
       `Tag de Categoria Selecionada: <b>【${tag}】</b>\n\n` +
@@ -62,17 +64,17 @@ export const ptBR: TranslationDict = {
       `• Tag de Persona: <b>${tag}</b>\n` +
       `• Destino: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ Regra de rota para o prefixo <code>${prefix}</code> excluída com sucesso!`,
-    tagsTitle: '🏷️ <b>【 Gerenciador de Tags de Categoria 】</b>',
+    tagsTitle: '🏷️ <b>【 Tags de Categoria 】</b>',
     tagsPrompt: 'Gerencie suas tags de categoria de negócio personalizadas aqui. Elas podem ser atribuídas a regras de roteamento:',
     tagsEmpty: 'Nenhuma tag personalizada criada ainda. As categorias padrão do sistema estão em uso (Pessoal, Suporte, Comercial, Produto, Geral).',
     tagsAddSuccess: (tag: string) => `✅ Tag personalizada adicionada com sucesso: <b>【${tag}】</b>!`,
     tagsDeleteSuccess: (tag: string) => `✅ Tag personalizada excluída: <b>【${tag}】</b>!`,
     tagsAddPrompt:
-      '🏷️ <b>【 Adicionar Tag Personalizada 】</b>\n' +
+      '🏷️ <b>【 Nova Tag de Categoria 】</b>\n' +
       '━━━━━━━━━━━━━━━━━━\n' +
       'Responda com o nome da tag que deseja criar (ex: <code>Finanças</code>, <code>Monitoramento</code>, <code>Dev</code>, máx. 10 caracteres):',
     tagsInvalid: '❌ Nome de tag inválido ou duplicado (deve ter entre 1 e 10 caracteres, sem espaços).',
-    kwTitle: '🚫 <b>【 Filtro de Palavras-chave de Marketing e Spam 】</b>',
+    kwTitle: '🚫 <b>【 Filtro de Spam 】</b>',
     fwdTitle: '📬 <b>【 Caixa de Encaminhamento e Backup 】</b>',
     toastUpdated: 'Configurações atualizadas!',
     toastCancelled: 'Operação cancelada',
@@ -208,7 +210,7 @@ export const ptBR: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 Status de Configurações e Credenciais 】</b>',
+    title: '📊 <b>【 Status e Diagnóstico 】</b>',
     llmTitle: '🤖 <b>Classificação Inteligente de E-mails (IA):</b>',
     llmProvider: (provider: string) => `  • Provedor de IA: <b>${provider}</b>`,
     llmReady: (source: string) => `  • Status de Vínculo: ✅ Pronto ${source}`,

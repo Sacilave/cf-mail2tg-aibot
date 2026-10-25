@@ -6,24 +6,26 @@ export const zhTW: TranslationDict = {
   flag: '🇭🇰',
 
   commandDesc: {
-    start: '查看運作狀態總覽',
+    start: '查看運行狀態總覽',
+    settings: '開啟設定面板',
+    status: '查看運行狀態與金鑰詳情',
     menu: '開啟設定面板',
+    config: '查看運行狀態與金鑰詳情',
     guide: '查看詳細使用指南',
-    setup: '啟動設定精靈 (分步引導)',
+    setup: '啟動配置精靈 (分步引導)',
     lang: '切換顯示語言 (Switch language)',
-    config: '查看運作狀態與金鑰詳情',
     provider: '切換大模型廠商',
     model: '切換運行模型版本',
-    routes: '管理分流路由與自訂標籤',
-    keywords: '查看行銷攔截詞庫',
-    addkeywords: '追加行銷攔截詞',
-    resetkeywords: '重設行銷攔截詞庫',
+    routes: '管理分流路由與自定義標籤',
+    keywords: '查看行銷攔截關鍵字庫',
+    addkeywords: '追加行銷攔截關鍵字',
+    resetkeywords: '重設行銷攔截關鍵字庫',
     add: '新增分流規則 (add 標籤 前綴 [目標])',
     del: '刪除分流規則 (del 前綴)',
-    setkey: '更新金鑰或備份信箱 (setkey <類型> <值>)',
-    resetkey: '重設動態金鑰或備份信箱',
+    setkey: '更新金鑰或備份郵箱 (setkey <類型> <值>)',
+    resetkey: '重設動態金鑰或備份郵箱',
     cancel: '取消當前會話或精靈',
-    help: '查看指令幫助手冊',
+    help: '查看指令說明手冊',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const zhTW: TranslationDict = {
     btnResetForward: '🗑️ 清除備份信箱',
     btnSetup: '⚡ 設定精靈',
     btnCancel: '❌ 取消',
-    routesTitle: '📂 <b>【 業務畫像分流規則管理 】</b>',
+    routesTitle: '📂 <b>【 郵件分流規則 】</b>',
     routesSelectTagPrompt: '請為新規則選擇<b>業務分類標籤</b>（輕觸按鈕選擇）：',
     routesInputPrefixPrompt: (tag: string) =>
       `已選擇分類標籤：<b>【${tag}】</b>\n\n` +
@@ -62,7 +64,7 @@ export const zhTW: TranslationDict = {
       `• 業務畫像: <b>${tag}</b>\n` +
       `• 遞送目標: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ 已成功刪除前綴為 <code>${prefix}</code> 的分流規則！`,
-    tagsTitle: '🏷️ <b>【 業務分類標籤管理 】</b>',
+    tagsTitle: '🏷️ <b>【 分類標籤管理 】</b>',
     tagsPrompt: '在此管理您的自訂業務分類標籤。這些標籤可在新增前綴分流規則時使用：',
     tagsEmpty: '暫無自訂標籤，目前使用系統預設分類（個人、客服、商務、產品、通用）。',
     tagsAddSuccess: (tag: string) => `✅ 成功新增自訂標籤: <b>【${tag}】</b>！`,
@@ -72,14 +74,14 @@ export const zhTW: TranslationDict = {
       '━━━━━━━━━━━━━━━━━━\n' +
       '請直接回覆您想要建立的業務標籤名稱（例如：<code>財務</code>、<code>監控</code>、<code>內部</code>，10字以內）：',
     tagsInvalid: '❌ 標籤名稱無效或已存在（必須為1-10個字元且不含空格）。',
-    kwTitle: '🚫 <b>【 行銷推廣與垃圾攔截關鍵字庫 】</b>',
+    kwTitle: '🚫 <b>【 垃圾攔截關鍵字庫 】</b>',
     fwdTitle: '📬 <b>【 備份信箱與轉發設定 】</b>',
     toastUpdated: '已更新設定！',
     toastCancelled: '已取消目前操作',
   },
 
   providerCommand: {
-    title: '🏢 <b>【 請選擇大模型 API 廠商 】</b>',
+    title: '🏢 <b>【 選擇 AI 廠商 】</b>',
     current: (provider: string, model: string) => `目前廠商: <b>${provider}</b> (模型: <code>${model}</code>)`,
     prompt: '請直接回覆對應序號進行切換（5分鐘內有效）：',
     success: (provider: string, model: string, note: string) =>
@@ -205,7 +207,7 @@ export const zhTW: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 設定與金鑰狀態 】</b>',
+    title: '📊 <b>【 系統運行狀態 】</b>',
     llmTitle: '🤖 <b>大模型審信 (LLM):</b>',
     llmReady: (source: string) => `  • 綁定狀態: ✅ 已就緒 ${source}`,
     llmNotConfigured: '  • 綁定狀態: ⚪ 未配置 (目前使用本機正則特徵嗅探)',
@@ -238,7 +240,7 @@ export const zhTW: TranslationDict = {
   },
 
   setkeyCommand: {
-    helpTitle: '💡 <b>【熱更新金鑰/配置說明】</b>',
+    helpTitle: '💡 <b>【 金鑰設定說明 】</b>',
     helpUsage: '<b>格式:</b> <code>/setkey &lt;類型&gt; &lt;值&gt;</code>',
     helpMinimax: '• <b>更新大模型金鑰:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
     helpForward: '• <b>更新備份信箱:</b>\n  <code>/setkey forward your-inbox@gmail.com</code>',
@@ -259,7 +261,7 @@ export const zhTW: TranslationDict = {
   },
 
   resetkeyCommand: {
-    helpTitle: '💡 <b>【重設金鑰指令說明】</b>',
+    helpTitle: '💡 <b>【 金鑰重設說明 】</b>',
     helpUsage: '<b>格式:</b> <code>/resetkey &lt;minimax|forward&gt;</code>',
     helpDesc: '刪除 KV 中的動態覆蓋項，恢復使用環境變數中的初始預設值。',
     kvError: '❌ <b>系統錯誤:</b> 未綁定 MAIL_ROUTES_KV 資料庫。',
@@ -270,7 +272,7 @@ export const zhTW: TranslationDict = {
   },
 
   keywordsCommand: {
-    title: '📋 <b>【行銷推廣攔截關鍵字管理】</b>',
+    title: '📋 <b>【 目前垃圾攔截關鍵字庫 】</b>',
     countDesc: (count: number) => `目前生效關鍵字共 <b>${count}</b> 個。`,
     instructions:
       '💡 <b>修改方式（複製修改後【直接回覆本則訊息】）：</b>\n' +
@@ -288,7 +290,7 @@ export const zhTW: TranslationDict = {
       `<code>${preview}${moreCount}</code>\n\n` +
       `💡 <i>後續命中上述任一關鍵字或 RFC 退訂標頭的入站郵件，將自動靜音推播並歸檔。</i>`,
     updateError: '❌ <b>更新失敗:</b> 儲存至資料庫時出現異常。',
-    addHelpTitle: '💡 <b>【增量新增關鍵字說明】</b>',
+    addHelpTitle: '💡 <b>【 新增關鍵字說明 】</b>',
     addHelpUsage: '<b>格式:</b> <code>/addkeywords 關鍵字1\n關鍵字2</code>',
     addHelpDesc: '系統將自動去重並安全合併至現有詞庫，<b>絕不會覆蓋原有的關鍵字</b>。',
     successAppend: (addedCount: number, totalCount: number, preview: string) =>
@@ -307,12 +309,12 @@ export const zhTW: TranslationDict = {
   },
 
   routesCommand: {
-    title: '📋 <b>【 目前生效的郵件路由規則庫 】</b>',
+    title: '📋 <b>【 目前分流規則庫 】</b>',
     presetBaselineTitle: '🔹 <b>系統預設基準畫像:</b>',
     fallbackGeneric: '• <i>(其餘未匹配地址)</i> ➔ 🏷️ <b>通用</b>',
     customRulesTitle: '🔸 <b>動態自訂規則 (KV 儲存):</b>',
     noCustomRules: '<i>(暫無自訂規則，可使用 add 個人 xxx 快速新增)</i>',
-    addHelpTitle: '💡 <b>【新增規則命令說明】</b>',
+    addHelpTitle: '💡 <b>【 新增規則說明 】</b>',
     addHelpUsage:
       '<b>格式:</b> <code>add &lt;標籤&gt; &lt;前綴&gt; [轉發信箱]</code>\n\n' +
       '• <b>標籤限定:</b> <code>個人</code>、<code>通用</code>、<code>免費產品</code>、<code>付費產品</code>、<code>商業支援</code>\n' +
@@ -360,7 +362,7 @@ export const zhTW: TranslationDict = {
 
   setupCommand: {
     startWizardText:
-      `🚀 <b>【 cf-mail2tg-aibot 互動式配置精靈 (1/2) 】</b>\n` +
+      `🚀 <b>【 快速配置精靈 (1/2) · 選擇 AI 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `歡迎使用極速配置精靈！本精靈將分 2 步帶您完成核心憑證綁定。\n` +
       `💡 <i>輸入 <code>skip</code> 可跳過目前步驟，隨時發送 <code>/cancel</code> 可退出精靈。</i>\n\n` +
@@ -375,7 +377,7 @@ export const zhTW: TranslationDict = {
     skipStep1Text:
       `⏭️ <b>已跳過備份信箱配置。</b>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot 互動式配置精靈 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置精靈 (2/2) · 備份郵箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用於對來信進行大模型智慧意圖審信（驗證碼、帳單、行銷、告警等）與驗證碼自動提取。\n` +
@@ -390,14 +392,14 @@ export const zhTW: TranslationDict = {
       `✅ <b>備份信箱綁定成功！</b>\n` +
       `已儲存目標地址: <code>${email}</code>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot 互動式配置精靈 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置精靈 (2/2) · 備份郵箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用於對來信進行大模型智慧意圖審信（驗證碼、帳單、行銷、告警等）與驗證碼自動提取。\n` +
       `💡 <i>若暫未獲取，輸入 <code>skip</code> 可跳過，系統將自動使用高效本機正規表示式進行保底處理。</i>\n\n` +
       `👉 <b>請直接回覆您的 MiniMax API Key</b>，或發送 <code>skip</code> 跳過:`,
     step2Card:
-      `🚀 <b>【 cf-mail2tg-aibot 互動式配置精靈 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置精靈 (2/2) · 備份郵箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用於對來信進行大模型智慧意圖審信（驗證碼、帳單、行銷、告警等）與驗證碼自動提取。\n` +
@@ -405,7 +407,7 @@ export const zhTW: TranslationDict = {
       `👉 <b>請直接回覆您的 MiniMax API Key</b>，或發送 <code>skip</code> 跳過:`,
     skipStep2Text: (fwdText: string, mmxText: string) =>
       `⏭️ <b>已跳過大模型 API Key 配置。</b>\n\n` +
-      `🎉 <b>【 恭喜！配置流程已順利完成 】</b>\n` +
+      `🎉 <b>【 配置完成 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `系統核心組件狀態:\n` +
       `• 備份轉發信箱: ${fwdText}\n` +
@@ -419,7 +421,7 @@ export const zhTW: TranslationDict = {
     successStep2Text: (maskedKey: string, fwdText: string) =>
       `✅ <b>大模型 API Key 綁定成功！</b>\n` +
       `已儲存至 KV，脫敏預覽: <code>${maskedKey}</code>\n\n` +
-      `🎉 <b>【 恭喜！極速配置流程已全部完成 】</b>\n` +
+      `🎉 <b>【 配置完成 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `您的 cf-mail2tg-aibot 郵件閘道已全面就緒！\n` +
       `• 備份轉發信箱: ${fwdText}\n` +

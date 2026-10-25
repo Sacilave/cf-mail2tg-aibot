@@ -186,11 +186,11 @@ export function getCommandsPayload(
   const payload: { commands: Array<{ command: string; description: string }>; language_code?: string } = {
     commands: [
       { command: 'start', description: dict.commandDesc.start },
-      { command: 'menu', description: dict.commandDesc.menu },
+      { command: 'settings', description: dict.commandDesc.settings || dict.commandDesc.menu || '' },
+      { command: 'status', description: dict.commandDesc.status || dict.commandDesc.config || '' },
       { command: 'guide', description: dict.commandDesc.guide },
       { command: 'setup', description: dict.commandDesc.setup },
       { command: 'lang', description: dict.commandDesc.lang },
-      { command: 'config', description: dict.commandDesc.config },
       { command: 'provider', description: dict.commandDesc.provider },
       { command: 'model', description: dict.commandDesc.model },
       { command: 'routes', description: dict.commandDesc.routes },

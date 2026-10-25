@@ -6,24 +6,26 @@ export const enUS: TranslationDict = {
   flag: '🇺🇸',
 
   commandDesc: {
-    start: 'View gateway status overview',
-    menu: 'Open Settings dashboard',
-    guide: 'View detailed user guide',
-    setup: 'Launch quick setup wizard',
-    lang: 'Switch display language',
-    config: 'View system status & credentials',
+    start: 'View runtime overview',
+    settings: 'Open settings dashboard',
+    status: 'View system readiness & credentials',
+    menu: 'Open settings dashboard',
+    config: 'View system readiness & credentials',
+    guide: 'View comprehensive user manual',
+    setup: 'Launch setup wizard (guided)',
+    lang: 'Switch language / 切换语言',
     provider: 'Switch AI model provider',
-    model: 'Switch AI model version',
-    routes: 'Manage routing rules & custom tags',
-    keywords: 'View spam filter keyword list',
+    model: 'Switch running model version',
+    routes: 'Manage email routing & tags',
+    keywords: 'Inspect spam filter keywords',
     addkeywords: 'Append spam filter keywords',
-    resetkeywords: 'Reset spam keywords to baseline',
-    add: 'Add route rule (add <tag> <prefix> [fwd])',
-    del: 'Delete route rule (del <prefix>)',
-    setkey: 'Set secret key or email (setkey <type> <val>)',
-    resetkey: 'Reset dynamic secret key or email',
+    resetkeywords: 'Reset spam filter keywords',
+    add: 'Add routing rule (add <tag> <prefix> [forward])',
+    del: 'Delete routing rule (del <prefix>)',
+    setkey: 'Update API key or forwarding email',
+    resetkey: 'Reset dynamic key or forwarding email',
     cancel: 'Cancel active session or wizard',
-    help: 'Display command manual & help',
+    help: 'View command reference manual',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const enUS: TranslationDict = {
     btnResetForward: '🗑️ Clear Forward Email',
     btnSetup: '⚡ Setup Wizard',
     btnCancel: '❌ Cancel',
-    routesTitle: '📂 <b>【 Persona Routing Rules 】</b>',
+    routesTitle: '📂 <b>【 Email Routing Rules 】</b>',
     routesSelectTagPrompt: 'Select a <b>business category tag</b> for this new route (tap button):',
     routesInputPrefixPrompt: (tag: string) =>
       `Selected Category Tag: <b>【${tag}】</b>\n\n` +
@@ -62,17 +64,17 @@ export const enUS: TranslationDict = {
       `• Persona Tag: <b>${tag}</b>\n` +
       `• Destination: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ Routing rule for prefix <code>${prefix}</code> deleted successfully!`,
-    tagsTitle: '🏷️ <b>【 Business Category Tag Manager 】</b>',
+    tagsTitle: '🏷️ <b>【 Category Tags 】</b>',
     tagsPrompt: 'Manage your custom business category tags here. These tags can be assigned to routing rules:',
     tagsEmpty: 'No custom tags yet. System default categories are currently in use (Personal, Support, Business, Product, Generic).',
     tagsAddSuccess: (tag: string) => `✅ Custom tag added successfully: <b>【${tag}】</b>!`,
     tagsDeleteSuccess: (tag: string) => `✅ Custom tag deleted: <b>【${tag}】</b>!`,
     tagsAddPrompt:
-      '🏷️ <b>【 Add Custom Tag 】</b>\n' +
+      '🏷️ <b>【 New Category Tag 】</b>\n' +
       '━━━━━━━━━━━━━━━━━━\n' +
       'Please reply with the tag name you want to create (e.g. <code>Finance</code>, <code>Monitoring</code>, <code>Dev</code>, max 10 chars):',
     tagsInvalid: '❌ Invalid or duplicate tag name (must be 1-10 characters without spaces).',
-    kwTitle: '🚫 <b>【 Marketing & Spam Keyword Filter 】</b>',
+    kwTitle: '🚫 <b>【 Spam Keyword Filter 】</b>',
     fwdTitle: '📬 <b>【 Forwarding & Backup Inbox 】</b>',
     toastUpdated: 'Settings updated!',
     toastCancelled: 'Operation cancelled',
@@ -109,7 +111,7 @@ export const enUS: TranslationDict = {
   },
 
   modelCommand: {
-    title: (provider: string) => `🧠 <b>【 Select Model for ${provider} 】</b>`,
+    title: (provider: string) => `🧠 <b>【 Select ${provider} Model 】</b>`,
     current: (model: string) => `Current Model: <code>${model}</code>`,
     prompt: 'Reply with a number or enter a custom model name (valid for 5 minutes):',
     success: (model: string) =>
@@ -223,7 +225,7 @@ export const enUS: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 Settings & Credentials Status 】</b>',
+    title: '📊 <b>【 System Status & Readiness 】</b>',
     llmTitle: '🤖 <b>LLM Email Classification (AI):</b>',
     llmProvider: (provider: string) => `  • AI Provider: <b>${provider}</b>`,
     llmReady: (source: string) => `  • Binding Status: ✅ Ready ${source}`,
@@ -334,7 +336,7 @@ export const enUS: TranslationDict = {
   },
 
   routesCommand: {
-    title: '📋 <b>【 Active Email Routing Rules 】</b>',
+    title: '📋 <b>【 Active Routing Rules 】</b>',
     presetBaselineTitle: '🔹 <b>System Preset Baseline Personas:</b>',
     fallbackGeneric: '• <i>(Unmatched addresses)</i> ➔ 🏷️ <b>General</b>',
     customRulesTitle: '🔸 <b>Dynamic Custom Rules (KV Storage):</b>',
@@ -387,7 +389,7 @@ export const enUS: TranslationDict = {
 
   setupCommand: {
     startWizardText:
-      `🚀 <b>【 cf-mail2tg-aibot Setup Wizard (1/2) 】</b>\n` +
+      `🚀 <b>【 Setup Wizard (1/2) · Select AI 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `Welcome to the rapid setup wizard! We will bind core credentials in 2 steps.\n` +
       `💡 <i>Type <code>skip</code> to bypass current step, or send <code>/cancel</code> anytime to exit.</i>\n\n` +
@@ -402,7 +404,7 @@ export const enUS: TranslationDict = {
     skipStep1Text:
       `⏭️ <b>Skipped backup forward email configuration.</b>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot Setup Wizard (2/2) 】</b>\n` +
+      `🚀 <b>【 Setup Wizard (2/2) · Backup Email 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>Step 2: Configure MiniMax LLM API Key</b>\n` +
       `Used for AI email triage (verification codes, bills, marketing, alerts) and code extraction.\n` +
@@ -417,14 +419,14 @@ export const enUS: TranslationDict = {
       `✅ <b>Backup Forward Email Bound Successfully!</b>\n` +
       `Saved target address: <code>${email}</code>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot Setup Wizard (2/2) 】</b>\n` +
+      `🚀 <b>【 Setup Wizard (2/2) · Backup Email 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>Step 2: Configure MiniMax LLM API Key</b>\n` +
       `Used for AI email triage (verification codes, bills, marketing, alerts) and code extraction.\n` +
       `💡 <i>If not available yet, type <code>skip</code> to fallback to fast local regex pattern sniffing.</i>\n\n` +
       `👉 <b>Please reply directly with your MiniMax API Key</b>, or send <code>skip</code>:`,
     step2Card:
-      `🚀 <b>【 cf-mail2tg-aibot Setup Wizard (2/2) 】</b>\n` +
+      `🚀 <b>【 Setup Wizard (2/2) · Backup Email 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>Step 2: Configure MiniMax LLM API Key</b>\n` +
       `Used for AI email triage (verification codes, bills, marketing, alerts) and code extraction.\n` +

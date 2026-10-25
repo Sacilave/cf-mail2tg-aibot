@@ -6,24 +6,26 @@ export const deDE: TranslationDict = {
   flag: '🇩🇪',
 
   commandDesc: {
-    start: 'Statusübersicht anzeigen',
+    start: 'Betriebsstatus anzeigen',
+    settings: 'Einstellungen öffnen',
+    status: 'Systemstatus und Schlüssel prüfen',
     menu: 'Einstellungen öffnen',
-    guide: 'Ausführliche Anleitung',
+    config: 'Systemstatus und Schlüssel prüfen',
+    guide: 'Benutzerhandbuch anzeigen',
     setup: 'Einrichtungsassistent starten',
-    lang: 'Sprache wechseln (Switch language)',
-    config: 'Systemstatus & Schlüsseldetails',
+    lang: 'Sprache ändern (Switch language)',
     provider: 'KI-Anbieter wechseln',
-    model: 'KI-Modellversion wechseln',
-    routes: 'Routen & Tags verwalten',
-    keywords: 'Spamfilter-Wortliste anzeigen',
-    addkeywords: 'Spam-Schlüsselwörter hinzufügen',
-    resetkeywords: 'Spamfilter zurücksetzen',
-    add: 'Regel hinzufügen (add <Tag> <Präfix>)',
-    del: 'Regel löschen (del <Präfix>)',
-    setkey: 'Key oder E-Mail setzen (setkey)',
-    resetkey: 'Dynamischen Key zurücksetzen',
-    cancel: 'Aktive Sitzung abbrechen',
-    help: 'Befehlshandbuch anzeigen',
+    model: 'Modellversion wechseln',
+    routes: 'Routing-Regeln und Tags verwalten',
+    keywords: 'Spamfilter-Keywords anzeigen',
+    addkeywords: 'Spamfilter-Keywords hinzufügen',
+    resetkeywords: 'Keywords zurücksetzen',
+    add: 'Routing-Regel hinzufügen',
+    del: 'Routing-Regel löschen',
+    setkey: 'Schlüssel oder Weiterleitung aktualisieren',
+    resetkey: 'Schlüssel oder Weiterleitung zurücksetzen',
+    cancel: 'Aktuelle Sitzung abbrechen',
+    help: 'Befehlshilfe anzeigen',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const deDE: TranslationDict = {
     btnResetForward: '🗑️ Postfach löschen',
     btnSetup: '⚡ Einrichtungsassistent',
     btnCancel: '❌ Abbrechen',
-    routesTitle: '📂 <b>【 Routing-Regeln & Personas 】</b>',
+    routesTitle: '📂 <b>【 E-Mail-Routing-Regeln 】</b>',
     routesSelectTagPrompt: 'Wählen Sie ein <b>Kategorie-Tag</b> für die neue Regel (Button antippen):',
     routesInputPrefixPrompt: (tag: string) =>
       `Ausgewähltes Kategorie-Tag: <b>【${tag}】</b>\n\n` +
@@ -62,24 +64,24 @@ export const deDE: TranslationDict = {
       `• Kategorie: <b>${tag}</b>\n` +
       `• Ziel: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ Routing-Regel für Präfix <code>${prefix}</code> erfolgreich gelöscht!`,
-    tagsTitle: '🏷️ <b>【 Verwaltung benutzerdefinierter Tags 】</b>',
+    tagsTitle: '🏷️ <b>【 Kategorie-Tags verwalten 】</b>',
     tagsPrompt: 'Verwalten Sie hier eigene Kategorie-Tags für neue Routing-Regeln:',
     tagsEmpty: 'Keine benutzerdefinierten Tags vorhanden. Standard-Kategorien aktiv (Privat, Support, Business, Produkt, Allgemein).',
     tagsAddSuccess: (tag: string) => `✅ Tag hinzugefügt: <b>【${tag}】</b>!`,
     tagsDeleteSuccess: (tag: string) => `✅ Tag gelöscht: <b>【${tag}】</b>!`,
     tagsAddPrompt:
-      '🏷️ <b>【 Neues Tag hinzufügen 】</b>\n' +
+      '🏷️ <b>【 Neues Kategorie-Tag 】</b>\n' +
       '━━━━━━━━━━━━━━━━━━\n' +
       'Senden Sie den gewünschten Tag-Namen (z. B. <code>Finanzen</code>, <code>Monitoring</code>, max. 10 Zeichen):',
     tagsInvalid: '❌ Ungültiger oder doppelter Tag-Name (1-10 Zeichen ohne Leerzeichen).',
-    kwTitle: '🚫 <b>【 Schlüsselwörter für Marketing- und Spamfilter 】</b>',
-    fwdTitle: '📬 <b>【 Weiterleitungs- und Backup-Einstellungen 】</b>',
+    kwTitle: '🚫 <b>【 Spam-Filter-Keywords 】</b>',
+    fwdTitle: '📬 <b>【 Backup und Weiterleitung 】</b>',
     toastUpdated: 'Einstellungen aktualisiert!',
     toastCancelled: 'Vorgang abgebrochen',
   },
 
   providerCommand: {
-    title: '🏢 <b>【 KI-Anbieter auswählen 】</b>',
+    title: '🏢 <b>【 KI-Anbieter wählen 】</b>',
     current: (provider: string, model: string) => `Aktueller Anbieter: <b>${provider}</b> (Modell: <code>${model}</code>)`,
     prompt: 'Antworten Sie mit der entsprechenden Ziffer (5 Minuten gültig):',
     success: (provider: string, model: string, note: string) =>
@@ -94,7 +96,7 @@ export const deDE: TranslationDict = {
   },
 
   modelCommand: {
-    title: (provider: string) => `🧠 <b>【 Modell für ${provider} auswählen 】</b>`,
+    title: (provider: string) => `🧠 <b>【 Modell für ${provider} wählen 】</b>`,
     current: (model: string) => `Aktuelles Modell: <code>${model}</code>`,
     prompt: 'Antworten Sie mit einer Ziffer oder einem benutzerdefinierten Modellnamen (5 Minuten gültig):',
     success: (model: string) =>
@@ -205,7 +207,7 @@ export const deDE: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 Einstellungen & Schlüsselstatus 】</b>',
+    title: '📊 <b>【 System- und Betriebsstatus 】</b>',
     llmTitle: '🤖 <b>KI-E-Mail-Klassifizierung (MiniMax):</b>',
     llmReady: (source: string) => `  • Status: ✅ Bereit ${source}`,
     llmNotConfigured: '  • Status: ⚪ Nicht konfiguriert (Lokale Regex-Erkennung aktiv)',

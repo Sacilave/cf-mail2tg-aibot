@@ -566,7 +566,7 @@ export default {
       if (callbackData === 'm:ai') {
         const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
         const card = [
-          `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+          `🤖 <b>【 AI 审信模型 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           `• 当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>`,
           `• 运行模型: <code>${escapeHtml(effectiveAi.model)}</code>`,
@@ -594,7 +594,7 @@ export default {
           await answerCallbackQuery(botToken, callbackId, `已切换至 ${providerMeta.name}`);
 
           const card = [
-            `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+            `🤖 <b>【 AI 审信模型 】</b>`,
             `━━━━━━━━━━━━━━━━━━`,
             `• 当前厂商: <b>${escapeHtml(providerMeta.name)}</b>`,
             `• 运行模型: <code>${escapeHtml(providerMeta.defaultModel)}</code>`,
@@ -674,7 +674,7 @@ export default {
         await sendTelegramMessage(
           botToken,
           adminChatId,
-          `🔑 <b>【 绑定大模型 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>\n\n请直接回复您的 API Key（如 <code>sk-...</code>）：\n<i>（注：Workers AI 免密运行，无需配置 Key）</i>`,
+          `🔑 <b>【 绑定 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>\n\n请直接回复您的 API Key（如 <code>sk-...</code>）：\n<i>（注：Workers AI 免密运行，无需配置 Key）</i>`,
           {
             inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
           }
@@ -692,7 +692,7 @@ export default {
         await answerCallbackQuery(botToken, callbackId, '已清除自定义 API Key');
         const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
         const card = [
-          `🤖 <b>【 AI 审信与意图引擎设置 】</b>`,
+          `🤖 <b>【 AI 审信模型 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           `• 当前厂商: <b>${escapeHtml(effectiveAi.provider)}</b>`,
           `• 运行模型: <code>${escapeHtml(effectiveAi.model)}</code>`,
@@ -744,7 +744,7 @@ export default {
       if (callbackData === 'm:tags') {
         const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
         const card = [
-          cbDict.dashboard.tagsTitle || '🏷️ <b>【 业务分类标签管理 】</b>',
+          cbDict.dashboard.tagsTitle || '🏷️ <b>【 分类标签管理 】</b>',
           `━━━━━━━━━━━━━━━━━━`,
           cbDict.dashboard.tagsPrompt || '在此管理您的自定义业务分类标签。这些标签可在添加前缀分流规则时使用：',
           ``,
@@ -772,7 +772,7 @@ export default {
         }
         const card = [
           cbDict.dashboard.tagsAddPrompt ||
-            '🏷️ <b>【 添加自定义标签 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要创建的业务标签名称（例如：<code>财务</code>、<code>监控</code>、<code>内部</code>，10字以内）：',
+            '🏷️ <b>【 新建分类标签 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要创建的业务标签名称（例如：<code>财务</code>、<code>监控</code>、<code>内部</code>，10字以内）：',
         ].join('\n');
 
         await answerCallbackQuery(botToken, callbackId);
@@ -791,7 +791,7 @@ export default {
         await answerCallbackQuery(botToken, callbackId, `已删除标签: ${tag}`);
         const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
         const card = [
-          cbDict.dashboard.tagsTitle || '🏷️ <b>【 业务分类标签管理 】</b>',
+          cbDict.dashboard.tagsTitle || '🏷️ <b>【 分类标签管理 】</b>',
           `━━━━━━━━━━━━━━━━━━`,
           cbDict.dashboard.tagsDeleteSuccess ? cbDict.dashboard.tagsDeleteSuccess(escapeHtml(tag)) : `✅ 已删除自定义标签: <b>【${escapeHtml(tag)}】</b>！`,
           ``,
@@ -811,7 +811,7 @@ export default {
       if (callbackData === 'ra:start') {
         const customTags = await getCustomTags(env.MAIL_ROUTES_KV);
         const card = [
-          `➕ <b>【 添加新路由规则 · 第一步 】</b>`,
+          `➕ <b>【 新增分流规则 (1/2) · 选标签 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           cbDict.dashboard.routesSelectTagPrompt,
         ].join('\n');
@@ -836,7 +836,7 @@ export default {
         }
         const localizedTag = cbDict.emailCard.personaTags[tag] || tag;
         const card = [
-          `➕ <b>【 添加新路由规则 · 第二步 】</b>`,
+          `➕ <b>【 新增分流规则 (2/2) · 设前缀 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           cbDict.dashboard.routesInputPrefixPrompt(localizedTag),
         ].join('\n');
@@ -905,7 +905,7 @@ export default {
       if (callbackData === 'kw:view') {
         const kws = await getMarketingKeywords(env.MAIL_ROUTES_KV);
         const card = [
-          `📋 <b>【 营销拦截词库完整列表 (共 ${kws.length} 个) 】</b>`,
+          `📋 <b>【 完整拦截词库 (共 ${kws.length} 个) 】</b>`,
           `━━━━━━━━━━━━━━━━━━`,
           `<code>${escapeHtml(kws.join('、'))}</code>`,
         ].join('\n');
@@ -958,7 +958,7 @@ export default {
         await sendTelegramMessage(
           botToken,
           adminChatId,
-          `🚫 <b>【 追加营销拦截词 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要追加的关键词（一行一个，或以逗号/空格分隔）：`,
+          `🚫 <b>【 添加拦截词 】</b>\n━━━━━━━━━━━━━━━━━━\n请直接回复您想要追加的关键词（一行一个，或以逗号/空格分隔）：`,
           {
             inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
           }
@@ -1169,9 +1169,11 @@ export default {
       // Check if replying directly to marketing keywords list
       const isKeywordReply =
         isReply &&
-        (replyText.includes('营销推广拦截关键词') ||
+        (replyText.includes('垃圾拦截') ||
+          replyText.includes('营销推广拦截关键词') ||
           replyText.includes('营销关键词') ||
           replyText.includes('Marketing') ||
+          replyText.includes('Spam') ||
           replyText.includes('キーワード') ||
           replyText.includes('стоп-слов') ||
           replyText.includes('Schlüsselwörter'));
@@ -1684,8 +1686,8 @@ export default {
         }
       }
 
-      // Command: config / keys / status (查看当前密钥配置与网关就绪状态)
-      if (command === 'config' || command === 'keys' || command === 'status') {
+      // Command: status / config / keys (查看当前密钥配置与网关就绪状态)
+      if (command === 'status' || command === 'config' || command === 'keys') {
         const effectiveAi = await getEffectiveAiConfig(env, env?.MAIL_ROUTES_KV);
         const meta = findProvider(effectiveAi.provider);
         const providerName = meta?.name || effectiveAi.provider;
@@ -1730,7 +1732,7 @@ export default {
         const marketingPolicy = env?.MARKETING_TG_POLICY || 'silent';
 
         const configCard = [
-          `🎛️ <b>【 ${dict.configCommand.title} 】</b>`,
+          dict.configCommand.title,
           `━━━━━━━━━━━━━━━━━━`,
           dict.configCommand.llmTitle,
           dict.configCommand.llmProvider ? dict.configCommand.llmProvider(escapeHtml(providerName)) : `  • 模型厂商: <b>${escapeHtml(providerName)}</b>`,
@@ -2179,8 +2181,8 @@ export default {
         return new Response('OK', { status: 200 });
       }
 
-      // Command: menu / settings / dashboard (交互控制中枢)
-      if (command === 'menu' || command === 'settings' || command === 'dashboard') {
+      // Command: settings / menu / dashboard (交互控制中枢)
+      if (command === 'settings' || command === 'menu' || command === 'dashboard') {
         try {
           await fetch(`https://api.telegram.org/bot${botToken}/setMyCommands`, {
             method: 'POST',
@@ -2230,9 +2232,10 @@ export default {
             `━━━━━━━━━━━━━━━━━━\n` +
             `${dict.helpCommand.menuHint}\n\n` +
             `${dict.helpCommand.keysSectionTitle}\n` +
+            (dict.helpCommand.settingsDesc ? `${dict.helpCommand.settingsDesc}\n` : '') +
+            `${dict.helpCommand.configDesc}\n` +
             `${dict.helpCommand.setupDesc}\n` +
             `${dict.helpCommand.cancelDesc}\n` +
-            `${dict.helpCommand.configDesc}\n` +
             `${dict.helpCommand.setkeyMinimaxDesc}\n` +
             `${dict.helpCommand.setkeyForwardDesc}\n` +
             `${dict.helpCommand.resetkeyDesc}\n\n` +

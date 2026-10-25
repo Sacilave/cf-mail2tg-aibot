@@ -209,9 +209,9 @@ Incoming Email
   - Attribute: `📂 Business Persona: Customer Support` (Shows product domain);
 - **Powers Zero-Drop Gmail Alias Routing**:
   When `ENABLE_GMAIL_ALIASES=true`, emails automatically route to `user+personal@gmail.com`, `user+support@gmail.com`, `user+business@gmail.com`, etc., mapping directly into Gmail label filters.
-- **Minimalist Status (`/start`) & Button-First Settings (`/menu`)**:
+- **Minimalist Status (`/start`) & Button-First Settings (`/settings`)**:
   - `/start` - Absolute minimalist overview with 3 direct shortcuts: `[⚙️ Settings]`, `[📖 User Guide]`, and `[🌐 Language]`;
-  - `/menu` - Redesigned **"⚙️ Settings"** control center with a neat 2x4 inline button grid:
+  - `/settings` (or `/menu`) - Redesigned **"⚙️ Settings"** control center with a neat 2x4 inline button grid:
     - `[🤖 AI Model]` `[📂 Routes]`
     - `[🚫 Anti-Spam]` `[📬 Forwarding]`
     - `[🌐 Language]` `[🔄 Refresh]`
@@ -232,7 +232,7 @@ Incoming Email
 
 ### 5. 🎛️ Mobile Telegram Control Panel & Key Management Hub
 - **Interactive Setup Wizard (`/setup`)**: A 1-minute mobile-friendly step-by-step wizard to bind your backup inbox and LLM API key; enter `skip` to bypass any step, or `/cancel` anytime.
-- **Global Status (`/config`)**: View gateway status with **security masking on sensitive keys** (e.g., `min***a8f9`).
+- **Global Status (`/status` or `/config`)**: View gateway status with **security masking on sensitive keys** (e.g., `min***a8f9`).
 - **Mobile Hot-Updates (`/setkey`)**: Send `/setkey minimax <NewKey>` or `/setkey forward <NewEmail>` in private chat to persist updates to Cloudflare KV in real time—no terminal needed.
 - **Dynamic Config Reset (`/resetkey`)**: Clear KV dynamic overrides and effortlessly fall back to environment variable defaults.
 - **Keyword Management (`/keywords`)**: Generate a clean, 1-tap copyable list of marketing filter keywords.
@@ -255,14 +255,14 @@ Tap the **[Menu]** button at the bottom-left of the Telegram chat or send any co
 | Command | Parameter Format | Description |
 | :--- | :--- | :--- |
 | `/start` | - | **👋 Minimalist Overview**: View gateway status summary with shortcuts to `[⚙️ Settings]`, `[📖 User Guide]`, and `[🌐 Language]` |
-| `/menu` | - | **⚙️ Settings Dashboard**: 2x4 inline button grid to manage all settings (AI, routing, anti-spam, forwarding, language, setup wizard, guide) |
+| `/settings` | - | **⚙️ Settings Dashboard**: 2x4 inline button grid to manage all settings (AI, routing, anti-spam, forwarding, language; alias `/menu`) |
 | `/guide` | - | **📖 Detailed User Guide**: View workflow, classification, spam filtering, prefix routing docs with direct GitHub documentation link |
 | `/setup` | - | **⚡ Quick Setup Wizard**: 1-minute step-by-step interactive setup wizard (accessible via inline button in Settings) |
 | `/lang` | `[code]` | Switch system language via interactive 5x2 keyboard or direct code (e.g. `/lang ko`, `/lang pt`, `/lang en`) |
 | `/provider` | `[1~9\|name]` | Interactive AI provider switch (reply with 1~9 to toggle Workers AI / DeepSeek / Groq / OpenAI etc.) |
 | `/model` | `[1~2\|name]` | Interactive model switch for the active provider |
 | `/cancel` | - | Exit active setup wizard or session, resetting interactive state |
-| `/config` | - | Inspect gateway readiness status and masked credentials |
+| `/status` | - | **📊 System Readiness & Status**: Inspect gateway readiness status and masked credentials (alias `/config`) |
 | `/setkey` | `<ai\|minimax\|forward> <value>` | Hot-update Universal AI / MiniMax key or backup forwarding email directly from mobile |
 | `/resetkey` | `<ai\|provider\|model\|minimax\|forward>` | Reset dynamic KV override and restore deployment defaults |
 | `/keywords` | - | Display all active marketing filter keywords in copyable code block |

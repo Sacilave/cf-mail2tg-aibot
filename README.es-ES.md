@@ -179,7 +179,7 @@ flowchart TD
 
 ### 4. 🎛️ Panel de Control Interactivo y Gestión de Claves en Telegram
 - **Asistente de Configuración (`/setup`)**: Guía interactiva paso a paso de 1 minuto para asociar tu buzón de respaldo y clave LLM desde el móvil (admite `skip` y `/cancel`).
-- **Estado General (`/config`)**: Consulta el estado de la pasarela con **enmascaramiento de seguridad en claves confidenciales** (p. ej., `min***a8f9`).
+- **Estado General (`/status` o `/config`)**: Consulta el estado de la pasarela con **enmascaramiento de seguridad en claves confidenciales** (p. ej., `min***a8f9`).
 - **Actualización de Claves en Caliente (`/setkey`)**: Envía `/setkey minimax <Clave>` o `/setkey forward <Email>` en chat privado para guardar y activar cambios en Cloudflare KV al instante.
 - **Restablecimiento Dinámico (`/resetkey`)**: Elimina las modificaciones en KV y vuelve a los valores predeterminados de las variables de entorno.
 - **Gestión de Palabras Clave (`/keywords`)**: Muestra todas las palabras clave de filtro en un bloque de código listo para copiar.
@@ -204,7 +204,8 @@ Pulsa el botón **[Menu]** abajo a la izquierda en el chat o envía los siguient
 | `/lang` | `[código]` | Cambia el idioma mediante teclado interactivo 5x2 o código directo (p. ej. `/lang ko`, `/lang pt`, `/lang es`) |
 | `/setup` | - | Inicia el asistente interactivo de configuración paso a paso en 1 minuto |
 | `/cancel` | - | Cancela el asistente o la conversación activa y restablece el estado |
-| `/config` | - | Consulta el estado general de la pasarela y las credenciales enmascaradas |
+| `/status` | - | **📊 Estado del Sistema**: Consulta el estado de la pasarela y credenciales enmascaradas (alias `/config`) |
+| `/settings` | - | **⚙️ Panel de Ajustes**: Cuadrícula 2x4 para gestionar todas las opciones (alias `/menu`) |
 | `/setkey` | `<minimax\|forward> <valor>` | Actualiza la clave LLM o el buzón de reenvío directamente en KV desde el móvil |
 | `/resetkey` | `<minimax\|forward>` | Elimina la sustitución dinámica en KV y restaura las variables de entorno |
 | `/keywords` | - | Muestra todas las palabras clave de filtro en un bloque de código para copiar |

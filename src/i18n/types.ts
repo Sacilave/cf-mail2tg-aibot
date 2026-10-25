@@ -46,11 +46,13 @@ export interface TranslationDict {
   // Bot Menu Commands description
   commandDesc: {
     start: string;
-    menu: string;
+    settings: string;
+    status: string;
+    menu?: string;
+    config?: string;
     guide: string;
     setup: string;
     lang: string;
-    config: string;
     provider: string;
     model: string;
     routes: string;
@@ -68,6 +70,7 @@ export interface TranslationDict {
   // Interactive Dashboard & Button Menus
   dashboard: {
     title: string;
+    aiTitle?: string;
     desc: string;
     btnAi: string;
     btnRoutes: string;
@@ -196,6 +199,7 @@ export interface TranslationDict {
     title: string;
     menuHint: string;
     keysSectionTitle: string;
+    settingsDesc?: string;
     configDesc: string;
     providerDesc?: string;
     modelDesc?: string;

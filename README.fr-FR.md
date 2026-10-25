@@ -179,7 +179,7 @@ flowchart TD
 
 ### 4. 🎛️ Panneau de Contrôle Interactif et Clés Directement sur Telegram
 - **Assistant d'Installation (`/setup`)** : Parcours guidé interactif en 1 minute adapté aux smartphones pour lier votre boîte de transfert et vos identifiants d'API (avec prise en charge de `skip` et `/cancel`).
-- **Consultation de l'État (`/config`)** : Aperçu global de la passerelle avec **masquage sécurisé des clés d'accès** (ex. : `min***a8f9`).
+- **Consultation de l'État (`/status` ou `/config`)** : Aperçu global de la passerelle avec **masquage sécurisé des clés d'accès** (ex. : `min***a8f9`).
 - **Mise à Jour à Chaud (`/setkey`)** : Envoyez `/setkey minimax <Clé>` ou `/setkey forward <Email>` en message privé pour enregistrer et appliquer immédiatement les changements dans Cloudflare KV sans toucher au terminal.
 - **Réinitialisation Dynamique (`/resetkey`)** : Supprimez les surcharges dans KV pour revenir instantanément aux variables d'environnement d'origine.
 - **Gestion des Mots-Clés (`/keywords`)** : Affichez l'intégralité des filtres anti-spam dans un bloc prêt à être copié sur téléphone.
@@ -204,7 +204,8 @@ Appuyez sur le bouton **[Menu]** en bas à gauche de la conversation Telegram ou
 | `/lang` | `[code]` | Changer la langue d'affichage via le clavier interactif 5x2 ou en paramètre direct (ex. `/lang ko`, `/lang pt`, `/lang fr`) |
 | `/setup` | - | Lancer l'assistant interactif de configuration pas-à-pas en 1 minute |
 | `/cancel` | - | Quitter l'assistant ou la session active et réinitialiser l'état |
-| `/config` | - | Consulter l'état de la passerelle et les identifiants masqués |
+| `/status` | - | **📊 État du Système** : Consulter l'état de la passerelle et les identifiants masqués (alias `/config`) |
+| `/settings` | - | **⚙️ Panneau de Paramètres** : Grille 2x4 pour gérer toutes les configurations (alias `/menu`) |
 | `/setkey` | `<minimax\|forward> <valeur>` | Mettre à jour une clé d'API ou l'e-mail de secours avec sauvegarde directe en KV |
 | `/resetkey` | `<minimax\|forward>` | Effacer les surcharges KV et rétablir les valeurs par défaut des variables |
 | `/keywords` | - | Afficher la liste complète des mots-clés de filtrage prêts à être copiés |

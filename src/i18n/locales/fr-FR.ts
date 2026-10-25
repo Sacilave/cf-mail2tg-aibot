@@ -6,24 +6,26 @@ export const frFR: TranslationDict = {
   flag: '🇫🇷',
 
   commandDesc: {
-    start: 'Aperçu de l\'état du système',
+    start: 'Aperçu du statut du système',
+    settings: 'Ouvrir les paramètres',
+    status: 'Consulter l\'état et les clés',
     menu: 'Ouvrir les paramètres',
-    guide: 'Consulter le guide détaillé',
-    setup: 'Lancer l\'assistant de config.',
-    lang: 'Changer de langue (Switch language)',
-    config: 'Voir l\'état et les clés d\'accès',
-    provider: 'Changer de fournisseur d\'IA',
-    model: 'Changer de modèle d\'IA',
-    routes: 'Gérer le routage et les balises',
+    config: 'Consulter l\'état et les clés',
+    guide: 'Consulter le guide d\'utilisation',
+    setup: 'Lancer l\'assistant de configuration',
+    lang: 'Changer la langue (Switch language)',
+    provider: 'Changer de fournisseur IA',
+    model: 'Changer la version du modèle',
+    routes: 'Gérer les règles de routage',
     keywords: 'Voir les mots-clés anti-spam',
-    addkeywords: 'Ajouter des mots-clés',
+    addkeywords: 'Ajouter des mots-clés anti-spam',
     resetkeywords: 'Réinitialiser les mots-clés',
-    add: 'Ajouter une règle (add <balise> <préfixe>)',
-    del: 'Supprimer une règle (del <préfixe>)',
-    setkey: 'Définir clé ou e-mail (setkey)',
-    resetkey: 'Réinitialiser clé dynamique',
+    add: 'Ajouter une règle de routage',
+    del: 'Supprimer une règle de routage',
+    setkey: 'Mettre à jour clé ou e-mail de transfert',
+    resetkey: 'Réinitialiser clé ou e-mail de transfert',
     cancel: 'Annuler la session en cours',
-    help: 'Manuel des commandes',
+    help: 'Afficher l\'aide des commandes',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const frFR: TranslationDict = {
     btnResetForward: '🗑️ Effacer l\'e-mail',
     btnSetup: '⚡ Assistant de config.',
     btnCancel: '❌ Annuler',
-    routesTitle: '📂 <b>【 Gestion des Règles de Routage 】</b>',
+    routesTitle: '📂 <b>【 Règles de Routage des E-mails 】</b>',
     routesSelectTagPrompt: 'Sélectionnez une <b>catégorie</b> pour la nouvelle règle (appuyez sur le bouton) :',
     routesInputPrefixPrompt: (tag: string) =>
       `Catégorie sélectionnée : <b>【${tag}】</b>\n\n` +
@@ -62,7 +64,7 @@ export const frFR: TranslationDict = {
       `• Catégorie : <b>${tag}</b>\n` +
       `• Destination : <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ Règle pour le préfixe <code>${prefix}</code> supprimée avec succès !`,
-    tagsTitle: '🏷️ <b>【 Gestionnaire de Balises Personnalisées 】</b>',
+    tagsTitle: '🏷️ <b>【 Balises de Catégorie 】</b>',
     tagsPrompt: 'Gérez vos balises de catégorie ici pour les utiliser lors de la création de règles :',
     tagsEmpty: 'Aucune balise personnalisée. Les catégories par défaut sont utilisées (Personnel, Support, Business, Produit, Générique).',
     tagsAddSuccess: (tag: string) => `✅ Balise personnalisée ajoutée : <b>【${tag}】</b> !`,
@@ -72,7 +74,7 @@ export const frFR: TranslationDict = {
       '━━━━━━━━━━━━━━━━━━\n' +
       'Répondez avec le nom de la balise (ex. <code>Finance</code>, <code>Monitoring</code>, max 10 lettres) :',
     tagsInvalid: '❌ Nom de balise invalide ou déjà existant (1-10 caractères sans espaces).',
-    kwTitle: '🚫 <b>【 Mots-clés de Filtrage des E-mails Marketing 】</b>',
+    kwTitle: '🚫 <b>【 Mots-clés Anti-Spam 】</b>',
     fwdTitle: '📬 <b>【 Configuration de Redirection et Copie 】</b>',
     toastUpdated: 'Paramètres mis à jour !',
     toastCancelled: 'Opération annulée',
@@ -205,7 +207,7 @@ export const frFR: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 Paramètres et état des clés 】</b>',
+    title: '📊 <b>【 État du Système et Configuration 】</b>',
     llmTitle: '🤖 <b>Classification des e-mails par IA (MiniMax) :</b>',
     llmReady: (source: string) => `  • État : ✅ Prêt ${source}`,
     llmNotConfigured: '  • État : ⚪ Non configuré (Détection locale par regex active)',

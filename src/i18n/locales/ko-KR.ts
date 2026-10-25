@@ -6,24 +6,26 @@ export const koKR: TranslationDict = {
   flag: '🇰🇷',
 
   commandDesc: {
-    start: '게이트웨이 가동 상태 요약 보기',
-    menu: '설정 대시보드 열기',
-    guide: '상세 사용 안내서 보기',
-    setup: '빠른 설정 마법사 시작',
-    lang: '표시 언어 전환',
-    config: '시스템 상태 및 인증 정보 확인',
-    provider: 'AI 모델 공급업체 전환',
-    model: 'AI 모델 버전 전환',
-    routes: '라우팅 규칙 및 커스텀 태그 관리',
-    keywords: '스팸 차단 키워드 목록 확인',
+    start: '운영 상태 개요 보기',
+    settings: '설정 패널 열기',
+    status: '운영 상태 및 인증 정보 확인',
+    menu: '설정 패널 열기',
+    config: '운영 상태 및 인증 정보 확인',
+    guide: '상세 사용 가이드 확인',
+    setup: '설정 마법사 실행',
+    lang: '표시 언어 변경 (Switch language)',
+    provider: 'AI 공급자 변경',
+    model: '실행 모델 버전 변경',
+    routes: '분류 라우팅 및 태그 관리',
+    keywords: '스팸 차단 키워드 확인',
     addkeywords: '스팸 차단 키워드 추가',
-    resetkeywords: '스팸 키워드를 기본값으로 재설정',
-    add: '라우팅 규칙 추가 (add <태그> <접두사> [전달대상])',
-    del: '라우팅 규칙 삭제 (del <접두사>)',
-    setkey: 'API 키 또는 이메일 설정 (setkey <유형> <값>)',
-    resetkey: '동적 설정 초기화 및 환경변수로 복원',
-    cancel: '진행 중인 세션 또는 마법사 취소',
-    help: '명령어 매뉴얼 및 도움말 확인',
+    resetkeywords: '차단 키워드 초기화',
+    add: '라우팅 규칙 추가',
+    del: '라우팅 규칙 삭제',
+    setkey: '키 또는 전달 이메일 업데이트',
+    resetkey: '동적 키 또는 전달 이메일 재설정',
+    cancel: '진행 중인 세션 취소',
+    help: '명령어 도움말 확인',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const koKR: TranslationDict = {
     btnResetForward: '🗑️ 백업 이메일 제거',
     btnSetup: '⚡ 설정 마법사',
     btnCancel: '❌ 취소',
-    routesTitle: '📂 <b>【 페르소나 라우팅 규칙 】</b>',
+    routesTitle: '📂 <b>【 메일 분류 규칙 】</b>',
     routesSelectTagPrompt: '새 라우팅 규칙에 바인딩할 <b>비즈니스 카테고리 태그</b>를 선택하세요 (버튼 터치):',
     routesInputPrefixPrompt: (tag: string) =>
       `선택된 카테고리 태그: <b>【${tag}】</b>\n\n` +
@@ -62,17 +64,17 @@ export const koKR: TranslationDict = {
       `• 페르소나 태그: <b>${tag}</b>\n` +
       `• 전달 대상: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ 접두사 <code>${prefix}</code>의 라우팅 규칙이 성공적으로 삭제되었습니다!`,
-    tagsTitle: '🏷️ <b>【 비즈니스 카테고리 태그 관리 】</b>',
+    tagsTitle: '🏷️ <b>【 분류 태그 관리 】</b>',
     tagsPrompt: '커스텀 비즈니스 카테고리 태그를 관리합니다. 이 태그들은 라우팅 규칙에 지정할 수 있습니다:',
     tagsEmpty: '등록된 커스텀 태그가 없습니다. 시스템 기본 카테고리가 사용 중입니다 (개인, 고객지원, 비즈니스, 제품, 일반).',
     tagsAddSuccess: (tag: string) => `✅ 커스텀 태그가 성공적으로 추가되었습니다: <b>【${tag}】</b>!`,
     tagsDeleteSuccess: (tag: string) => `✅ 커스텀 태그가 삭제되었습니다: <b>【${tag}】</b>!`,
     tagsAddPrompt:
-      '🏷️ <b>【 커스텀 태그 추가 】</b>\n' +
+      '🏷️ <b>【 새 태그 생성 】</b>\n' +
       '━━━━━━━━━━━━━━━━━━\n' +
       '생성할 태그 이름을 입력하세요 (예: <code>재무</code>, <code>모니터링</code>, <code>개발</code>, 최대 10자):',
     tagsInvalid: '❌ 유효하지 않거나 중복된 태그 이름입니다 (공백 없는 1~10자 이내여야 합니다).',
-    kwTitle: '🚫 <b>【 마케팅 및 스팸 필터 키워드 】</b>',
+    kwTitle: '🚫 <b>【 스팸 필터 키워드 】</b>',
     fwdTitle: '📬 <b>【 전달 및 백업 사서함 】</b>',
     toastUpdated: '설정이 업데이트되었습니다!',
     toastCancelled: '작업이 취소되었습니다.',
@@ -208,7 +210,7 @@ export const koKR: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 설정 및 자격 증명 상태 】</b>',
+    title: '📊 <b>【 시스템 운영 상태 】</b>',
     llmTitle: '🤖 <b>LLM 이메일 인텔리전트 분류 (AI):</b>',
     llmProvider: (provider: string) => `  • AI 공급업체: <b>${provider}</b>`,
     llmReady: (source: string) => `  • 바인딩 상태: ✅ 준비 완료 ${source}`,
@@ -282,7 +284,7 @@ export const koKR: TranslationDict = {
   },
 
   keywordsCommand: {
-    title: '📋 <b>【 마케팅 필터 키워드 관리 】</b>',
+    title: '📋 <b>【 활성 스팸 키워드 】</b>',
     countDesc: (count: number) => `현재 활성 키워드: <b>${count}</b>개.`,
     instructions:
       '💡 <b>수정 방법 (복사 후 수정하여 [이 메시지에 답장]):</b>\n' +
@@ -319,7 +321,7 @@ export const koKR: TranslationDict = {
   },
 
   routesCommand: {
-    title: '📋 <b>【 활성 이메일 라우팅 규칙 】</b>',
+    title: '📋 <b>【 활성 분류 규칙 】</b>',
     presetBaselineTitle: '🔹 <b>시스템 기본 프리셋 페르소나:</b>',
     fallbackGeneric: '• <i>(미일치 주소)</i> ➔ 🏷️ <b>일반</b>',
     customRulesTitle: '🔸 <b>동적 커스텀 규칙 (KV 스토리지):</b>',

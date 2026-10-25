@@ -7,11 +7,13 @@ export const zhCN: TranslationDict = {
 
   commandDesc: {
     start: '查看运行状态总览',
+    settings: '打开设置面板',
+    status: '查看运行状态与密钥详情',
     menu: '打开设置面板',
+    config: '查看运行状态与密钥详情',
     guide: '查看详细使用指南',
     setup: '启动配置向导 (分步引导)',
     lang: '切换显示语言 (Switch language)',
-    config: '查看运行状态与密钥详情',
     provider: '切换大模型厂商',
     model: '切换运行模型版本',
     routes: '管理分流路由与自定义标签',
@@ -49,7 +51,7 @@ export const zhCN: TranslationDict = {
     btnResetForward: '🗑️ 清除备份邮箱',
     btnSetup: '⚡ 配置向导',
     btnCancel: '❌ 取消',
-    routesTitle: '📂 <b>【 业务画像分流规则管理 】</b>',
+    routesTitle: '📂 <b>【 邮件分流规则 】</b>',
     routesSelectTagPrompt: '请为新规则选择<b>业务分类标签</b>（轻触按钮选择）：',
     routesInputPrefixPrompt: (tag: string) =>
       `已选择分类标签：<b>【${tag}】</b>\n\n` +
@@ -62,18 +64,18 @@ export const zhCN: TranslationDict = {
       `• 业务画像: <b>${tag}</b>\n` +
       `• 投递目标: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ 已成功删除前缀为 <code>${prefix}</code> 的分流规则！`,
-    tagsTitle: '🏷️ <b>【 业务分类标签管理 】</b>',
+    tagsTitle: '🏷️ <b>【 分类标签管理 】</b>',
     tagsPrompt: '在此管理您的自定义业务分类标签。这些标签可在添加前缀分流规则时使用：',
     tagsEmpty: '暂无自定义标签，当前使用系统默认分类（个人、客服、商务、产品、通用）。',
     tagsAddSuccess: (tag: string) => `✅ 成功添加自定义标签: <b>【${tag}】</b>！`,
     tagsDeleteSuccess: (tag: string) => `✅ 已删除自定义标签: <b>【${tag}】</b>！`,
     tagsAddPrompt:
-      '🏷️ <b>【 添加自定义标签 】</b>\n' +
+      '🏷️ <b>【 新建分类标签 】</b>\n' +
       '━━━━━━━━━━━━━━━━━━\n' +
       '请直接回复您想要创建的业务标签名称（例如：<code>财务</code>、<code>监控</code>、<code>内部</code>，10字以内）：',
     tagsInvalid: '❌ 标签名称无效或已存在（必须为1-10个字符且不含空格）。',
-    kwTitle: '🚫 <b>【 营销推广与垃圾拦截词库 】</b>',
-    fwdTitle: '📬 <b>【 备份邮箱与转发设置 】</b>',
+    kwTitle: '🚫 <b>【 垃圾拦截词库 】</b>',
+    fwdTitle: '📬 <b>【 备份与转发邮箱 】</b>',
     toastUpdated: '已更新设置！',
     toastCancelled: '已取消当前操作',
     statusEngineLabel: 'AI 审信引擎',
@@ -94,7 +96,7 @@ export const zhCN: TranslationDict = {
   },
 
   providerCommand: {
-    title: '🏢 <b>【 请选择大模型 API 厂商 】</b>',
+    title: '🏢 <b>【 选择 AI 厂商 】</b>',
     current: (provider: string, model: string) => `当前厂商: <b>${provider}</b> (模型: <code>${model}</code>)`,
     prompt: '请直接回复对应序号进行切换（5分钟内有效）：',
     success: (provider: string, model: string, note: string) =>
@@ -109,7 +111,7 @@ export const zhCN: TranslationDict = {
   },
 
   modelCommand: {
-    title: (provider: string) => `🧠 <b>【 请选择 ${provider} 运行模型 】</b>`,
+    title: (provider: string) => `🧠 <b>【 选择 ${provider} 模型 】</b>`,
     current: (model: string) => `当前运行模型: <code>${model}</code>`,
     prompt: '请直接回复对应序号完成切换，或直接回复自定义模型名称（5分钟内有效）：',
     success: (model: string) =>
@@ -183,7 +185,8 @@ export const zhCN: TranslationDict = {
     commandsTitle: '⚡ <b>5. 常用指令速查</b>',
     commandsContent:
       '• <code>/start</code> - 查看运行状态与快捷入口\n' +
-      '• <code>/menu</code> - 打开设置面板 (⚙️ 设置)\n' +
+      '• <code>/settings</code> - 打开设置面板 (⚙️ 设置)\n' +
+      '• <code>/status</code> - 查看系统运行状态\n' +
       '• <code>/guide</code> - 查看本使用指南\n' +
       '• <code>/routes</code> - 管理前缀分流规则与自定义标签\n' +
       '• <code>/keywords</code> - 查看与维护拦截词库\n' +
@@ -199,7 +202,8 @@ export const zhCN: TranslationDict = {
     title: '📖 <b>【 cf-mail2tg-aibot 指令帮助 】</b>',
     menuHint: '您可直接点击左下角 <b>[Menu]</b> 按钮或发送以下指令：',
     keysSectionTitle: '🔑 <b>状态与配置指令:</b>',
-    configDesc: '• <code>/config</code> - 查看运行状态与密钥绑定详情 (带脱敏掩码)',
+    settingsDesc: '• <code>/settings</code> - 打开交互式设置控制台',
+    configDesc: '• <code>/status</code> - 查看运行状态与密钥详情 (带脱敏掩码)',
     providerDesc: '• <code>/provider</code> - 交互式切换大模型厂商',
     modelDesc: '• <code>/model</code> - 交互式切换当前厂商的运行模型',
     setkeyAiDesc: '• <code>/setkey ai &lt;key&gt;</code> - 手机端热更新通用大模型 API Key',
@@ -223,7 +227,7 @@ export const zhCN: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 设置与密钥状态 】</b>',
+    title: '📊 <b>【 系统运行状态 】</b>',
     llmTitle: '🤖 <b>大模型审信 (LLM):</b>',
     llmProvider: (provider: string) => `  • 模型厂商: <b>${provider}</b>`,
     llmReady: (source: string) => `  • 绑定状态: ✅ 已就绪 ${source}`,
@@ -259,7 +263,7 @@ export const zhCN: TranslationDict = {
   },
 
   setkeyCommand: {
-    helpTitle: '💡 <b>【热更新密钥/配置说明】</b>',
+    helpTitle: '💡 <b>【 密钥配置说明 】</b>',
     helpUsage: '<b>格式:</b> <code>/setkey &lt;类型&gt; &lt;值&gt;</code>',
     helpAi: '• <b>更新通用大模型密钥:</b>\n  <code>/setkey ai sk-your-api-key</code>',
     helpMinimax: '• <b>更新 MiniMax 密钥:</b>\n  <code>/setkey minimax sk-your-api-key</code>',
@@ -286,7 +290,7 @@ export const zhCN: TranslationDict = {
   },
 
   resetkeyCommand: {
-    helpTitle: '💡 <b>【重置密钥指令说明】</b>',
+    helpTitle: '💡 <b>【 密钥重置说明 】</b>',
     helpUsage: '<b>格式:</b> <code>/resetkey &lt;minimax|forward&gt;</code>',
     helpDesc: '删除 KV 中的动态覆盖项，恢复使用环境变量中的初始默认值。',
     kvError: '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。',
@@ -297,7 +301,7 @@ export const zhCN: TranslationDict = {
   },
 
   keywordsCommand: {
-    title: '📋 <b>【营销推广拦截关键词管理】</b>',
+    title: '📋 <b>【 当前垃圾拦截词库 】</b>',
     countDesc: (count: number) => `当前生效关键词共 <b>${count}</b> 个。`,
     instructions:
       '💡 <b>修改方式（复制修改后【直接回复本条消息】）：</b>\n' +
@@ -315,7 +319,7 @@ export const zhCN: TranslationDict = {
       `<code>${preview}${moreCount}</code>\n\n` +
       `💡 <i>后续命中上述任意关键词或 RFC 退订头的入站邮件，将自动静默推送并归档。</i>`,
     updateError: '❌ <b>更新失败:</b> 保存至数据库时出现异常。',
-    addHelpTitle: '💡 <b>【增量添加关键词说明】</b>',
+    addHelpTitle: '💡 <b>【 添加关键词说明 】</b>',
     addHelpUsage: '<b>格式:</b> <code>/addkeywords 关键词1\n关键词2</code>',
     addHelpDesc: '系统将自动去重并安全合并至现有词库，<b>绝不会覆盖原有的关键词</b>。',
     successAppend: (addedCount: number, totalCount: number, preview: string) =>
@@ -334,12 +338,12 @@ export const zhCN: TranslationDict = {
   },
 
   routesCommand: {
-    title: '📋 <b>【 当前生效的邮件路由规则库 】</b>',
+    title: '📋 <b>【 当前分流规则库 】</b>',
     presetBaselineTitle: '🔹 <b>系统预设基线画像:</b>',
     fallbackGeneric: '• <i>(其余未匹配地址)</i> ➔ 🏷️ <b>通用</b>',
     customRulesTitle: '🔸 <b>动态自定义规则 (KV 存储):</b>',
     noCustomRules: '<i>(暂无自定义规则，可使用 add 个人 xxx 快速添加)</i>',
-    addHelpTitle: '💡 <b>【添加规则命令说明】</b>',
+    addHelpTitle: '💡 <b>【 添加规则说明 】</b>',
     addHelpUsage:
       '<b>格式:</b> <code>add &lt;标签&gt; &lt;前缀&gt; [转发邮箱]</code>\n\n' +
       '• <b>标签限定:</b> <code>个人</code>、<code>通用</code>、<code>免费产品</code>、<code>付费产品</code>、<code>商业支持</code>\n' +
@@ -361,7 +365,7 @@ export const zhCN: TranslationDict = {
       `🏷️ <b>归属标签:</b> ${tag}\n` +
       `📥 <b>转发目标:</b> <code>${forward || '(未配置独立转发，纯TG通知)'}</code>\n\n` +
       `💡 <i>Catch-all 开启后，发往该前缀的邮件将即刻按此规则分流。</i>`,
-    delHelpTitle: '💡 <b>【删除规则命令说明】</b>',
+    delHelpTitle: '💡 <b>【 删除规则说明 】</b>',
     delHelpUsage: '<b>格式:</b> <code>del &lt;前缀&gt;</code>\n<b>示例:</b> <code>del blog</code>',
     delNotFound: (prefix: string) =>
       `⚠️ <b>未找到规则:</b> 数据库中未找到前缀为 <code>${prefix}</code> 的自定义规则。`,
@@ -387,7 +391,7 @@ export const zhCN: TranslationDict = {
 
   setupCommand: {
     startWizardText:
-      `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (1/2) 】</b>\n` +
+      `🚀 <b>【 快速配置向导 (1/2) · 选择 AI 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `欢迎使用极速配置向导！本向导将分 2 步带您完成核心凭证绑定。\n` +
       `💡 <i>输入 <code>skip</code> 可跳过当前步骤，随时发送 <code>/cancel</code> 可退出向导。</i>\n\n` +
@@ -402,7 +406,7 @@ export const zhCN: TranslationDict = {
     skipStep1Text:
       `⏭️ <b>已跳过备份邮箱配置。</b>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置向导 (2/2) · 备份邮箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用于对来信进行大模型智能意图审信（验证码、账单、营销、告警等）与验证码自动提取。\n` +
@@ -417,14 +421,14 @@ export const zhCN: TranslationDict = {
       `✅ <b>备份邮箱绑定成功！</b>\n` +
       `已保存目标地址: <code>${email}</code>\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置向导 (2/2) · 备份邮箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用于对来信进行大模型智能意图审信（验证码、账单、营销、告警等）与验证码自动提取。\n` +
       `💡 <i>若暂未获取，输入 <code>skip</code> 可跳过，系统将自动使用高性能本地正则进行兜底处理。</i>\n\n` +
       `👉 <b>请直接回复您的 MiniMax API Key</b>，或发送 <code>skip</code> 跳过:`,
     step2Card:
-      `🚀 <b>【 cf-mail2tg-aibot 交互式配置向导 (2/2) 】</b>\n` +
+      `🚀 <b>【 快速配置向导 (2/2) · 备份邮箱 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `<b>第 2 步: 配置 MiniMax 大模型 API Key</b>\n` +
       `用于对来信进行大模型智能意图审信（验证码、账单、营销、告警等）与验证码自动提取。\n` +
@@ -432,13 +436,13 @@ export const zhCN: TranslationDict = {
       `👉 <b>请直接回复您的 MiniMax API Key</b>，或发送 <code>skip</code> 跳过:`,
     skipStep2Text: (fwdText: string, mmxText: string) =>
       `⏭️ <b>已跳过大模型 API Key 配置。</b>\n\n` +
-      `🎉 <b>【 恭喜！配置流程已顺利完成 】</b>\n` +
+      `🎉 <b>【 配置完成 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `系统核心组件状态:\n` +
       `• 备份转发邮箱: ${fwdText}\n` +
       `• 大模型审信: ${mmxText}\n\n` +
       `💡 <b>后续建议:</b>\n` +
-      `• 发送 <code>/config</code> 查看全局配置中枢与脱敏密钥\n` +
+      `• 发送 <code>/status</code> 查看系统运行状态与脱敏密钥\n` +
       `• 发送 <code>/routes</code> 查看当前生效的收信画像规则\n` +
       `• 随时发送 <code>/setkey</code> 可单独热更新各项密钥`,
     keyEmptyError:
@@ -446,13 +450,13 @@ export const zhCN: TranslationDict = {
     successStep2Text: (maskedKey: string, fwdText: string) =>
       `✅ <b>大模型 API Key 绑定成功！</b>\n` +
       `已保存至 KV，脱敏预览: <code>${maskedKey}</code>\n\n` +
-      `🎉 <b>【 恭喜！极速配置流程已全部完成 】</b>\n` +
+      `🎉 <b>【 配置完成 】</b>\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `您的 cf-mail2tg-aibot 邮件网关已全面就绪！\n` +
       `• 备份转发邮箱: ${fwdText}\n` +
       `• 大模型审信: ✅ 已就绪 (<code>${maskedKey}</code>)\n\n` +
       `💡 <b>后续建议:</b>\n` +
-      `• 发送 <code>/config</code> 查看全局配置中枢与脱敏密钥\n` +
+      `• 发送 <code>/status</code> 查看系统运行状态与脱敏密钥\n` +
       `• 发送 <code>/routes</code> 查看收信画像与域名规则\n` +
       `• 任何新邮件到达时，网关将全自动进行 AI 意图分析并实时推送！`,
     kvRequiredError: `⚠️ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库，无法启动向导。`,
@@ -528,12 +532,12 @@ export const zhCN: TranslationDict = {
     actionLabel: '防御动作',
     triggerLabel: '触发原因',
     defenseStatusLabel: '防御状态',
-    sizeCapTitle: '邮件中继 · 超大容量熔断拦截',
+    sizeCapTitle: '超大邮件熔断拦截',
     sizeCapReason: (size: string, cap: string) =>
       `邮件体积为 <b>${size}</b>，超出网关安全上限 (${cap})`,
     sizeCapAction: '已向发件方返回 SMTP 552 拒信退回，<b>未转入备份邮箱 (0 空间消耗)</b>。',
     sizeCapTip: '建议发件人通过网盘或 GitHub 链接分享超大文件。',
-    attachmentTitle: '邮件中继 · 附件安全策略拦截',
+    attachmentTitle: '危险附件策略拦截',
     attachmentReason: '触发附件安全防御',
     attachmentDetected: '检测附件',
     attachmentAction: '已向发信方返回 SMTP 550 拒信，<b>未转入备份邮箱 (0 空间占用)</b>。',

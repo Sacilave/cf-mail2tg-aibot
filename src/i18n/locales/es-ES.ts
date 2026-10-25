@@ -6,24 +6,26 @@ export const esES: TranslationDict = {
   flag: '🇪🇸',
 
   commandDesc: {
-    start: 'Ver resumen del estado',
-    menu: 'Abrir panel de ajustes',
-    guide: 'Ver guía detallada',
-    setup: 'Iniciar asistente de config.',
-    lang: 'Cambiar idioma (Switch language)',
+    start: 'Ver estado general del sistema',
+    settings: 'Abrir ajustes',
+    status: 'Ver estado del sistema y claves',
+    menu: 'Abrir ajustes',
     config: 'Ver estado del sistema y claves',
+    guide: 'Ver guía de uso completa',
+    setup: 'Iniciar asistente de configuración',
+    lang: 'Cambiar idioma (Switch language)',
     provider: 'Cambiar proveedor de IA',
-    model: 'Cambiar versión de modelo IA',
-    routes: 'Gestionar rutas y etiquetas',
-    keywords: 'Ver lista de palabras spam',
-    addkeywords: 'Añadir palabras spam',
-    resetkeywords: 'Restablecer palabras spam',
-    add: 'Añadir regla (add <etiq> <prefijo>)',
-    del: 'Eliminar regla (del <prefijo>)',
-    setkey: 'Configurar clave o buzón (setkey)',
-    resetkey: 'Restablecer clave dinámica',
-    cancel: 'Cancelar sesión o asistente',
-    help: 'Manual de comandos y ayuda',
+    model: 'Cambiar versión del modelo',
+    routes: 'Gestionar reglas de enrutamiento',
+    keywords: 'Ver palabras clave anti-spam',
+    addkeywords: 'Añadir palabras clave anti-spam',
+    resetkeywords: 'Restablecer palabras clave',
+    add: 'Añadir regla de enrutamiento',
+    del: 'Eliminar regla de enrutamiento',
+    setkey: 'Actualizar clave o correo de reenvío',
+    resetkey: 'Restablecer clave o correo de reenvío',
+    cancel: 'Cancelar sesión actual',
+    help: 'Ver ayuda de comandos',
   },
 
   dashboard: {
@@ -49,7 +51,7 @@ export const esES: TranslationDict = {
     btnResetForward: '🗑️ Eliminar buzón',
     btnSetup: '⚡ Asistente de config.',
     btnCancel: '❌ Cancelar',
-    routesTitle: '📂 <b>【 Gestión de Reglas de Enrutamiento 】</b>',
+    routesTitle: '📂 <b>【 Reglas de Enrutamiento 】</b>',
     routesSelectTagPrompt: 'Seleccione una <b>etiqueta de categoría</b> para la nueva regla (toque el botón):',
     routesInputPrefixPrompt: (tag: string) =>
       `Categoría seleccionada: <b>【${tag}】</b>\n\n` +
@@ -62,7 +64,7 @@ export const esES: TranslationDict = {
       `• Etiqueta: <b>${tag}</b>\n` +
       `• Destino: <code>${forward}</code>`,
     routesDeletedSuccess: (prefix: string) => `✅ ¡Regla para el prefijo <code>${prefix}</code> eliminada con éxito!`,
-    tagsTitle: '🏷️ <b>【 Gestor de Etiquetas Personalizadas 】</b>',
+    tagsTitle: '🏷️ <b>【 Etiquetas de Categoría 】</b>',
     tagsPrompt: 'Gestione sus etiquetas de negocio personalizadas. Podrá usarlas al añadir reglas de enrutamiento:',
     tagsEmpty: 'Sin etiquetas personalizadas. Se usan las categorías predeterminadas (Personal, Soporte, Negocios, Producto, General).',
     tagsAddSuccess: (tag: string) => `✅ ¡Etiqueta personalizada añadida: <b>【${tag}】</b>!`,
@@ -72,14 +74,14 @@ export const esES: TranslationDict = {
       '━━━━━━━━━━━━━━━━━━\n' +
       'Responda con el nombre de la nueva etiqueta (ej: <code>Finanzas</code>, <code>Monitoreo</code>, máx 10 letras):',
     tagsInvalid: '❌ Nombre de etiqueta inválido o duplicado (1-10 caracteres sin espacios).',
-    kwTitle: '🚫 <b>【 Palabras Clave de Bloqueo Publicitario 】</b>',
+    kwTitle: '🚫 <b>【 Filtro de Palabras Spam 】</b>',
     fwdTitle: '📬 <b>【 Configuración de Reenvío y Copia 】</b>',
     toastUpdated: '¡Configuración actualizada!',
     toastCancelled: 'Operación cancelada',
   },
 
   providerCommand: {
-    title: '🏢 <b>【 Seleccionar Proveedor de IA 】</b>',
+    title: '🏢 <b>【 Seleccionar Proveedor IA 】</b>',
     current: (provider: string, model: string) => `Proveedor Actual: <b>${provider}</b> (Modelo: <code>${model}</code>)`,
     prompt: 'Responda con el número correspondiente (válido por 5 minutos):',
     success: (provider: string, model: string, note: string) =>
@@ -94,7 +96,7 @@ export const esES: TranslationDict = {
   },
 
   modelCommand: {
-    title: (provider: string) => `🧠 <b>【 Seleccionar Modelo para ${provider} 】</b>`,
+    title: (provider: string) => `🧠 <b>【 Seleccionar Modelo ${provider} 】</b>`,
     current: (model: string) => `Modelo Actual: <code>${model}</code>`,
     prompt: 'Responda con un número o escriba el nombre del modelo personalizado (válido por 5 minutos):',
     success: (model: string) =>
@@ -205,7 +207,7 @@ export const esES: TranslationDict = {
   },
 
   configCommand: {
-    title: '⚙️ <b>【 Ajustes y estado de claves 】</b>',
+    title: '📊 <b>【 Estado del Sistema 】</b>',
     llmTitle: '🤖 <b>Clasificación de correos por IA (MiniMax):</b>',
     llmReady: (source: string) => `  • Estado: ✅ Listo ${source}`,
     llmNotConfigured: '  • Estado: ⚪ No configurado (Usando detector local de expresiones regulares)',

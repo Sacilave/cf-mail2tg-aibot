@@ -179,7 +179,7 @@ flowchart TD
 
 ### 4. 🎛️ Interaktives Telegram-Bedienfeld auf dem Smartphone
 - **Einrichtungsassistent (`/setup`)**: Ein benutzerfreundlicher 1-Minuten-Assistent für Mobilgeräte zur Verknüpfung Ihrer Weiterleitungsadresse und des LLM-Schlüssels (unterstützt `skip` und `/cancel`).
-- **Statusübersicht (`/config`)**: Zeigt den Systemstatus mit **Sicherheitsmaskierung vertraulicher Schlüssel** an (z. B. `min***a8f9`).
+- **Statusübersicht (`/status` oder `/config`)**: Zeigt den Systemstatus mit **Sicherheitsmaskierung vertraulicher Schlüssel** an (z. B. `min***a8f9`).
 - **Schlüsselverwaltung per Chat (`/setkey`)**: Senden Sie `/setkey minimax <Schlüssel>` oder `/setkey forward <E-Mail>` im privaten Chat, um Schlüssel direkt in Cloudflare KV zu speichern – ganz ohne Terminal.
 - **Zurücksetzen dynamischer Werte (`/resetkey`)**: Löscht KV-Überschreibungen und stellt die ursprünglichen Umgebungsvariablen wieder her.
 - **Schlüsselwort-Verwaltung (`/keywords`)**: Gibt die aktive Liste der Marketing-Filterwörter in einem kopierbaren Codeblock aus.
@@ -204,7 +204,8 @@ Tippen Sie auf die Schaltfläche **[Menu]** unten links im Telegram-Chat oder se
 | `/lang` | `[Sprachcode]` | Anzeigesprache wechseln (über 5x2-Tastatur oder Direktbefehl wie `/lang ko`, `/lang pt`, `/lang de`) |
 | `/setup` | - | Interaktiven 1-Minuten-Konfigurationsassistenten starten |
 | `/cancel` | - | Laufenden Assistenten oder Dialog abbrechen und Status zurücksetzen |
-| `/config` | - | Gateway-Status und maskierte Anmeldedaten anzeigen |
+| `/status` | - | **📊 Systemstatus**: Gateway-Status und maskierte Anmeldedaten anzeigen (Alias `/config`) |
+| `/settings` | - | **⚙️ Einstellungen**: 2x4 Inline-Tastenfeld für alle Konfigurationen (Alias `/menu`) |
 | `/setkey` | `<minimax\|forward> <Wert>` | LLM-Schlüssel oder Weiterleitungsadresse direkt per Chat in KV speichern |
 | `/resetkey` | `<minimax\|forward>` | KV-Überschreibungen löschen und ursprüngliche Variablen wiederherstellen |
 | `/keywords` | - | Liste der aktiven Marketing-Filterwörter kopierbar anzeigen |

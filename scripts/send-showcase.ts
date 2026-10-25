@@ -1,12 +1,15 @@
 /**
  * =============================================================================
- * Product Showcase Generator (English Version for Telegram Screenshots)
+ * Product Showcase Generator (Bilingual for Telegram Screenshots)
  * Sends 5 carefully crafted, high-fidelity sample cards to demonstrate:
  *   1. 🔐 OTP / Security Verification Code (Pinned & Tap-to-Copy)
  *   2. 💼 Business & Customer Support Inquiry (Persona Routing & Expandable Quote)
  *   3. 💰 Billing / Invoice Notification (Financial Triage & Amount Extraction)
  *   4. 🚨 Spoof Detection & Security Warning (SPF/DKIM Failure & High Alert)
  *   5. 📢 Marketing Noise Suppression (Keyword Fast-Drop & Silent Delivery)
+ *
+ * Usage:
+ *   npx tsx scripts/send-showcase.ts [zh|en]
  * =============================================================================
  */
 
@@ -95,13 +98,158 @@ async function main() {
     process.exit(1);
   }
 
-  const dictEn = getTranslation('en-US');
+  const langArg = (process.argv[2] || 'zh').toLowerCase();
+  const isZh = langArg.startsWith('zh') || langArg === 'cn';
+  const targetLang = isZh ? 'zh-CN' : 'en-US';
+  const dict = getTranslation(targetLang);
   const baseBackup = devVars.FORWARD_TO_EMAIL || 'sacilave@gmail.com';
 
-  const showcaseCases = [
+  const showcaseCasesZh = [
     // -------------------------------------------------------------------------
-    // 1. Verification / OTP Scenario
+    // 1. 验证码独立置顶与一键复制场景
     // -------------------------------------------------------------------------
+    {
+      title: '1. [验证码秒提取] GitHub 动态验证码 (单行独立代码块 · 点击直接复制)',
+      intentTag: '验证' as EmailIntentTag,
+      targetName: 'admin',
+      extractedCode: '729406',
+      routeTag: '个人' as AllowedTag,
+      targetDomain: 'lave.fun',
+      to: 'admin@lave.fun',
+      from: 'GitHub Security <noreply@github.com>',
+      cleanReplyEmail: 'noreply@github.com',
+      authBadge: '🛡️ <b>鉴真:</b> <code>SPF 通过 · DKIM 官方签名有效 (来源可信)</code>',
+      aiBadge: '🤖 <b>AI 研判:</b> <code>MiniMax: 动态验证码 (重要·强提醒)</code>',
+      subject: '【GitHub】请验证您的新设备登录请求',
+      snippet:
+        '开发者你好：\n\n' +
+        '系统检测到您的 GitHub 账户正在尝试从新设备（东京，日本）登录。\n\n' +
+        '本次安全验证码为: 729406\n' +
+        '该验证码将在 10 分钟后失效。如非本人操作，请立即前往安全中心修改密码以保护账户安全。\n\n' +
+        'GitHub 安全团队',
+      forwardSuccess: true,
+      baseForwardTarget: baseBackup,
+      actualForwardedTo: baseBackup,
+      isSilent: false,
+    },
+
+    // -------------------------------------------------------------------------
+    // 2. 商业合作与客户咨询 (角色画像智能分流 & 长文折叠)
+    // -------------------------------------------------------------------------
+    {
+      title: '2. [商业合作与客户画像] 企业级授权与私有部署咨询 (Gmail 别名投递)',
+      intentTag: '业务' as EmailIntentTag,
+      targetName: 'business',
+      extractedCode: undefined,
+      routeTag: '商务' as AllowedTag,
+      targetDomain: 'lave.fun',
+      to: 'business@lave.fun',
+      from: '李晨 <chen.li@innovatetech.cn>',
+      cleanReplyEmail: 'chen.li@innovatetech.cn',
+      authBadge: '🛡️ <b>鉴真:</b> <code>SPF 通过 · DKIM 签名有效 (企业域名可信)</code>',
+      aiBadge: '🤖 <b>AI 研判:</b> <code>MiniMax: 商业合作洽谈 (高优先级来信)</code>',
+      subject: '关于 cf-mail2tg-aibot 企业版授权与批量私有化部署咨询',
+      snippet:
+        '您好！\n\n' +
+        '我是创智科技（InnovateTech）的基础设施负责人。我们在边缘集群环境中完整测试了贵团队开源的 cf-mail2tg-aibot 邮件网关，工程团队（约 35 名工程师）对其 0.2ms 极速前置频控与双轨保底直转架构印象极其深刻。\n\n' +
+        '我们计划在内部全面引入该方案，希望进一步了解：\n' +
+        '1. 企业级多租户路由与专属 Webhook 告警扩展支持\n' +
+        '2. 私有大模型集群（本地 Ollama / vLLM）对接适配指南\n' +
+        '3. 企业 SLA 技术支持与定制化服务方案\n\n' +
+        '期待与您建立商业合作，本周四上午方便安排一次 15 分钟的线上会议交流吗？\n\n' +
+        '顺祝商祺！\n创智科技 基础架构部 · 李晨',
+      forwardSuccess: true,
+      baseForwardTarget: baseBackup,
+      actualForwardedTo: 'sacilave+business@gmail.com',
+      isSilent: false,
+    },
+
+    // -------------------------------------------------------------------------
+    // 3. 财务账单与扣费凭据
+    // -------------------------------------------------------------------------
+    {
+      title: '3. [财务账单与发票] Stripe 结算收据 (金额与订单号结构化高亮)',
+      intentTag: '账单' as EmailIntentTag,
+      targetName: 'billing',
+      extractedCode: undefined,
+      routeTag: '付费产品' as AllowedTag,
+      targetDomain: 'lave.fun',
+      to: 'billing@lave.fun',
+      from: 'Stripe 结算中心 <invoices@stripe.com>',
+      cleanReplyEmail: 'invoices@stripe.com',
+      authBadge: '🛡️ <b>鉴真:</b> <code>SPF 通过 · DKIM 官方签名有效 (Stripe 官方)</code>',
+      aiBadge: '🤖 <b>AI 研判:</b> <code>MiniMax: 财务扣费凭单 (财务发票入账)</code>',
+      subject: '账单付款成功通知 #INV-2026-9812 ($249.00 USD)',
+      snippet:
+        'Stripe 支付结算凭单\n\n' +
+        '账单编号: #INV-2026-9812\n' +
+        '付款金额: $249.00 USD\n' +
+        '支付方式: 企业 Visa 信用卡 (尾号 4921)\n' +
+        '服务项目: Cloudflare Workers 专属 Pro 实例 (年度订阅)\n\n' +
+        '完整的电子增值税发票与对账单已同步生成，您可以登录控制面板直接下载。',
+      attachmentsSummary: 'invoice-INV-2026-9812.pdf (84 KB)',
+      forwardSuccess: true,
+      baseForwardTarget: baseBackup,
+      actualForwardedTo: 'sacilave+billing@gmail.com',
+      isSilent: false,
+    },
+
+    // -------------------------------------------------------------------------
+    // 4. 仿冒源鉴真安全警报与钓鱼拦截
+    // -------------------------------------------------------------------------
+    {
+      title: '4. [安全告警与鉴真拦截] 伪造发件人钓鱼警报 (SPF/DKIM 失败醒目标记)',
+      intentTag: '告警' as EmailIntentTag,
+      targetName: 'security',
+      extractedCode: undefined,
+      routeTag: '通用' as AllowedTag,
+      targetDomain: 'lave.fun',
+      to: 'security@lave.fun',
+      from: '安全中心 <service-notice@fake-auth-portal.com>',
+      cleanReplyEmail: 'service-notice@fake-auth-portal.com',
+      authBadge: '🚨 <b>鉴真:</b> <code>SPF/DKIM 校验不合格 (高危仿冒发件人·来源未经验证)</code>',
+      aiBadge: '🤖 <b>AI 研判:</b> <code>MiniMax: 钓鱼仿冒告警 (检测到可疑跳转链接)</code>',
+      subject: '【紧急】您的域名解析凭据存在异常，请立即解除冻结',
+      snippet:
+        '安全警告: 检测到来自未知设备的越权访问尝试。\n\n' +
+        '由于检测到疑似撞库攻击，您的域名控制面板已被系统临时限制。\n' +
+        '请在 2 小时内点击下方链接完成安全校验，否则将暂停当前域名的 NS 解析服务。\n\n' +
+        '[已被网关安全拦截的恶意钓鱼链接: http://fake-auth-portal.com/login?token=hijack]',
+      forwardSuccess: true,
+      baseForwardTarget: baseBackup,
+      actualForwardedTo: baseBackup,
+      isSilent: false,
+    },
+
+    // -------------------------------------------------------------------------
+    // 5. 营销降噪与静默免打扰
+    // -------------------------------------------------------------------------
+    {
+      title: '5. [营销推广与防打扰] 优惠大促 (关键词短路免调AI · 静默推送)',
+      intentTag: '营销' as EmailIntentTag,
+      targetName: 'newsletter',
+      extractedCode: undefined,
+      routeTag: '通用' as AllowedTag,
+      targetDomain: 'lave.fun',
+      to: 'newsletter@lave.fun',
+      from: '云上周刊 <promotions@cloud-newsletter.com>',
+      cleanReplyEmail: 'promotions@cloud-newsletter.com',
+      authBadge: '🛡️ <b>鉴真:</b> <code>SPF 通过 · DKIM 签名有效</code>',
+      aiBadge: '🏷️ <b>规则命中:</b> <code>关键词匹配 [限时特惠, 3折] (短路免调AI·节省配额·静默推送)</code>',
+      subject: '限时特惠：全球开发者工具双11大促，云服务额度低至 3 折！',
+      snippet:
+        '亲爱的开发者：\n\n' +
+        '年度最大折扣福利已上线！精选超过 50 款顶级开发者工具、IDE 效率插件与边缘算力资源包，首年特惠仅需 69 元/月起。\n\n' +
+        '活动将于本周日 24:00 准时截止，结算时输入优惠码 DOUBLE11 即可立享折上折。\n\n' +
+        '如需管理邮件订阅偏好或退订此类推广邮件，请点击这里: https://cloud-newsletter.com/unsubscribe',
+      forwardSuccess: true,
+      baseForwardTarget: baseBackup,
+      actualForwardedTo: baseBackup,
+      isSilent: true, // 静默投递
+    },
+  ];
+
+  const showcaseCasesEn = [
     {
       title: '1. [Verification / OTP] GitHub 2FA Code with Instant Tap-to-Copy',
       intentTag: '验证' as EmailIntentTag,
@@ -126,10 +274,6 @@ async function main() {
       actualForwardedTo: baseBackup,
       isSilent: false,
     },
-
-    // -------------------------------------------------------------------------
-    // 2. Business & Customer Support Persona Routing
-    // -------------------------------------------------------------------------
     {
       title: '2. [Business & Support] Enterprise License & API Integration Inquiry',
       intentTag: '业务' as EmailIntentTag,
@@ -157,10 +301,6 @@ async function main() {
       actualForwardedTo: 'sacilave+business@gmail.com',
       isSilent: false,
     },
-
-    // -------------------------------------------------------------------------
-    // 3. Billing & Payment Invoice
-    // -------------------------------------------------------------------------
     {
       title: '3. [Billing & Finance] Stripe Invoice & Payment Receipt',
       intentTag: '账单' as EmailIntentTag,
@@ -187,10 +327,6 @@ async function main() {
       actualForwardedTo: 'sacilave+billing@gmail.com',
       isSilent: false,
     },
-
-    // -------------------------------------------------------------------------
-    // 4. Security Spoof Alert & Phishing Defense
-    // -------------------------------------------------------------------------
     {
       title: '4. [Security Alert] Phishing Spoof Detection (SPF/DKIM Failure Warning)',
       intentTag: '告警' as EmailIntentTag,
@@ -214,10 +350,6 @@ async function main() {
       actualForwardedTo: baseBackup,
       isSilent: false,
     },
-
-    // -------------------------------------------------------------------------
-    // 5. Marketing Noise Suppression & Silent Delivery
-    // -------------------------------------------------------------------------
     {
       title: '5. [Marketing Noise] Promo Campaign (Keyword Fast-Match · Muted Delivery)',
       intentTag: '营销' as EmailIntentTag,
@@ -239,12 +371,14 @@ async function main() {
       forwardSuccess: true,
       baseForwardTarget: baseBackup,
       actualForwardedTo: baseBackup,
-      isSilent: true, // Silent delivery for marketing
+      isSilent: true,
     },
   ];
 
+  const showcaseCases = isZh ? showcaseCasesZh : showcaseCasesEn;
+
   console.log(`\n========================================================`);
-  console.log(`🚀 Starting Showcase Generation (English Edition)...`);
+  console.log(`🚀 Starting Showcase Generation (${isZh ? '简体中文' : 'English'})...`);
   console.log(`   Target Chat ID: ${adminChatId}`);
   console.log(`   Total Cards: ${showcaseCases.length}`);
   console.log(`========================================================\n`);
@@ -254,7 +388,7 @@ async function main() {
     console.log(`[${i + 1}/${showcaseCases.length}] Rendering & Sending: ${sc.title}`);
 
     const cardHtml = renderEmailCardHtml({
-      dict: dictEn,
+      dict,
       intentTag: sc.intentTag,
       targetName: sc.targetName,
       extractedCode: sc.extractedCode,
@@ -287,8 +421,8 @@ async function main() {
     }
   }
 
-  console.log(`\n🎉 All 5 showcase cards delivered to your Telegram!`);
-  console.log(`   You can now take screenshots directly in Telegram for your README.`);
+  console.log(`\n🎉 All 5 ${isZh ? '中文' : 'English'} showcase cards delivered to your Telegram!`);
+  console.log(`   You can now take screenshots directly in Telegram.`);
 }
 
 main().catch(console.error);

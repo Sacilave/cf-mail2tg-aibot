@@ -209,7 +209,7 @@ E-mail Recebido
 
 ### 5. 🎛️ Painel de Controle e Hub de Credenciais no Telegram
 - **Assistente de Configuração Interativo (`/setup`)**: Passo a passo de 1 minuto pelo celular para vincular e-mail de backup e chave de IA.
-- **Status do Sistema (`/config`)**: Visualize configurações e status com credenciais sensíveis mascaradas por segurança.
+- **Status do Sistema (`/status` ou `/config`)**: Visualize configurações e status com credenciais sensíveis mascaradas por segurança.
 - **Atualização a Quente (`/setkey`)**: Altere chaves e e-mails de backup em tempo real sem precisar de terminal.
 - **Edição de Palavras-chave (`/keywords`)**: Responda diretamente à mensagem do bot para salvar alterações instantaneamente no KV.
 - **Gerenciamento de Rotas (`/routes`, `/add`, `/del`)**: Adicione e exclua regras de personas de domínio com botões interativos.
@@ -229,14 +229,14 @@ Toque no botão **[Menu]** no canto inferior esquerdo do chat ou envie qualquer 
 | Comando | Formato de Parâmetro | Descrição |
 | :--- | :--- | :--- |
 | `/start` | - | **👋 Visão Geral Minimalista**: Resumo do gateway com atalhos para `[⚙️ Configurações]`, `[📖 Guia]` e `[🌐 Idioma]` |
-| `/menu` | - | **⚙️ Painel de Configurações**: Grade 2x4 para gerenciar IA, rotas, anti-spam, encaminhamento, idioma e assistente |
+| `/settings` | - | **⚙️ Painel de Configurações**: Grade 2x4 para gerenciar IA, rotas, anti-spam, encaminhamento, idioma (alias `/menu`) |
 | `/guide` | - | **📖 Guia Detalhado do Usuário**: Documentação completa sobre classificação, filtros de spam e roteamento |
 | `/setup` | - | **⚡ Assistente de Configuração**: Configuração passo a passo em 2 etapas para vincular credenciais pelo celular |
 | `/lang` | `[código]` | Alternar idioma do sistema pelo menu 5x2 ou via código direto (ex: `/lang pt`, `/lang en`) |
 | `/provider` | `[1~9\|nome]` | Troca interativa de provedor de IA (responda de 1 a 9 para Workers AI / DeepSeek / Groq / OpenAI etc.) |
 | `/model` | `[1~2\|nome]` | Troca interativa da versão do modelo do provedor ativo |
 | `/cancel` | - | Cancelar assistente ou sessão interativa ativa a qualquer momento |
-| `/config` | - | Visualizar status do gateway e credenciais mascaradas |
+| `/status` | - | **📊 Status do Sistema**: Visualizar status do gateway e credenciais mascaradas (alias `/config`) |
 | `/setkey` | `<ai\|minimax\|forward> <valor>` | Atualizar chave de IA ou e-mail de backup a quente pelo chat |
 | `/resetkey` | `<ai\|provider\|model\|minimax\|forward>` | Redefinir sobreposição do KV e restaurar padrões do ambiente |
 | `/keywords` | - | Exibir todas as palavras-chave ativas de marketing em bloco copiável |
