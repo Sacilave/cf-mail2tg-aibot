@@ -262,6 +262,23 @@ E-mail Recebido
 - **Localização de Ponta a Ponta**: Cards de e-mail, alertas de segurança, painéis de configuração e comandos do menu do Telegram totalmente adaptados e naturais.
 - **Alternador Rápido (`/lang`)**: Envie `/lang` para abrir o teclado em grade 5x2 (com `✓` no idioma ativo) ou forneça o código diretamente (ex: `/lang pt`, `/lang en`).
 - **Resolução de Prioridade em 4 Níveis**: `Configuração dinâmica no KV (config:sys:system_language)` > `Variável de ambiente (DEFAULT_LANGUAGE)` > `Idioma do cliente Telegram (language_code)` > `Padrão de fallback (zh-CN)`.
+### 7. 📤 Assistente de Envio Direto de E-mails e Respostas em Thread RFC 5322 (via Resend)
+- **Assistente Interativo em 5 Etapas (`/send`)**: Fluxo passo a passo no Telegram (seleção da identidade de envio, validação do destinatário, assunto, corpo com limite de 100KB e confirmação prévia) despachado via API REST do Resend;
+- **Conformidade com Threads RFC 5322 / RFC 2822**: O botão `[ ↩️ Responder ]` inicia a resposta contextual injetando os cabeçalhos `In-Reply-To` e `References` e ajustando `Re: ` para agrupar conversas nativamente no Gmail, Outlook, etc.;
+- **Proteção contra Injeção CRLF**: Sanitização rigorosa via `cleanHeaderValue()` que elimina quebras de linha `\r\n` e caracteres de controle para neutralizar qualquer risco de injeção de cabeçalhos;
+- **Configuração Dinâmica de Token**: Envie `/setkey resend re_xxxxxx` no Telegram para vincular sua chave do Resend sem necessidade de redeploy.
+
+### 8. ⭐ Lista Branca sem Consumo de IA e Seleção Rápida de Destinatários
+- **Ignora IA com 0 Tokens (`/whitelist`)**: Remetentes ou domínios (`@empresa.com`) na lista branca são aprovados sem análise de LLM – **0 tokens gastos e proteção total contra falsos positivos de spam**;
+- **Botões Dinâmicos de Seleção Rápida**: A etapa 1 do `/send` cria botões táteis combinando sua lista branca, seus últimos 2 remetentes e seus últimos 2 destinatários.
+
+### 9. 🎛️ Console de 5 Ações Rápidas em Cada Notificação
+Cada card de e-mail recebido no Telegram conta com 5 botões de alta produtividade:
+- **`[ ↩️ Responder ]`**: Inicia a resposta interativa com um toque;
+- **`[ 🤖 Resumo IA ]`**: Resumo executivo estilo Humanizer (propósito, prazos, ações), traduzido para o idioma do usuário e com cache KV (0 tokens em consultas seguintes);
+- **`[ 🌐 Tradução IA ]`**: Tradução fluida e natural de todo o texto com proteção contra estouro de limite de caracteres;
+- **`[ 📋 Copiar Corpo ]`**: Envia um bloco `<pre><code>` para cópia com 1 toque no celular ou desktop;
+- **`[ 📖 Ver E-mail Completo ]`**: Abre um leitor Web dedicado (`GET /view/:replyId`) com sandbox Strict CSP e modo escuro, superando o limite de 4.096 caracteres do Telegram.
 
 ---
 

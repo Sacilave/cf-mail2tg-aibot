@@ -235,6 +235,23 @@ flowchart TD
 - **Cambio Inmediato (`/lang`)**: Muestra una cuadrícula táctil 5x2 con indicador `✓` del idioma activo o acepta argumentos directos (como `/lang ko`, `/lang pt`, `/lang es`).
 - **Resolución en 4 Niveles**: `Configuración dinámica en KV` > `Variable de entorno (DEFAULT_LANGUAGE)` > `Idioma del cliente de Telegram` > `Por defecto (zh-CN)`.
 - **Rendimiento Submilimétrico**: Árboles de diccionarios tipados en TypeScript con tiempo de resolución menor a 0.1ms sin impacto en memoria.
+### 7. 📤 Asistente de Envío de Correo y Respuestas en Hilo RFC 5322 (vía Resend)
+- **Asistente de Envío en 5 Pasos (`/send`)**: Flujo interactivo en Telegram guiado paso a paso (selección de identidad del remitente, validación de destinatario, asunto, cuerpo con límite de 100KB y confirmación previa) con entrega vía Resend REST API;
+- **Compatibilidad con Hilos RFC 5322 / RFC 2822**: El botón `[ ↩️ Responder ]` inicia una respuesta contextual inyectando los encabezados `In-Reply-To` y `References` y normalizando `Re: ` para agrupar hilos en Gmail, Outlook, etc.;
+- **Protección contra Inyección CRLF**: Filtrado mediante `cleanHeaderValue()` que elimina caracteres `\r\n` y de control para erradicar cualquier riesgo de secuestro de cabeceras;
+- **Vinculación Dinámica de API Key**: Envía `/setkey resend re_xxxxxx` en Telegram para configurar tu clave de Resend sin redeploy.
+
+### 8. ⭐ Lista Blanca con Omisión de IA y Selección Rápida de Destinatarios
+- **Omisión de IA con 0 Tokens (`/whitelist`)**: Remitentes o dominios (`@empresa.com`) en lista blanca no consumen tokens y evitan falsos positivos de spam;
+- **Botones Dinámicos de Selección Rápida**: El paso 1 de `/send` genera botones interactivos con tu lista blanca, los últimos 2 remitentes y los últimos 2 destinatarios.
+
+### 9. 🎛️ Consola de 5 Acciones Rápidas en Cada Notificación
+Cada tarjeta de correo entrante en Telegram incluye 5 botones funcionales:
+- **`[ ↩️ Responder ]`**: Activa el flujo interactivo de respuesta al correo;
+- **`[ 🤖 Resumen IA ]`**: Resumen práctico y directo estilo Humanizer (propósito, fechas clave, acciones requeridas) adaptado al idioma del usuario y con caché KV (0 tokens en clics posteriores);
+- **`[ 🌐 Traducción IA ]`**: Traducción fiel y natural del texto completo con protección de límite de caracteres;
+- **`[ 📋 Copiar Texto ]`**: Envía un bloque `<pre><code>` para copiar todo el cuerpo con un solo toque;
+- **`[ 📖 Ver Correo Completo ]`**: Lector web seguro (`GET /view/:replyId`) con Strict CSP y modo oscuro, superando el límite de 4.096 caracteres de Telegram.
 
 ---
 

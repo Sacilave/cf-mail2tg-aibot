@@ -235,6 +235,23 @@ flowchart TD
 - **Schnellwechsel (`/lang`)**: Öffnet eine 5x2-Tastaturmatrix mit aktiver Sprachmarkierung `✓` oder akzeptiert Sprachcodes direkt (z. B. `/lang ko`, `/lang pt`, `/lang de`).
 - **4-Stufige Auflösung**: `Dynamische KV-Konfiguration` > `Umgebungsvariable (DEFAULT_LANGUAGE)` > `Telegram-Client-Sprache` > `Standardwert (zh-CN)`.
 - **Submillisekunden-Reaktionszeit**: Statische TypeScript-Wörterbücher mit Reaktionszeiten unter 0,1 ms ohne zusätzlichen Speicherverbrauch.
+### 7. 📤 Interaktiver E-Mail-Sendeassistent & RFC 5322 Thread-Antworten (via Resend)
+- **5-Schritte-Sendeassistent (`/send`)**: Schrittweiser interaktiver Ablauf in Telegram zur Auswahl der Absender-Routing-Identität, Empfängerprüfung, Betreff, Nachrichtentext (mit 100KB-Schutz) und Bestätigungsvorschau mit Auslieferung über die Resend REST API;
+- **RFC 5322 / RFC 2822 Konversationsthreads**: Der Button `[ ↩️ Antworten ]` startet eine Antwort mit automatischer `Re: `-Formatierung und `In-Reply-To`- sowie `References`-Headern zur nativen Thread-Gruppierung in E-Mail-Clients;
+- **CRLF-Injektionsschutz**: Automatisches Filtern von Zeilenumbrüchen `\r\n` und Steuerzeichen via `cleanHeaderValue()` schützt vor Header-Injektionen;
+- **Dynamische Schlüsselbindung**: Senden Sie `/setkey resend re_xxxxxx` in Telegram, um Ihren Resend API-Schlüssel ohne erneutes Deployment zu speichern.
+
+### 8. ⭐ KI-Bypass-Whitelist & Dynamische Schnellauswahl
+- **Whitelist ohne Token-Verbrauch (`/whitelist`)**: E-Mails von Adressen oder Domains (`@firma.de`) auf der Whitelist umgehen die KI-Klassifizierung vollständig – **0 Token-Verbrauch & Schutz vor Spam-Fehlalarmen**;
+- **Dynamische Empfänger-Schnellauswahl**: Schritt 1 von `/send` erzeugt interaktive Buttons aus Ihrer Whitelist, den letzten 2 eingehenden und 2 ausgehenden Adressen.
+
+### 9. 🎛️ 5-in-1-Aktionskonsole unter jeder E-Mail-Benachrichtigung
+Jede E-Mail-Benachrichtigungskarte in Telegram enthält 5 Schnellaktions-Buttons:
+- **`[ ↩️ Antworten ]`**: Startet direkt den interaktiven Antwort-Assistenten;
+- **`[ 🤖 KI-Zusammenfassung ]`**: Prägnante Zusammenfassung im Humanizer-Stil (Kernanliegen, Fristen, Aktionen), automatisch in der Benutzersprache und dank KV-Caching ab dem 2. Klick mit 0 Token;
+- **`[ 🌐 KI-Übersetzung ]`**: Natürliche Volltextübersetzung ohne Roboter-Diktion mit Längenüberlaufschutz;
+- **`[ 📋 Text kopieren ]`**: Sendet einen `<pre><code>`-Block für 1-Klick-Volltextkopieren am Smartphone und Desktop;
+- **`[ 📖 Vollständige E-Mail ansehen ]`**: Öffnet einen sicheren Web-Reader (`GET /view/:replyId`) mit Strict CSP Sandbox und Dark Mode – hebt das 4.096-Zeichen-Limit von Telegram auf.
 
 ---
 

@@ -235,6 +235,23 @@ flowchart TD
 - **Changement Immédiat (`/lang`)** : Affichez un menu tactile 5x2 avec indicateur `✓` de la langue active, ou fournissez un code directement (ex. : `/lang ko`, `/lang pt`, `/lang fr`).
 - **Résolution en 4 Étapes** : `Configuration dynamique Cloudflare KV` > `Variable d'environnement (DEFAULT_LANGUAGE)` > `Langue du client Telegram` > `Valeur par défaut (zh-CN)`.
 - **Performances Submilliseconde** : Arbres de dictionnaires TypeScript typés statiquement pour un temps de réponse < 0,1 ms sans consommation mémoire superflue.
+### 7. 📤 Assistant d'Envoi d'E-mails & Réponses Groupées RFC 5322 (via Resend)
+- **Assistant d'Envoi en 5 Étapes (`/send`)** : Parcours interactif guidé dans Telegram (sélection de l'identité d'expéditeur, saisie du destinataire, objet, corps avec limite de 100 Ko et carte de confirmation) expédié via l'API REST de Resend ;
+- **Respect des Fils de Discussion RFC 5322 / RFC 2822** : Le bouton `[ ↩️ Répondre ]` amorce une réponse contextuelle en injectant les en-têtes `In-Reply-To` et `References` et en normalisant `Re: ` pour un regroupement natif dans Gmail, Apple Mail, etc. ;
+- **Protection contre l'Injection CRLF** : Nettoyage strict via `cleanHeaderValue()` éliminant les sauts de ligne `\r\n` et caractères de contrôle pour bloquer toute injection SMTP/MIME ;
+- **Configuration Dynamique de Clé** : Envoyez `/setkey resend re_xxxxxx` dans Telegram pour lier votre clé API Resend sans redéploiement.
+
+### 8. ⭐ Liste Blanche sans Consommation d'IA & Sélection Rapide
+- **Contournement IA avec 0 Jeton (`/whitelist`)** : Les expéditeurs ou domaines (`@entreprise.com`) sur liste blanche contournent l'analyse par IA – **0 jeton consommé et aucun faux positif de spam** ;
+- **Boutons Dynamiques de Destinataires** : L'étape 1 de `/send` génère des boutons tactiles combinant votre liste blanche, vos 2 derniers expéditeurs entrants et vos 2 derniers destinataires sortants.
+
+### 9. 🎛️ Console de 5 Actions Rapides sous Chaque Notification
+Chaque notification d'e-mail dans Telegram intègre 5 boutons interactifs :
+- **`[ ↩️ Répondre ]`** : Active la session interactive de réponse ;
+- **`[ 🤖 Résumé IA ]`** : Synthèse pragmatique style Humanizer (objectif, montants, échéances, actions), adaptée à la langue de l'utilisateur et mise en cache KV (0 jeton dès le second clic) ;
+- **`[ 🌐 Traduction IA ]`** : Traduction naturelle et fluide du texte intégral avec protection contre les dépassements de taille ;
+- **`[ 📋 Copier le corps ]`** : Envoie un bloc `<pre><code>` pour copier l'intégralité du texte en un seul clic sur mobile ;
+- **`[ 📖 Voir l'e-mail complet ]`** : Ouvre un lecteur Web sécurisé (`GET /view/:replyId`) avec bac à sable Strict CSP et mode sombre, résolvant la limite de 4 096 caractères de Telegram.
 
 ---
 

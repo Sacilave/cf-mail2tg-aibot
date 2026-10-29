@@ -288,6 +288,23 @@ Incoming Email
 - **Instant Switcher (`/lang`)**: Send `/lang` to invoke a 5x2 inline button matrix (the active language is marked with `✓`), or supply a code directly (e.g., `/lang en`, `/lang ja`, `/lang ko`, `/lang pt`).
 - **4-Tier Priority Resolution**: `Cloudflare KV dynamic setting (config:sys:system_language)` > `Environment variable (DEFAULT_LANGUAGE)` > `Telegram client language (language_code)` > `Fallback default (zh-CN)`.
 - **Sub-millisecond Zero Overhead**: Built on static TypeScript dictionary trees with sub-millisecond (< 0.1ms) execution and zero edge memory penalty.
+### 7. 📤 Interactive Outbound Compose & RFC 5322 Threaded Replies (via Resend)
+- **Multi-Step Direct Compose Wizard (`/send`)**: Step-by-step interactive wizard in Telegram guiding you through sender routing identity, recipient email (with format verification), subject, body text (with multi-line support & 100KB length cap), and final confirmation preview, dispatching directly via Resend REST API;
+- **RFC 5322 / RFC 2822 Conversation Threading**: Tapping `[ ↩️ Reply ]` instantly initiates a reply context, auto-formatting `Re: ` and injecting `In-Reply-To` and `References` headers for native conversation folding in Gmail, Outlook, Apple Mail, etc.;
+- **CRLF Injection Hardening**: All email headers are sanitized with `cleanHeaderValue()` stripping `\r\n` and control characters (`0x00-0x1F`) to eliminate SMTP/MIME injection risks;
+- **Zero-Redeploy Token Binding**: Bind or update your Resend API Key directly within Telegram via `/setkey resend re_xxxxxx`.
+
+### 8. ⭐ AI-Bypass Whitelist & Dynamic Quick-Pick Keyboard
+- **Zero-Token Short-Circuit Whitelist (`/whitelist`)**: Whitelisted senders (exact email or `@domain.com`) automatically bypass AI classification—**spending 0 AI tokens and eliminating false marketing flags**;
+- **Dynamic Suggested Recipients**: Step 1 of the `/send` wizard dynamically aggregates your whitelist, your last 2 inbound senders, and your last 2 outbound recipients as 1-tap buttons.
+
+### 9. 🎛️ 5-in-1 Quick Action Console on Notification Cards
+Every inbound email notification card in Telegram features 5 interactive buttons:
+- **`[ ↩️ Reply ]`**: 1-click interactive reply prompt;
+- **`[ 🤖 AI Summary ]`**: Humanizer utilitarian summary prompt extracting core purpose, key figures/deadlines, and action items. Dynamically auto-adapts to your target language; cached in KV on first run for instant 0-token subsequent reads;
+- **`[ 🌐 AI Translate ]`**: Natural humanized full-text translation with dual-language subject comparison and overflow protection;
+- **`[ 📋 Copy Body ]`**: Sends a `<pre><code>` block for 1-tap full body copying on Telegram mobile and desktop;
+- **`[ 📖 View Full Original ]`**: Opens a standalone secure Web Reader (`GET /view/:replyId`) with Strict CSP sandbox and dark mode, completely overcoming Telegram's 4,096-character cap.
 
 ---
 
