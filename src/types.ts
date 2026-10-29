@@ -50,6 +50,10 @@ export interface Env {
   MINIMAX_API_URL?: string;
   /** Default display language: 'zh-CN' | 'en-US' | 'zh-TW' | 'ja-JP' | 'ko-KR' | 'pt-BR' | 'ru-RU' | 'es-ES' | 'fr-FR' | 'de-DE' */
   DEFAULT_LANGUAGE?: string;
+  /** Resend API Key for sending outbound email replies */
+  RESEND_API_KEY?: string;
+  /** Primary outbound email domain (default: example.com) */
+  EMAIL_DOMAIN?: string;
 }
 
 export interface MarketingDetectionResult {
@@ -162,4 +166,29 @@ export interface AttachmentPolicyResult {
   reason?: string;
   smtpRejectCode?: number;
   detectedAttachments?: string[];
+}
+
+/** Short metadata stored in KV to enable 1-click email replies, AI actions, and viewing from Telegram */
+export interface EmailReplyMeta {
+  id: string;
+  /** Original sender email (client address to reply to) */
+  from: string;
+  /** Routing inbox address (persona address to send from, e.g. service@example.com) */
+  to: string;
+  /** Original email subject */
+  subject: string;
+  /** Original RFC Message-ID header for In-Reply-To and References threading */
+  messageId?: string;
+  /** Timestamp when stored */
+  createdAt: number;
+  /** Plain text body for copy and AI actions */
+  bodyText?: string;
+  /** HTML body for full original web viewer */
+  bodyHtml?: string;
+  /** Cached AI summary */
+  aiSummary?: string;
+  /** Cached AI translation */
+  aiTranslation?: string;
+  /** Cached AI translated subject */
+  aiTranslatedSubject?: string;
 }

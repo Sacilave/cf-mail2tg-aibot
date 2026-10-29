@@ -42,6 +42,8 @@ import {
   findProvider,
   SUPPORTED_PROVIDERS,
   getRecommendedModel,
+  summarizeEmail,
+  translateEmail,
 } from './ai';
 import type { MiniMaxClassifyResult, MiniMaxClassifyOptions } from './ai';
 import {
@@ -89,6 +91,21 @@ import {
   setInteractiveSession,
   clearInteractiveSession,
   getEffectiveAiConfig,
+  saveEmailReplyMeta,
+  getEmailReplyMeta,
+  updateEmailReplyMeta,
+  getEffectiveResendKey,
+  getAvailableSenderList,
+  EMAIL_REPLY_PREFIX,
+  getWhitelist,
+  setWhitelist,
+  appendWhitelist,
+  resetWhitelist,
+  isSenderWhitelisted,
+  recordRecentInboundSender,
+  recordRecentOutboundRecipient,
+  getSuggestedRecipients,
+  WHITELIST_KV_KEY,
 } from './router';
 import type {
   Env,
@@ -104,6 +121,7 @@ import type {
   MarketingDetectionResult,
   EmailIntentTag,
   EmailIntentType,
+  EmailReplyMeta,
 } from './types';
 import {
   getTranslation,
@@ -136,7 +154,31 @@ import {
   getRouteTagSelectionKeyboard,
   getKeywordsMenuKeyboard,
   getForwardMenuKeyboard,
+  getEmailReplyKeyboard,
+  renderReplyPromptCard,
+  renderReplySuccessCard,
+  getComposeSenderKeyboard,
+  getComposeConfirmKeyboard,
+  getComposeCancelKeyboard,
+  getComposeToKeyboard,
+  renderComposeSenderPromptCard,
+  renderComposeCustomPrefixPromptCard,
+  renderComposeToPromptCard,
+  renderComposeSubjectPromptCard,
+  renderComposeBodyPromptCard,
+  renderComposeConfirmCard,
+  renderComposeSuccessCard,
+  renderComposeErrorCard,
+  renderComposeNoApiKeyCard,
+  renderEmailSummaryCard,
+  renderEmailTranslationCard,
+  renderFullEmailWebPage,
 } from './card-renderer';
+import {
+  sendEmailViaResend,
+  formatReplySubject,
+  cleanHeaderValue,
+} from './email-sender';
 
 // Export core functions and types for external test suites
 export {
@@ -145,6 +187,34 @@ export {
   renderAttachmentRejectCard,
   renderEmailCardHtml,
   renderEmailCardPlainText,
+  getEmailReplyKeyboard,
+  renderReplyPromptCard,
+  renderReplySuccessCard,
+  getComposeSenderKeyboard,
+  getComposeConfirmKeyboard,
+  getComposeCancelKeyboard,
+  renderComposeSenderPromptCard,
+  renderComposeCustomPrefixPromptCard,
+  renderComposeToPromptCard,
+  renderComposeSubjectPromptCard,
+  renderComposeBodyPromptCard,
+  renderComposeConfirmCard,
+  renderComposeSuccessCard,
+  renderComposeErrorCard,
+  renderComposeNoApiKeyCard,
+  getAvailableSenderList,
+  cleanHeaderValue,
+  sendEmailViaResend,
+  formatReplySubject,
+  saveEmailReplyMeta,
+  getEmailReplyMeta,
+  updateEmailReplyMeta,
+  summarizeEmail,
+  translateEmail,
+  renderEmailSummaryCard,
+  renderEmailTranslationCard,
+  renderFullEmailWebPage,
+  getEffectiveResendKey,
   escapeHtml,
   extractCleanEmail,
   extractDomain,
@@ -191,6 +261,9 @@ export {
   setSetupSession,
   clearSetupSession,
   SETUP_SESSION_KEY,
+  getInteractiveSession,
+  setInteractiveSession,
+  clearInteractiveSession,
   classifyEmailWithMiniMax,
   sanitizeErrorMessage,
   extractVerificationCode,
@@ -230,6 +303,7 @@ export type {
   MiniMaxClassifyOptions,
   EmailIntentTag,
   EmailIntentType,
+  EmailReplyMeta,
 };
 
 // In-memory Telegram 429 cooling circuit breaker
@@ -246,7 +320,10 @@ const BOT_COMMANDS = [
   { command: 'config', description: '查看密钥绑定状态与配置中枢' },
   { command: 'routes', description: '查看并管理邮箱业务路由规则' },
   { command: 'keywords', description: '查看并管理营销垃圾拦截词库' },
+  { command: 'whitelist', description: '查看并管理邮件信任白名单' },
+  { command: 'addwhitelist', description: '增量添加信任白名单条目' },
   { command: 'setkey', description: '热更新密钥/备份邮箱: setkey <类型> <值>' },
+  { command: 'send', description: '发起新邮件 (选择路由身份并按步骤发送)' },
   { command: 'help', description: '查看指令面板与帮助' },
 ];
 
@@ -278,7 +355,24 @@ async function sendTelegramMessage(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    return res.ok;
+    if (res.ok) return true;
+
+    // Robust Auto-Fallback: If HTML parsing fails (e.g. 400 Bad Request entity parse error),
+    // strip HTML tags and retry once in plain text mode to guarantee message delivery!
+    const plainText = text.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const fallbackBody: any = {
+      chat_id: chatId,
+      text: plainText,
+    };
+    if (replyMarkup) fallbackBody.reply_markup = replyMarkup;
+    if (disableNotification) fallbackBody.disable_notification = true;
+
+    const retryRes = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fallbackBody),
+    });
+    return retryRes.ok;
   } catch (err) {
     console.error('[Telegram] sendTelegramMessage failed:', err);
     return false;
@@ -322,7 +416,23 @@ async function editMessageText(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    return res.ok;
+    if (res.ok) return true;
+
+    // Robust Auto-Fallback: If HTML parsing fails, retry with plain text
+    const plainText = text.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const fallbackPayload: any = {
+      chat_id: chatId,
+      message_id: messageId,
+      text: plainText,
+    };
+    if (replyMarkup) fallbackPayload.reply_markup = replyMarkup;
+
+    const retryRes = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fallbackPayload),
+    });
+    return retryRes.ok;
   } catch {
     return false;
   }
@@ -340,24 +450,7 @@ export default {
     const baseForwardTarget = env?.FORWARD_TO_EMAIL?.trim() || '';
 
     // Endpoint helper: One-click setup for Webhook & official Menu button commands
-    if (url.pathname === '/setup-webhook' || url.pathname === '/setup-commands') {
-      if (!botToken) {
-        return new Response(
-          JSON.stringify(
-            {
-              ok: false,
-              error: 'Missing TELEGRAM_BOT_TOKEN. Please configure TELEGRAM_BOT_TOKEN in your Cloudflare Worker Settings -> Variables and Secrets first.',
-              hint: '请先在 Cloudflare 控制台的 Worker 设置 -> 变量和机密中配置 TELEGRAM_BOT_TOKEN',
-            },
-            null,
-            2
-          ),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json; charset=utf-8' },
-          }
-        );
-      }
+    if ((url.pathname === '/setup-webhook' || url.pathname === '/setup-commands') && botToken) {
       if (webhookSecret) {
         const querySecret = url.searchParams.get('secret')?.trim();
         if (querySecret !== webhookSecret) {
@@ -437,6 +530,34 @@ export default {
       }
     }
 
+    // Safe Web Reader view for full email inspection (overcoming Telegram 4096 char limit)
+    if (request.method === 'GET' && url.pathname.startsWith('/view/')) {
+      const replyId = url.pathname.slice('/view/'.length).trim();
+      if (!replyId || !env?.MAIL_ROUTES_KV) {
+        return new Response('<h3>404 Not Found</h3><p>邮件上下文不存在或未启用 KV 存储。</p>', {
+          status: 404,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      }
+      const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+      if (!meta) {
+        return new Response('<h3>404 Not Found</h3><p>该邮件原文已过期或不存在（超过7天已自动清除）。</p>', {
+          status: 404,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
+      }
+      return new Response(renderFullEmailWebPage(meta), {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; img-src https: data: cid:; font-src https: data:;",
+          'X-Content-Type-Options': 'nosniff',
+          'X-Frame-Options': 'DENY',
+          'Referrer-Policy': 'no-referrer',
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+        },
+      });
+    }
+
     // Restrict direct HTTP requests (protect Workers quota from arbitrary crawlers)
     if (request.method !== 'POST') {
       return new Response('403 Forbidden: Direct HTTP access is restricted on cf-mail2tg-aibot gateway.', {
@@ -487,6 +608,592 @@ export default {
         update.callback_query.from?.language_code
       );
       const cbDict = getTranslation(cbLang);
+
+      // 0.0 Email Reply Trigger (rep:<replyId>)
+      if (callbackData.startsWith('rep:')) {
+        const replyId = callbackData.slice('rep:'.length);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+        if (!meta) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 该邮件上下文已过期或未找到');
+          return new Response('OK', { status: 200 });
+        }
+
+        const resendKey = await getEffectiveResendKey(env, env.MAIL_ROUTES_KV);
+        if (!resendKey) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 尚未配置 Resend API Key');
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `⚠️ <b>【 未配置发信密钥 】</b>\n━━━━━━━━━━━━━━━━━━\n系统检测到您尚未绑定 Resend API Key，无法向外回复邮件。\n\n💡 <b>快捷配置:</b>\n1. 前往 resend.com 获取 API Key\n2. 直接向机器人发送: <code>/setkey resend re_xxxxxx</code>\n配置完成后即可随时一键回复！`,
+            { inline_keyboard: [[{ text: cbDict.startCommand.btnOpenMenu, callback_data: 'm:main' }]] }
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'reply_email',
+          replyId,
+          fromRoute: meta.to,
+          targetSender: meta.from,
+          subject: meta.subject,
+          messageId: meta.messageId,
+          createdAt: Date.now(),
+        });
+
+        await answerCallbackQuery(botToken, callbackId, '已激活邮件回复，请输入内容');
+
+        const promptCard = renderReplyPromptCard({
+          dict: cbDict,
+          fromRoute: meta.to,
+          targetSender: meta.from,
+          subject: meta.subject,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, promptCard, {
+          force_reply: true,
+          selective: true,
+          inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+        });
+
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.001 AI Email Summarization (ai:sum:<replyId>)
+      if (callbackData.startsWith('ai:sum:')) {
+        const replyId = callbackData.slice('ai:sum:'.length);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+        if (!meta) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 该邮件上下文已过期或未找到');
+          return new Response('OK', { status: 200 });
+        }
+
+        // Instant cache hit response (Zero LLM tokens spent)
+        if (meta.aiSummary) {
+          await answerCallbackQuery(botToken, callbackId, '⚡ 已调取缓存速读总结');
+          const summaryCard = renderEmailSummaryCard({
+            dict: cbDict,
+            subject: meta.subject,
+            from: meta.from,
+            summary: meta.aiSummary,
+            provider: 'AI速读 (缓存)',
+          });
+          await sendTelegramMessage(botToken, adminChatId, summaryCard);
+          return new Response('OK', { status: 200 });
+        }
+
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        if (!effectiveAi.isConfigured && !env.AI) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 尚未配置 AI 模型或 API Key');
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `⚠️ <b>【 未配置 AI 模型或 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n当前无法执行 AI 智能速读总结。\n\n💡 <b>快捷配置:</b>\n1. 可使用 Workers AI（免费免 Key）\n2. 或通过菜单 <code>/start</code> -> <b>🤖 AI 研判</b> 绑定 DeepSeek / MiniMax / OpenAI 密钥！`,
+            { inline_keyboard: [[{ text: cbDict.startCommand.btnOpenMenu, callback_data: 'm:ai' }]] }
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        await answerCallbackQuery(botToken, callbackId, '🤖 AI 深度提炼总结中，请稍候...');
+
+        const langNameMap: Record<string, string> = {
+          zh: '简体中文',
+          en: 'English',
+          ja: '日本語',
+          ko: '한국어',
+          ru: 'Русский',
+          es: 'Español',
+          fr: 'Français',
+          de: 'Deutsch',
+        };
+        const targetLangName = langNameMap[cbLang] || '简体中文';
+
+        const bodyContent = meta.bodyText || meta.subject || '';
+        const sumRes = await summarizeEmail({
+          provider: effectiveAi.provider as any,
+          apiKey: effectiveAi.apiKey,
+          model: effectiveAi.model,
+          baseUrl: effectiveAi.baseUrl,
+          groupId: env.MINIMAX_GROUP_ID,
+          subject: meta.subject,
+          from: meta.from,
+          bodyText: bodyContent,
+          targetLangName,
+          cfAi: env.AI,
+        });
+
+        if (!sumRes.success || !sumRes.summary) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `❌ <b>【 AI 总结失败 】</b>\n━━━━━━━━━━━━━━━━━━\n原因: <code>${escapeHtml(sumRes.error || '未知错误')}</code>\n建议稍后重试或检查模型网络与额度。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        // Cache result in KV for immediate subsequent reads
+        await updateEmailReplyMeta(env.MAIL_ROUTES_KV, replyId, {
+          aiSummary: sumRes.summary,
+        });
+
+        const summaryCard = renderEmailSummaryCard({
+          dict: cbDict,
+          subject: meta.subject,
+          from: meta.from,
+          summary: sumRes.summary,
+          provider: sumRes.provider,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, summaryCard);
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.002 AI Email Translation (ai:tr:<replyId>)
+      if (callbackData.startsWith('ai:tr:')) {
+        const replyId = callbackData.slice('ai:tr:'.length);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+        if (!meta) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 该邮件上下文已过期或未找到');
+          return new Response('OK', { status: 200 });
+        }
+
+        // Instant cache hit response
+        if (meta.aiTranslation) {
+          await answerCallbackQuery(botToken, callbackId, '⚡ 已调取缓存精准翻译');
+          const trCard = renderEmailTranslationCard({
+            dict: cbDict,
+            subject: meta.subject,
+            translatedSubject: meta.aiTranslatedSubject || meta.subject,
+            translatedText: meta.aiTranslation,
+            provider: 'AI精准翻译 (缓存)',
+          });
+          await sendTelegramMessage(botToken, adminChatId, trCard);
+          return new Response('OK', { status: 200 });
+        }
+
+        const effectiveAi = await getEffectiveAiConfig(env, env.MAIL_ROUTES_KV);
+        if (!effectiveAi.isConfigured && !env.AI) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 尚未配置 AI 模型或 API Key');
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `⚠️ <b>【 未配置 AI 模型或 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n当前无法执行 AI 全文精准翻译。\n\n💡 <b>快捷配置:</b>\n1. 可使用 Workers AI（免费免 Key）\n2. 或通过菜单 <code>/start</code> -> <b>🤖 AI 研判</b> 绑定 DeepSeek / MiniMax / OpenAI 密钥！`,
+            { inline_keyboard: [[{ text: cbDict.startCommand.btnOpenMenu, callback_data: 'm:ai' }]] }
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        await answerCallbackQuery(botToken, callbackId, '🌐 AI 翻译转换中，请稍候...');
+
+        const langNameMap: Record<string, string> = {
+          zh: '简体中文',
+          en: 'English',
+          ja: '日本語',
+          ko: '한국어',
+          ru: 'Русский',
+          es: 'Español',
+          fr: 'Français',
+          de: 'Deutsch',
+        };
+        const targetLangName = langNameMap[cbLang] || '简体中文';
+
+        const bodyContent = meta.bodyText || meta.subject || '';
+        const trRes = await translateEmail({
+          provider: effectiveAi.provider as any,
+          apiKey: effectiveAi.apiKey,
+          model: effectiveAi.model,
+          baseUrl: effectiveAi.baseUrl,
+          groupId: env.MINIMAX_GROUP_ID,
+          subject: meta.subject,
+          bodyText: bodyContent,
+          targetLangName,
+          cfAi: env.AI,
+        });
+
+        if (!trRes.success || !trRes.translatedText) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `❌ <b>【 AI 翻译失败 】</b>\n━━━━━━━━━━━━━━━━━━\n原因: <code>${escapeHtml(trRes.error || '未知错误')}</code>\n建议稍后重试或检查模型网络与额度。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        // Cache result in KV
+        await updateEmailReplyMeta(env.MAIL_ROUTES_KV, replyId, {
+          aiTranslation: trRes.translatedText,
+          aiTranslatedSubject: trRes.translatedSubject,
+        });
+
+        const trCard = renderEmailTranslationCard({
+          dict: cbDict,
+          subject: meta.subject,
+          translatedSubject: trRes.translatedSubject || meta.subject,
+          translatedText: trRes.translatedText,
+          provider: trRes.provider,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, trCard);
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.003 Copy Body Text (act:copy:<replyId>)
+      if (callbackData.startsWith('act:copy:')) {
+        const replyId = callbackData.slice('act:copy:'.length);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+        if (!meta) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 该邮件上下文已过期或未找到');
+          return new Response('OK', { status: 200 });
+        }
+
+        await answerCallbackQuery(botToken, callbackId, '📋 点击下方代码块即可一键复制正文！');
+
+        const rawContent = meta.bodyText || '(邮件无正文内容)';
+        const displayContent = rawContent.length > 3800
+          ? rawContent.slice(0, 3800) + '\n\n... (正文过长已截断，如需查看完整全文请点击【查看完整原文】)'
+          : rawContent;
+
+        const copyCard = [
+          '📋 <b>【 邮件正文拷贝板 】</b>',
+          '━━━━━━━━━━━━━━━━━━',
+          '💡 <i>在 Telegram 中轻触或点击下方文本框即可快速复制全文：</i>',
+          '',
+          `<pre><code>${escapeHtml(displayContent)}</code></pre>`,
+        ].join('\n');
+
+        await sendTelegramMessage(botToken, adminChatId, copyCard);
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.004 View Full Email (act:view:<replyId>)
+      if (callbackData.startsWith('act:view:')) {
+        const replyId = callbackData.slice('act:view:'.length);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const meta = await getEmailReplyMeta(env.MAIL_ROUTES_KV, replyId);
+        if (!meta) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 该邮件上下文已过期或未找到');
+          return new Response('OK', { status: 200 });
+        }
+
+        await answerCallbackQuery(botToken, callbackId, '📖 正在打开原文阅读视图...');
+
+        const readerUrl = `${url.origin}/view/${replyId}`;
+        const charCount = (meta.bodyText || '').length;
+        const viewCard = [
+          '📖 <b>【 邮件完整原文阅读器 】</b>',
+          '━━━━━━━━━━━━━━━━━━',
+          `📌 <b>主　题:</b> <b>${escapeHtml(meta.subject || '(无主题)')}</b>`,
+          `👤 <b>发件人:</b> <code>${escapeHtml(meta.from)}</code>`,
+          `📬 <b>收件人:</b> <code>${escapeHtml(meta.to)}</code>`,
+          `📊 <b>正文长度:</b> 约 ${charCount} 字符`,
+          '━━━━━━━━━━━━━━━━━━',
+          '💡 <i>该邮件已在安全网关上生成端到端阅读页面（支持深色模式与富文本样式，彻底解决 Telegram 4096 字符上限截断问题）。</i>',
+        ].join('\n');
+
+        await sendTelegramMessage(botToken, adminChatId, viewCard, {
+          inline_keyboard: [
+            [
+              { text: '🌐 在线阅读完整原文 (无视长度)', url: readerUrl },
+            ],
+            [
+              { text: '📋 快速提取纯文本', callback_data: `act:copy:${replyId}` },
+            ],
+          ],
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.01 Compose Email Start (comp:start)
+      if (callbackData === 'comp:start') {
+        const resendKey = await getEffectiveResendKey(env, env?.MAIL_ROUTES_KV);
+        if (!resendKey) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 尚未配置 Resend API Key');
+          const noKeyCard = renderComposeNoApiKeyCard({ dict: cbDict });
+          if (messageId) {
+            await editMessageText(botToken, adminChatId, messageId, noKeyCard, {
+              inline_keyboard: [
+                [
+                  { text: '🔑 绑定 Resend Key', callback_data: 'resend:setkey' },
+                  { text: cbDict.dashboard.btnBackMain, callback_data: 'm:main' },
+                ],
+              ],
+            });
+          } else {
+            await sendTelegramMessage(botToken, adminChatId, noKeyCard, {
+              inline_keyboard: [
+                [
+                  { text: '🔑 绑定 Resend Key', callback_data: 'resend:setkey' },
+                  { text: cbDict.dashboard.btnBackMain, callback_data: 'm:main' },
+                ],
+              ],
+            });
+          }
+          return new Response('OK', { status: 200 });
+        }
+
+        const domain = env?.EMAIL_DOMAIN || 'example.com';
+        const senders = await getAvailableSenderList(env?.MAIL_ROUTES_KV, domain);
+        const promptCard = renderComposeSenderPromptCard(cbDict);
+        const keyboard = getComposeSenderKeyboard(senders, cbDict);
+
+        await answerCallbackQuery(botToken, callbackId);
+        if (messageId) {
+          await editMessageText(botToken, adminChatId, messageId, promptCard, {
+            inline_keyboard: keyboard,
+          });
+        } else {
+          await sendTelegramMessage(botToken, adminChatId, promptCard, {
+            inline_keyboard: keyboard,
+          });
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.02 Compose Email: Sender Selected (comp:from:<address>)
+      if (callbackData.startsWith('comp:from:')) {
+        const chosenSender = callbackData.slice('comp:from:'.length).trim();
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const suggested = await getSuggestedRecipients(env.MAIL_ROUTES_KV, env.FORWARD_TO_EMAIL);
+        const suggestedAddresses = suggested.map((s) => s.address);
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'compose_email',
+          composeStep: 'input_to',
+          composeFrom: chosenSender,
+          suggestedRecipients: suggestedAddresses,
+          createdAt: Date.now(),
+        });
+
+        await answerCallbackQuery(botToken, callbackId, `已选定身份: ${chosenSender}`);
+
+        const promptCard = renderComposeToPromptCard({
+          dict: cbDict,
+          fromAddress: chosenSender,
+          hasSuggestions: suggested.length > 0,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, promptCard, {
+          force_reply: true,
+          selective: true,
+          inline_keyboard: getComposeToKeyboard(cbDict, suggested),
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.025 Compose Email: Quick Recipient Picked (comp:to_pick:<index>)
+      if (callbackData.startsWith('comp:to_pick:')) {
+        const pickIdx = parseInt(callbackData.slice('comp:to_pick:'.length), 10);
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+        const session = await getInteractiveSession(env.MAIL_ROUTES_KV);
+        if (!session || session.type !== 'compose_email' || session.composeStep !== 'input_to') {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 发信会话已失效，请重新发起');
+          return new Response('OK', { status: 200 });
+        }
+        const picked = session.suggestedRecipients && session.suggestedRecipients[pickIdx];
+        if (!picked || !isValidEmail(picked)) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 无效的收件人地址');
+          return new Response('OK', { status: 200 });
+        }
+        if (session.composeFrom && session.composeFrom.toLowerCase() === picked.toLowerCase()) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 发件人和收件人不能完全相同');
+          return new Response('OK', { status: 200 });
+        }
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          ...session,
+          composeStep: 'input_subject',
+          composeTo: picked,
+          createdAt: Date.now(),
+        });
+
+        await answerCallbackQuery(botToken, callbackId, `已选收件人: ${picked}`);
+
+        const promptCard = renderComposeSubjectPromptCard({
+          dict: cbDict,
+          fromAddress: session.composeFrom || '',
+          toAddress: picked,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, promptCard, {
+          force_reply: true,
+          selective: true,
+          inline_keyboard: getComposeCancelKeyboard(cbDict),
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.03 Compose Email: Custom Sender Prefix (comp:custom)
+      if (callbackData === 'comp:custom') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'compose_custom_prefix',
+          createdAt: Date.now(),
+        });
+
+        await answerCallbackQuery(botToken, callbackId);
+
+        const domain = env?.EMAIL_DOMAIN || 'example.com';
+        const promptCard = renderComposeCustomPrefixPromptCard({
+          dict: cbDict,
+          domain,
+        });
+
+        await sendTelegramMessage(botToken, adminChatId, promptCard, {
+          force_reply: true,
+          selective: true,
+          inline_keyboard: getComposeCancelKeyboard(cbDict),
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.04 Compose Email: Trigger Send (comp:send)
+      if (callbackData === 'comp:send') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        const session = await getInteractiveSession(env.MAIL_ROUTES_KV);
+        if (
+          !session ||
+          session.type !== 'compose_email' ||
+          session.composeStep !== 'confirm' ||
+          !session.composeFrom ||
+          !session.composeTo ||
+          !session.composeBody
+        ) {
+          await answerCallbackQuery(botToken, callbackId, '❌ 发信会话已失效或信息不完整，请重新发起 /send');
+          return new Response('OK', { status: 200 });
+        }
+
+        const resendKey = await getEffectiveResendKey(env, env.MAIL_ROUTES_KV);
+        if (!resendKey) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ 尚未配置 Resend API Key');
+          return new Response('OK', { status: 200 });
+        }
+
+        await answerCallbackQuery(botToken, callbackId, '🚀 正在投递邮件...');
+
+        // Clear session immediately to prevent double submission
+        await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+        const fromAddress = session.composeFrom;
+        const toAddress = session.composeTo;
+        const subject = session.composeSubject || '(无主题)';
+        const body = session.composeBody;
+
+        const sendResult = await sendEmailViaResend({
+          apiKey: resendKey,
+          from: fromAddress,
+          to: toAddress,
+          subject,
+          text: body,
+        });
+
+        if (sendResult.success) {
+          const successCard = renderComposeSuccessCard({
+            dict: cbDict,
+            fromAddress,
+            toAddress,
+            subject,
+            body,
+            messageId: sendResult.id,
+          });
+
+          if (messageId) {
+            await editMessageText(botToken, adminChatId, messageId, successCard, {
+              inline_keyboard: [[{ text: cbDict.dashboard.btnBackMain, callback_data: 'm:main' }]],
+            });
+          } else {
+            await sendTelegramMessage(botToken, adminChatId, successCard, {
+              inline_keyboard: [[{ text: cbDict.dashboard.btnBackMain, callback_data: 'm:main' }]],
+            });
+          }
+        } else {
+          const errorCard = renderComposeErrorCard({
+            dict: cbDict,
+            fromAddress,
+            toAddress,
+            subject,
+            error: sendResult.error,
+          });
+
+          if (messageId) {
+            await editMessageText(botToken, adminChatId, messageId, errorCard, {
+              inline_keyboard: [
+                [
+                  { text: '✉️ 重新发信', callback_data: 'comp:start' },
+                  { text: cbDict.dashboard.btnBackMain, callback_data: 'm:main' },
+                ],
+              ],
+            });
+          } else {
+            await sendTelegramMessage(botToken, adminChatId, errorCard);
+          }
+        }
+
+        return new Response('OK', { status: 200 });
+      }
+
+      // 0.05 Set Resend API Key Callback (resend:setkey)
+      if (callbackData === 'resend:setkey') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await answerCallbackQuery(botToken, callbackId, '⚠️ KV 数据库未就绪');
+          return new Response('OK', { status: 200 });
+        }
+
+        await setInteractiveSession(env.MAIL_ROUTES_KV, {
+          type: 'set_resend_key',
+          createdAt: Date.now(),
+        });
+
+        await answerCallbackQuery(botToken, callbackId);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `🔑 <b>【 绑定 Resend 发信 API Key 】</b>\n━━━━━━━━━━━━━━━━━━\n💬 <i>请直接在输入框发送您的 Resend API Key（格式如 <code>re_123456789...</code>）：</i>\n\n<i>（发送 /cancel 可随时取消操作）</i>`,
+          {
+            force_reply: true,
+            selective: true,
+            inline_keyboard: [[{ text: cbDict.dashboard.btnCancel, callback_data: 'm:cancel' }]],
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
 
       // 0. Start Overview Menu
       if (callbackData === 'm:start') {
@@ -1183,6 +1890,13 @@ export default {
       const currentLang = await resolveLanguage(env?.MAIL_ROUTES_KV, env?.DEFAULT_LANGUAGE, userTgLang);
       const dict = getTranslation(currentLang);
 
+      // Check if replying directly to whitelist card
+      const isWhitelistReply =
+        isReply &&
+        (replyText.includes('白名单') ||
+          replyText.includes('Whitelist') ||
+          replyText.includes('信任白名单'));
+
       // Check if replying directly to marketing keywords list
       const isKeywordReply =
         isReply &&
@@ -1615,6 +2329,297 @@ export default {
             );
             return new Response('OK', { status: 200 });
           }
+
+          if (interactiveSession.type === 'reply_email') {
+            const replyBody = rawText.trim();
+            if (!replyBody) {
+              await sendTelegramMessage(botToken, adminChatId, '❌ 回复内容不能为空，请重新发送文字正文:');
+              return new Response('OK', { status: 200 });
+            }
+
+            const resendKey = await getEffectiveResendKey(env, env.MAIL_ROUTES_KV);
+            if (!resendKey) {
+              await clearInteractiveSession(env.MAIL_ROUTES_KV);
+              await sendTelegramMessage(botToken, adminChatId, '❌ 未检测到 Resend API Key，回复会话已终止。');
+              return new Response('OK', { status: 200 });
+            }
+
+            const fromRoute = interactiveSession.fromRoute || '';
+            const targetSender = interactiveSession.targetSender || '';
+            const origSubject = interactiveSession.subject || '';
+            const messageId = interactiveSession.messageId || undefined;
+
+            // 立即销毁 session，避免重放或重复提交
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+            // 调用 Resend API 发送邮件
+            const sendResult = await sendEmailViaResend({
+              apiKey: resendKey,
+              from: fromRoute,
+              to: targetSender,
+              subject: origSubject,
+              text: replyBody,
+              inReplyTo: messageId,
+              references: messageId,
+            });
+
+            if (sendResult.success) {
+              if (env.MAIL_ROUTES_KV && targetSender) {
+                await recordRecentOutboundRecipient(env.MAIL_ROUTES_KV, targetSender);
+              }
+              const successCard = renderReplySuccessCard({
+                dict,
+                fromRoute,
+                targetSender,
+                subject: origSubject,
+                text: replyBody,
+                messageId: sendResult.id,
+              });
+              await sendTelegramMessage(botToken, adminChatId, successCard);
+            } else {
+              const errorCard = [
+                `❌ <b>【 邮件回复发送失败 】</b>`,
+                `━━━━━━━━━━━━━━━━━━`,
+                `• <b>发件身份:</b> <code>${escapeHtml(fromRoute)}</code>`,
+                `• <b>回复对象:</b> <code>${escapeHtml(targetSender)}</code>`,
+                `• <b>错误详情:</b> <code>${escapeHtml(sendResult.error || '未知错误')}</code>`,
+                ``,
+                `💡 <i>请检查 Resend 中是否已验证域名 <code>${escapeHtml(fromRoute.split('@')[1] || '')}</code>，或发送 /setkey resend 检查密钥。</i>`,
+              ].join('\n');
+              await sendTelegramMessage(botToken, adminChatId, errorCard);
+            }
+
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'set_resend_key') {
+            const cleanKey = rawText.trim().replace(/^['"]|['"]$/g, '');
+            if (!cleanKey) {
+              await sendTelegramMessage(botToken, adminChatId, '❌ Key 不能为空，请重新发送有效的 API Key:');
+              return new Response('OK', { status: 200 });
+            }
+            await setDynamicConfig(env.MAIL_ROUTES_KV, 'resend_api_key', cleanKey);
+            await clearInteractiveSession(env.MAIL_ROUTES_KV);
+            await sendTelegramMessage(
+              botToken,
+              adminChatId,
+              `✅ <b>Resend API Key 绑定成功！</b>\n━━━━━━━━━━━━━━━━━━\n已持久化保存至 KV，脱敏预览: <code>${escapeHtml(maskSecret(cleanKey))}</code>\n后续即可随时使用 <code>/send</code> 主动发信或一键回复。\n`,
+              {
+                inline_keyboard: [
+                  [
+                    { text: '✉️ 发起新邮件', callback_data: 'comp:start' },
+                    { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                  ],
+                ],
+              }
+            );
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'compose_custom_prefix') {
+            const prefix = rawText.trim().toLowerCase().replace(/^@+/, '');
+            if (!prefix || !/^[a-zA-Z0-9._-]+$/.test(prefix) || prefix.length > 64) {
+              await sendTelegramMessage(
+                botToken,
+                adminChatId,
+                dict.composeCard?.invalidPrefixAlert ||
+                  '❌ 前缀格式无效（仅支持英文字母、数字及点减下划线），请重新输入，或发送 /cancel 取消。',
+                {
+                  force_reply: true,
+                  selective: true,
+                  inline_keyboard: getComposeCancelKeyboard(dict),
+                }
+              );
+              return new Response('OK', { status: 200 });
+            }
+
+            const domain = env?.EMAIL_DOMAIN || 'example.com';
+            const fullSender = `${prefix}@${domain}`;
+
+            const suggested = await getSuggestedRecipients(env.MAIL_ROUTES_KV, env.FORWARD_TO_EMAIL);
+            const suggestedAddresses = suggested.map((s) => s.address);
+
+            await setInteractiveSession(env.MAIL_ROUTES_KV, {
+              type: 'compose_email',
+              composeStep: 'input_to',
+              composeFrom: fullSender,
+              suggestedRecipients: suggestedAddresses,
+              createdAt: Date.now(),
+            });
+
+            const promptCard = renderComposeToPromptCard({
+              dict,
+              fromAddress: fullSender,
+              hasSuggestions: suggested.length > 0,
+            });
+
+            await sendTelegramMessage(botToken, adminChatId, promptCard, {
+              force_reply: true,
+              selective: true,
+              inline_keyboard: getComposeToKeyboard(dict, suggested),
+            });
+            return new Response('OK', { status: 200 });
+          }
+
+          if (interactiveSession.type === 'compose_email') {
+            const step = interactiveSession.composeStep || 'input_to';
+
+            if (step === 'input_to') {
+              const toAddress = extractCleanEmail(rawText.trim()) || rawText.trim();
+              if (!isValidEmail(toAddress)) {
+                await sendTelegramMessage(
+                  botToken,
+                  adminChatId,
+                  dict.composeCard?.invalidEmailAlert ||
+                    '❌ 邮箱地址格式无效，请重新输入（如 alice@example.com），或发送 /cancel 取消发信。',
+                  {
+                    force_reply: true,
+                    selective: true,
+                    inline_keyboard: getComposeCancelKeyboard(dict),
+                  }
+                );
+                return new Response('OK', { status: 200 });
+              }
+
+              await setInteractiveSession(env.MAIL_ROUTES_KV, {
+                ...interactiveSession,
+                composeStep: 'input_subject',
+                composeTo: toAddress,
+                createdAt: Date.now(),
+              });
+
+              const promptCard = renderComposeSubjectPromptCard({
+                dict,
+                fromAddress: interactiveSession.composeFrom || '',
+                toAddress,
+              });
+
+              await sendTelegramMessage(botToken, adminChatId, promptCard, {
+                force_reply: true,
+                selective: true,
+                inline_keyboard: getComposeCancelKeyboard(dict),
+              });
+              return new Response('OK', { status: 200 });
+            }
+
+            if (step === 'input_subject') {
+              let subject = cleanHeaderValue(rawText.trim());
+              if (!subject || subject.toLowerCase() === 'skip') {
+                subject = '(无主题)';
+              }
+
+              await setInteractiveSession(env.MAIL_ROUTES_KV, {
+                ...interactiveSession,
+                composeStep: 'input_body',
+                composeSubject: subject,
+                createdAt: Date.now(),
+              });
+
+              const promptCard = renderComposeBodyPromptCard({
+                dict,
+                fromAddress: interactiveSession.composeFrom || '',
+                toAddress: interactiveSession.composeTo || '',
+                subject,
+              });
+
+              await sendTelegramMessage(botToken, adminChatId, promptCard, {
+                force_reply: true,
+                selective: true,
+                inline_keyboard: getComposeCancelKeyboard(dict),
+              });
+              return new Response('OK', { status: 200 });
+            }
+
+            if (step === 'input_body') {
+              const body = rawText.trim();
+              if (!body) {
+                await sendTelegramMessage(
+                  botToken,
+                  adminChatId,
+                  '❌ 邮件正文不能为空，请输入内容，或发送 /cancel 取消。',
+                  {
+                    force_reply: true,
+                    selective: true,
+                    inline_keyboard: getComposeCancelKeyboard(dict),
+                  }
+                );
+                return new Response('OK', { status: 200 });
+              }
+
+              const cappedBody = body.slice(0, 102400);
+
+              // 立即销毁 session，避免重放
+              await clearInteractiveSession(env.MAIL_ROUTES_KV);
+
+              const fromAddress = interactiveSession.composeFrom || '';
+              const toAddress = interactiveSession.composeTo || '';
+              const subject = interactiveSession.composeSubject || '(无主题)';
+
+              const resendKey = await getEffectiveResendKey(env, env.MAIL_ROUTES_KV);
+              if (!resendKey) {
+                const noKeyCard = renderComposeNoApiKeyCard({ dict });
+                await sendTelegramMessage(botToken, adminChatId, noKeyCard, {
+                  inline_keyboard: [
+                    [
+                      { text: '🔑 绑定 Resend Key', callback_data: 'resend:setkey' },
+                      { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                    ],
+                  ],
+                });
+                return new Response('OK', { status: 200 });
+              }
+
+              // 调用 Resend API 立即发送邮件
+              const sendResult = await sendEmailViaResend({
+                apiKey: resendKey,
+                from: fromAddress,
+                to: toAddress,
+                subject,
+                text: cappedBody,
+                isReply: false,
+              });
+
+              if (sendResult.success) {
+                if (env.MAIL_ROUTES_KV) {
+                  await recordRecentOutboundRecipient(env.MAIL_ROUTES_KV, toAddress);
+                }
+                const successCard = renderComposeSuccessCard({
+                  dict,
+                  fromAddress,
+                  toAddress,
+                  subject,
+                  body: cappedBody,
+                  messageId: sendResult.id,
+                });
+                await sendTelegramMessage(botToken, adminChatId, successCard, {
+                  inline_keyboard: [
+                    [
+                      { text: '✉️ 再发一封', callback_data: 'comp:start' },
+                      { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                    ],
+                  ],
+                });
+              } else {
+                const errorCard = renderComposeErrorCard({
+                  dict,
+                  fromAddress,
+                  toAddress,
+                  subject,
+                  error: sendResult.error,
+                });
+                await sendTelegramMessage(botToken, adminChatId, errorCard, {
+                  inline_keyboard: [
+                    [
+                      { text: '✉️ 重新发信', callback_data: 'comp:start' },
+                      { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+                    ],
+                  ],
+                });
+              }
+
+              return new Response('OK', { status: 200 });
+            }
+          }
         }
 
         const setupStep = await getSetupSession(env.MAIL_ROUTES_KV);
@@ -1738,6 +2743,14 @@ export default {
             ? dict.sources.envDefault
             : '';
 
+        const effectiveResend = await getEffectiveResendKey(env, env?.MAIL_ROUTES_KV);
+        const dynamicResend = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'resend_api_key');
+        const resendSource = dynamicResend
+          ? dict.sources.kvOverride
+          : env?.RESEND_API_KEY
+            ? dict.sources.envDefault
+            : '';
+
         const keywords = await getMarketingKeywords(env?.MAIL_ROUTES_KV);
         const customRules = await listCustomRules(env?.MAIL_ROUTES_KV);
 
@@ -1765,6 +2778,12 @@ export default {
             ? dict.configCommand.forwardAliasesActive
             : dict.configCommand.forwardAliasesDisabled,
           ``,
+          ``,
+          `📤 <b>【 快捷回复通道 (Resend) 】</b>`,
+          effectiveResend
+            ? `  • 发信状态: 🟢 已就绪 <code>${escapeHtml(maskSecret(effectiveResend))}</code> ${escapeHtml(resendSource)}`
+            : `  • 发信状态: ⚪ 未绑定 (发送 <code>/setkey resend re_...</code> 开启回复)`,
+          ``,
           dict.configCommand.kvTitle,
           hasKv ? dict.configCommand.kvConnected : dict.configCommand.kvNotConnected,
           dict.configCommand.kvKeywordsCount(keywords.length),
@@ -1783,6 +2802,8 @@ export default {
           dict.configCommand.shortcutModel || '• <code>/model</code> - 交互式切换大模型版本',
           dict.configCommand.shortcutSetkeyMinimax,
           dict.configCommand.shortcutSetkeyForward,
+          '• <code>/setkey resend re_...</code> - 绑定 Resend 发信密钥',
+          '• <code>/resetkey resend</code> - 重置 Resend 发信密钥',
           dict.configCommand.shortcutResetkeyMinimax,
           dict.configCommand.shortcutResetkeyForward,
           dict.configCommand.shortcutLang,
@@ -1808,6 +2829,7 @@ export default {
               `━━━━━━━━━━━━━━━━━━\n` +
               `${dict.setkeyCommand.helpUsage}\n\n` +
               `${aiHelp}\n\n` +
+              `• <b>更新 Resend 邮件回复发信密钥:</b>\n  <code>/setkey resend re_your-api-key</code>\n\n` +
               `${dict.setkeyCommand.helpMinimax}\n\n` +
               `${dict.setkeyCommand.helpForward}\n\n` +
               `${dict.setkeyCommand.helpTip}`
@@ -1839,6 +2861,21 @@ export default {
           return new Response('OK', { status: 200 });
         }
 
+        if (subType === 'resend') {
+          const cleanKey = subVal.trim().replace(/^['"]|['"]$/g, '');
+          if (!cleanKey) {
+            await sendTelegramMessage(botToken, adminChatId, '❌ Key 不能为空，请提供有效的 Resend API Key:');
+            return new Response('OK', { status: 200 });
+          }
+          await setDynamicConfig(env.MAIL_ROUTES_KV, 'resend_api_key', cleanKey);
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `✅ <b>Resend API Key 绑定成功！</b>\n━━━━━━━━━━━━━━━━━━\n已持久化保存至 KV，脱敏预览: <code>${escapeHtml(maskSecret(cleanKey))}</code>\n后续点击邮件卡片下方的【↩️ 回复邮件】即可自动向外发信。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
         if (subType === 'forward') {
           await setDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email', subVal);
           await sendTelegramMessage(
@@ -1860,7 +2897,7 @@ export default {
       // Command: resetkey (重置动态密钥并回退)
       if (command === 'resetkey') {
         const subType = (parts[1] || '').toLowerCase();
-        const validTypes = ['minimax', 'forward', 'ai', 'provider', 'model'];
+        const validTypes = ['minimax', 'forward', 'ai', 'provider', 'model', 'resend'];
         if (!subType || !validTypes.includes(subType)) {
           await sendTelegramMessage(
             botToken,
@@ -1889,6 +2926,8 @@ export default {
           await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'minimax_api_key');
         } else if (subType === 'forward') {
           await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'forward_to_email');
+        } else if (subType === 'resend') {
+          await deleteDynamicConfig(env.MAIL_ROUTES_KV, 'resend_api_key');
         }
 
         await sendTelegramMessage(
@@ -1899,8 +2938,155 @@ export default {
         return new Response('OK', { status: 200 });
       }
 
+      // Command: whitelist / wl (查看当前白名单)
+      if (command === 'whitelist' || command === 'wl') {
+        const whitelist = await getWhitelist(env?.MAIL_ROUTES_KV, env?.FORWARD_TO_EMAIL);
+        const wlDict = dict.whitelistCommand || {
+          title: '⭐ <b>【 邮件信任白名单库 】</b>',
+          countDesc: (c: number) => `当前生效白名单条目共 <b>${c}</b> 条。`,
+          instructions:
+            '💡 <b>修改方式（复制修改后【直接回复本条消息】）：</b>\n' +
+            '1. 单击下方代码块复制全部内容；\n' +
+            '2. 选择<b>「回复 (Reply)」本条消息</b>（或直接发送 <code>setwhitelist ...</code>），编辑名单（<b>一行一个邮箱或@域名</b>）；\n' +
+            '3. 发送后网关将自动全量更新，来自白名单的邮件将享有 0 额度特免短路！',
+        };
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `${wlDict.title}\n` +
+            `━━━━━━━━━━━━━━━━━━\n` +
+            `${wlDict.countDesc(whitelist.length)}\n\n` +
+            `${wlDict.instructions}\n\n` +
+            `<pre><code>${escapeHtml(whitelist.join('\n'))}</code></pre>`,
+          {
+            force_reply: true,
+            selective: true,
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: setwhitelist / setwl / reply to whitelist card
+      if (command === 'setwhitelist' || command === 'setwl' || isWhitelistReply) {
+        let contentToParse = rawText;
+        if (command === 'setwhitelist' || command === 'setwl') {
+          contentToParse = rawText.replace(/^\/?(setwhitelist|setwl)\s*/i, '');
+        }
+
+        const lines = contentToParse
+          .split(/\r?\n/)
+          .map((s: string) => s.trim().toLowerCase())
+          .filter((s: string) => s.length > 0 && !s.startsWith('#'));
+
+        if (lines.length === 0) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.emptyError || '❌ <b>更新失败:</b> 未检测到任何有效白名单条目。'
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.kvError || '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。'
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        const success = await setWhitelist(env.MAIL_ROUTES_KV, lines);
+        if (success) {
+          const previewList = lines.slice(0, 15).join(', ');
+          const moreCount = lines.length > 15 ? ` 等共 ${lines.length} 个` : '';
+          const msg = dict.whitelistCommand?.successUpdate
+            ? dict.whitelistCommand.successUpdate(lines.length, escapeHtml(previewList), moreCount)
+            : `✅ <b>【信任白名单库已成功更新！】</b>\n━━━━━━━━━━━━━━━━━━\n已全量更新 <b>${lines.length}</b> 条信任白名单。\n\n📝 <b>预览:</b> <code>${escapeHtml(previewList)}${moreCount}</code>`;
+          await sendTelegramMessage(botToken, adminChatId, msg);
+        } else {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.updateError || '❌ <b>更新失败:</b> 写入数据库出错。'
+          );
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: addwhitelist / addwl
+      if (command === 'addwhitelist' || command === 'addwl') {
+        const contentToParse = rawText.replace(/^\/?(addwhitelist|addwl)\s*/i, '');
+        const lines = contentToParse
+          .split(/\r?\n/)
+          .map((s: string) => s.trim().toLowerCase())
+          .filter((s: string) => s.length > 0 && !s.startsWith('#'));
+
+        if (lines.length === 0) {
+          const helpTitle = dict.whitelistCommand?.addHelpTitle || '💡 <b>【 添加白名单说明 】</b>';
+          const helpUsage = dict.whitelistCommand?.addHelpUsage || '<b>格式:</b> <code>/addwhitelist 邮箱1\n邮箱2</code> 或 <code>/addwhitelist @domain.com</code>';
+          const helpDesc = dict.whitelistCommand?.addHelpDesc || '系统将自动去重并安全合并至现有白名单，<b>绝不会覆盖原有条目</b>。';
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `${helpTitle}\n━━━━━━━━━━━━━━━━━━\n${helpUsage}\n\n${helpDesc}`
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.kvError || '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。'
+          );
+          return new Response('OK', { status: 200 });
+        }
+
+        const appendResult = await appendWhitelist(env.MAIL_ROUTES_KV, lines, env.FORWARD_TO_EMAIL);
+        if (appendResult.success) {
+          const msg = dict.whitelistCommand?.successAppend
+            ? dict.whitelistCommand.successAppend(appendResult.addedCount, appendResult.totalCount, escapeHtml(lines.join('\n')))
+            : `✅ <b>【增量白名单添加成功】</b>\n━━━━━━━━━━━━━━━━━━\n• 新增: <b>${appendResult.addedCount}</b> 条\n• 总计: <b>${appendResult.totalCount}</b> 条`;
+          await sendTelegramMessage(botToken, adminChatId, msg);
+        } else {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.appendError || '❌ <b>添加失败:</b> 写入数据库出错。'
+          );
+        }
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: resetwhitelist
+      if (command === 'resetwhitelist') {
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            dict.whitelistCommand?.kvError || '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。'
+          );
+          return new Response('OK', { status: 200 });
+        }
+        await resetWhitelist(env.MAIL_ROUTES_KV);
+        const msg = dict.whitelistCommand?.resetSuccess
+          ? dict.whitelistCommand.resetSuccess(1)
+          : `🔄 <b>【信任白名单已重置为默认基线】</b>\n━━━━━━━━━━━━━━━━━━\n已恢复系统默认预设。`;
+        await sendTelegramMessage(botToken, adminChatId, msg);
+        return new Response('OK', { status: 200 });
+      }
+
       // Command: keywords / kw
       if (command === 'keywords' || command === 'kw') {
+        const effectiveResend = await getEffectiveResendKey(env, env?.MAIL_ROUTES_KV);
+        const dynamicResend = await getDynamicConfig(env?.MAIL_ROUTES_KV, 'resend_api_key');
+        const resendSource = dynamicResend
+          ? dict.sources.kvOverride
+          : env?.RESEND_API_KEY
+            ? dict.sources.envDefault
+            : '';
+
         const keywords = await getMarketingKeywords(env?.MAIL_ROUTES_KV);
         await sendTelegramMessage(
           botToken,
@@ -2232,6 +3418,66 @@ export default {
         return new Response('OK', { status: 200 });
       }
 
+
+      // Command: send / compose (发起新邮件)
+      if (command === 'send' || command === 'compose') {
+        const resendKey = await getEffectiveResendKey(env, env?.MAIL_ROUTES_KV);
+        if (!resendKey) {
+          const noKeyCard = renderComposeNoApiKeyCard({ dict });
+          await sendTelegramMessage(botToken, adminChatId, noKeyCard, {
+            inline_keyboard: [
+              [
+                { text: '🔑 绑定 Resend Key', callback_data: 'resend:setkey' },
+                { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+              ],
+            ],
+          });
+          return new Response('OK', { status: 200 });
+        }
+
+        const domain = env?.EMAIL_DOMAIN || 'example.com';
+        const senders = await getAvailableSenderList(env?.MAIL_ROUTES_KV, domain);
+        const promptCard = renderComposeSenderPromptCard(dict);
+        const keyboard = getComposeSenderKeyboard(senders, dict);
+
+        await sendTelegramMessage(botToken, adminChatId, promptCard, {
+          inline_keyboard: keyboard,
+        });
+        return new Response('OK', { status: 200 });
+      }
+
+      // Command: setresend (快捷设置 Resend Key)
+      if (command === 'setresend') {
+        const keyVal = rawText.replace(/^\/?setresend\s*/i, '').trim().replace(/^['"]|['"]$/g, '');
+        if (!keyVal) {
+          await sendTelegramMessage(
+            botToken,
+            adminChatId,
+            `🔑 <b>【 配置 Resend 发信密钥 】</b>\n━━━━━━━━━━━━━━━━━━\n用法: <code>/setresend re_your-api-key</code>\n\n或直接点击菜单中的设置绑定。`
+          );
+          return new Response('OK', { status: 200 });
+        }
+        if (!env?.MAIL_ROUTES_KV) {
+          await sendTelegramMessage(botToken, adminChatId, dict.setkeyCommand.kvError);
+          return new Response('OK', { status: 200 });
+        }
+        await setDynamicConfig(env.MAIL_ROUTES_KV, 'resend_api_key', keyVal);
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `✅ <b>Resend API Key 配置成功！</b>\n━━━━━━━━━━━━━━━━━━\n脱敏预览: <code>${escapeHtml(maskSecret(keyVal))}</code>\n现在您可以随时使用 <code>/send</code> 发起新邮件或点击通知卡片一键回复！\n`,
+          {
+            inline_keyboard: [
+              [
+                { text: '✉️ 发起新邮件', callback_data: 'comp:start' },
+                { text: dict.dashboard.btnBackMain, callback_data: 'm:main' },
+              ],
+            ],
+          }
+        );
+        return new Response('OK', { status: 200 });
+      }
+
       // Command: help (完整控制面板与指令字典)
       if (command === 'help') {
         try {
@@ -2273,6 +3519,23 @@ export default {
         );
         return new Response('OK', { status: 200 });
       }
+
+      if (rawText && !isCommand) {
+        await sendTelegramMessage(
+          botToken,
+          adminChatId,
+          `💡 <b>提示:</b> 未检测到正在进行的发信或配置会话（可能已超时退出或已完成）。\n\n如需发送新邮件，请直接点击下方按键或发送 <code>/send</code>：`,
+          {
+            inline_keyboard: [
+              [
+                { text: '✉️ 发起新邮件', callback_data: 'comp:start' },
+                { text: dict.startCommand.btnOpenMenu, callback_data: 'm:main' },
+              ],
+            ],
+          }
+        );
+      }
+
 
       return new Response('OK', { status: 200 });
     }
@@ -2364,7 +3627,8 @@ export default {
       const sendToTelegram = async (
         text: string,
         parseMode?: string,
-        disableNotification?: boolean
+        disableNotification?: boolean,
+        replyMarkup?: any
       ): Promise<boolean> => {
         if (!botToken || !adminChatId) return false;
 
@@ -2387,6 +3651,9 @@ export default {
         }
         if (disableNotification) {
           tgPayload.disable_notification = true;
+        }
+        if (replyMarkup) {
+          tgPayload.reply_markup = replyMarkup;
         }
 
         try {
@@ -2600,81 +3867,97 @@ export default {
         return message.headers[name.toLowerCase()] || message.headers[name] || '';
       };
 
-      const rfcUnsub = getHeader('list-unsubscribe');
-      const rfcPrecedence = getHeader('precedence').toLowerCase();
-      const isRfcBulk = Boolean(
-        rfcUnsub || rfcPrecedence === 'bulk' || rfcPrecedence === 'list' || rfcPrecedence === 'junk'
-      );
+      // 0. Record recent inbound sender
+      if (env.MAIL_ROUTES_KV && from) {
+        await recordRecentInboundSender(env.MAIL_ROUTES_KV, from);
+      }
 
-      if (isRfcBulk) {
-        isMarketing = true;
-        intentTag = '营销';
-        aiBadge = dict.emailCard.aiRfcUnsubShortCircuit;
-        disableNotification = true;
+      // Level 0: Whitelist check (Absolute immunity, 0 AI tokens spent)
+      const whitelist = await getWhitelist(env.MAIL_ROUTES_KV, env.FORWARD_TO_EMAIL);
+      const isWhitelisted = isSenderWhitelisted(from, whitelist);
+
+      if (isWhitelisted) {
+        isMarketing = false;
+        intentTag = '业务';
+        aiBadge = '⭐ <b>白名单特免:</b> <code>已短路免调AI·省额度·防误判</code>';
+        disableNotification = false;
       } else {
-        // 2. Level 2: Local & KV Keywords short-circuit
-        const marketingKeywords = await getMarketingKeywords(env.MAIL_ROUTES_KV);
-        const localResult = detectMarketingEmail(message.headers, subject, snippet, marketingKeywords);
-
-        if (localResult.isMarketing) {
+        const rfcUnsub = getHeader('list-unsubscribe');
+        const rfcPrecedence = getHeader('precedence').toLowerCase();
+        const isRfcBulk = Boolean(
+          rfcUnsub || rfcPrecedence === 'bulk' || rfcPrecedence === 'list' || rfcPrecedence === 'junk'
+        );
+  
+        if (isRfcBulk) {
           isMarketing = true;
           intentTag = '营销';
-          aiBadge = dict.emailCard.aiKeywordShortCircuit(escapeHtml(
-            localResult.matchedKeyword || '营销特征'
-          ));
+          aiBadge = dict.emailCard.aiRfcUnsubShortCircuit;
           disableNotification = true;
-        } else if (hasAI) {
-          // 3. Level 3: Multi-Provider LLM Intent Classification
-          const aiResult = await classifyEmail({
-            provider: effectiveAi.provider,
-            apiKey: effectiveAi.apiKey,
-            model: effectiveAi.model,
-            baseUrl: effectiveAi.baseUrl,
-            groupId: env.MINIMAX_GROUP_ID,
-            subject,
-            from,
-            bodySnippet: snippet.slice(0, 800),
-            cfAi: env.AI,
-          });
-
-          if (aiResult.success) {
-            intentTag = aiResult.intent || '业务';
-            isMarketing = aiResult.isMarketing;
-            extractedCode = aiResult.extractedCode;
-
-            if (intentTag === '营销') {
-              aiBadge = dict.emailCard.aiMarketing;
-              disableNotification = true;
-            } else if (intentTag === '验证') {
-              aiBadge = dict.emailCard.aiVerification;
-              disableNotification = false;
-            } else if (intentTag === '告警') {
-              aiBadge = dict.emailCard.aiSecurity;
-              disableNotification = false;
-            } else if (intentTag === '账单') {
-              aiBadge = dict.emailCard.aiBilling;
-              disableNotification = false;
-            } else if (intentTag === '通知') {
-              aiBadge = dict.emailCard.aiNotification;
-              disableNotification = false;
+        } else {
+          // 2. Level 2: Local & KV Keywords short-circuit
+          const marketingKeywords = await getMarketingKeywords(env.MAIL_ROUTES_KV);
+          const localResult = detectMarketingEmail(message.headers, subject, snippet, marketingKeywords);
+  
+          if (localResult.isMarketing) {
+            isMarketing = true;
+            intentTag = '营销';
+            aiBadge = dict.emailCard.aiKeywordShortCircuit(escapeHtml(
+              localResult.matchedKeyword || '营销特征'
+            ));
+            disableNotification = true;
+          } else if (hasAI) {
+            // 3. Level 3: Multi-Provider LLM Intent Classification
+            const aiResult = await classifyEmail({
+              provider: effectiveAi.provider,
+              apiKey: effectiveAi.apiKey,
+              model: effectiveAi.model,
+              baseUrl: effectiveAi.baseUrl,
+              groupId: env.MINIMAX_GROUP_ID,
+              subject,
+              from,
+              bodySnippet: snippet.slice(0, 800),
+              cfAi: env.AI,
+            });
+  
+            if (aiResult.success) {
+              intentTag = aiResult.intent || '业务';
+              isMarketing = aiResult.isMarketing;
+              extractedCode = aiResult.extractedCode;
+  
+              if (intentTag === '营销') {
+                aiBadge = dict.emailCard.aiMarketing;
+                disableNotification = true;
+              } else if (intentTag === '验证') {
+                aiBadge = dict.emailCard.aiVerification;
+                disableNotification = false;
+              } else if (intentTag === '告警') {
+                aiBadge = dict.emailCard.aiSecurity;
+                disableNotification = false;
+              } else if (intentTag === '账单') {
+                aiBadge = dict.emailCard.aiBilling;
+                disableNotification = false;
+              } else if (intentTag === '通知') {
+                aiBadge = dict.emailCard.aiNotification;
+                disableNotification = false;
+              } else {
+                aiBadge = dict.emailCard.aiImportant;
+                disableNotification = false;
+              }
             } else {
-              aiBadge = dict.emailCard.aiImportant;
+              intentTag = '业务';
+              isMarketing = false;
+              const errDetail = aiResult.error || '连接异常';
+              aiBadge = dict.emailCard.aiErrorFallback(escapeHtml(errDetail));
               disableNotification = false;
             }
           } else {
-            intentTag = '业务';
-            isMarketing = false;
-            const errDetail = aiResult.error || '连接异常';
-            aiBadge = dict.emailCard.aiErrorFallback(escapeHtml(errDetail));
-            disableNotification = false;
-          }
-        } else {
-          // Fallback to local regex sniffer when LLM API Key is omitted
-          extractedCode = extractVerificationCode(`${subject}\n${snippet}`);
-          if (extractedCode) {
-            intentTag = '验证';
-            aiBadge = dict.emailCard.aiRegexVerification;
-            disableNotification = false;
+            // Fallback to local regex sniffer when LLM API Key is omitted
+            extractedCode = extractVerificationCode(`${subject}\n${snippet}`);
+            if (extractedCode) {
+              intentTag = '验证';
+              aiBadge = dict.emailCard.aiRegexVerification;
+              disableNotification = false;
+            }
           }
         }
       }
@@ -2725,18 +4008,40 @@ export default {
 
       const cardHtml = renderEmailCardHtml(cardOptions);
 
+      // Quota Protection: If marketing email is suppressed by policy, exit early BEFORE KV writes
       const marketingPolicy = env.MARKETING_TG_POLICY || 'silent';
       if (isMarketing && marketingPolicy === 'mute') {
         console.log(`[EmailWorker] Marketing email suppressed from Telegram by policy (${marketingPolicy}): ${subject}`);
         return;
       }
 
-      let sent = await sendToTelegram(cardHtml, 'HTML', disableNotification);
+      // Generate short reply token & store metadata in KV (7-day TTL) for 1-click TG reply
+      let replyMarkup: any = undefined;
+      const targetReplyTo = cleanReplyEmail || from;
+      if (targetReplyTo && to && env.MAIL_ROUTES_KV) {
+        try {
+          const replyId = await saveEmailReplyMeta(env.MAIL_ROUTES_KV, {
+            from: targetReplyTo,
+            to,
+            subject,
+            messageId: parsedEmail?.messageId || undefined,
+            bodyText: (parsedEmail?.text || snippet || '').slice(0, 50000),
+            bodyHtml: (parsedEmail?.html || '').slice(0, 150000),
+          });
+          replyMarkup = {
+            inline_keyboard: getEmailReplyKeyboard(dict, replyId),
+          };
+        } catch (metaErr) {
+          console.warn('[EmailWorker] Failed to save reply metadata:', metaErr);
+        }
+      }
+
+      let sent = await sendToTelegram(cardHtml, 'HTML', disableNotification, replyMarkup);
 
       if (!sent) {
         console.warn('[EmailWorker] HTML sendMessage failed. Retrying with safe plain text fallback...');
         const plainTextFallback = renderEmailCardPlainText(cardOptions);
-        await sendToTelegram(plainTextFallback, undefined, disableNotification);
+        await sendToTelegram(plainTextFallback, undefined, disableNotification, replyMarkup);
       }
     };
 

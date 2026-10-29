@@ -1023,9 +1023,10 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       const body = JSON.parse(msgCall[1].body);
       expect(body.text).toContain('设置');
       expect(body.reply_markup).toBeDefined();
-      expect(body.reply_markup.inline_keyboard.length).toBe(4);
+      expect(body.reply_markup.inline_keyboard.length).toBe(5);
 
       const allCallbackData = body.reply_markup.inline_keyboard.flat().map((btn: any) => btn.callback_data);
+      expect(allCallbackData).toContain('comp:start');
       expect(allCallbackData).toContain('m:ai');
       expect(allCallbackData).toContain('m:routes');
       expect(allCallbackData).toContain('m:kw');
@@ -1060,7 +1061,7 @@ describe('Telegram Webhook - 动态管理与交互指令测试', () => {
       const editCall = JSON.parse(fetchMock.mock.calls[1][1].body);
       expect(editCall.message_id).toBe(100);
       expect(editCall.text).toContain('设置');
-      expect(editCall.reply_markup.inline_keyboard.length).toBe(4);
+      expect(editCall.reply_markup.inline_keyboard.length).toBe(5);
     });
 
     it('点击 m:ai 回调应切换展示 AI 模型设置面板与厂商按钮', async () => {

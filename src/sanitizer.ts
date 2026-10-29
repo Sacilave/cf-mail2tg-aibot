@@ -526,3 +526,46 @@ export function detectMarketingEmail(
 
   return { isMarketing: false };
 }
+
+/**
+ * Sanitize and format LLM output or user input into Telegram-safe HTML.
+ * Preserves standard Telegram tags: <b>, <i>, <code>, <pre>, <blockquote>, <u>, <s>, <a>
+ * Converts Markdown bold (**text**) and inline code (`code`) to HTML tags.
+ * Safely escapes any stray <, >, or & that would otherwise trigger Telegram 400 Bad Request entity parse error.
+ * Enforces a maximum character length to prevent Telegram 4096 character limit errors.
+ */
+export function formatTelegramSafeHtml(text: string, maxLength = 3200): string {
+  if (!text) return '';
+
+  let trimmed = text.trim();
+  if (trimmed.length > maxLength) {
+    trimmed = trimmed.slice(0, maxLength) + '\n\n...(内容过长已折叠)';
+  }
+
+  // Convert markdown **bold** to <b>bold</b>
+  trimmed = trimmed.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  // Convert markdown `code` to <code>code</code>
+  trimmed = trimmed.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Regex matching allowed Telegram HTML opening and closing tags
+  const allowedTagPattern = /<\/?(?:b|i|u|s|code|pre|blockquote|tg-spoiler|a)(?:\s+href="[^"]*")?\s*\/?>/gi;
+
+  const parts: string[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = allowedTagPattern.exec(trimmed)) !== null) {
+    if (match.index > lastIndex) {
+      const rawPiece = trimmed.slice(lastIndex, match.index);
+      parts.push(escapeHtml(rawPiece));
+    }
+    parts.push(match[0]);
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < trimmed.length) {
+    parts.push(escapeHtml(trimmed.slice(lastIndex)));
+  }
+
+  return parts.join('');
+}

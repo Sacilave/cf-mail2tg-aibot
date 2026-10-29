@@ -13,7 +13,7 @@ import {
   DEFAULT_MARKETING_KEYWORDS_EN,
   LOCALIZED_MARKETING_KEYWORDS,
 } from './sanitizer';
-import type { PersonaCategory, PersonaRoute, AllowedTag, CustomRouteRule } from './types';
+import type { PersonaCategory, PersonaRoute, AllowedTag, CustomRouteRule, EmailReplyMeta, Env } from './types';
 import {
   ALLOWED_TAGS,
   isValidTag,
@@ -345,6 +345,271 @@ export async function resetMarketingKeywords(kv: any): Promise<boolean> {
   }
 }
 
+// ======================== Whitelist & Recent Contacts ========================
+
+export const WHITELIST_KV_KEY = 'config:whitelist';
+export const RECENT_INBOUND_KV_KEY = 'recent:inbound_senders';
+export const RECENT_OUTBOUND_KV_KEY = 'recent:outbound_recipients';
+
+export async function getWhitelist(kv: any, defaultEmail?: string): Promise<string[]> {
+  const defaultList = defaultEmail && isValidEmail(defaultEmail) ? [defaultEmail.trim().toLowerCase()] : [];
+  if (!kv || typeof kv.get !== 'function') {
+    return defaultList;
+  }
+  const cacheKey = 'whitelist';
+  const now = Date.now();
+  if (!isMockKv(kv)) {
+    const cached = ROUTER_MEM_CACHE.get(cacheKey);
+    if (cached && now < cached.expiresAt) {
+      return cached.value;
+    }
+  }
+  try {
+    const raw = await kv.get(WHITELIST_KV_KEY);
+    if (!raw) {
+      if (!isMockKv(kv)) {
+        ROUTER_MEM_CACHE.set(cacheKey, { value: defaultList, expiresAt: now + ROUTER_CACHE_TTL_MS });
+      }
+      return defaultList;
+    }
+    const parsed = JSON.parse(raw);
+    let list: string[] = Array.isArray(parsed)
+      ? parsed.map((s) => String(s).trim().toLowerCase()).filter((s) => s.length > 0 && !s.startsWith('#'))
+      : [];
+    if (defaultEmail && isValidEmail(defaultEmail)) {
+      const defClean = defaultEmail.trim().toLowerCase();
+      if (!list.includes(defClean)) {
+        list.push(defClean);
+      }
+    }
+    if (!isMockKv(kv)) {
+      ROUTER_MEM_CACHE.set(cacheKey, { value: list, expiresAt: now + ROUTER_CACHE_TTL_MS });
+    }
+    return list;
+  } catch (err) {
+    console.warn('[EmailRouter] Failed to parse whitelist from KV:', err);
+    return defaultList;
+  }
+}
+
+export async function setWhitelist(kv: any, list: string[]): Promise<boolean> {
+  if (!kv || typeof kv.put !== 'function') return false;
+  try {
+    const cleanList = Array.from(
+      new Set(
+        list
+          .map((k) => k.trim().toLowerCase())
+          .filter((k) => k.length > 0 && !k.startsWith('#'))
+      )
+    );
+    const current = await getWhitelist(kv);
+    if (
+      current.length === cleanList.length &&
+      cleanList.every((k, i) => k === current[i])
+    ) {
+      return true;
+    }
+    await kv.put(WHITELIST_KV_KEY, JSON.stringify(cleanList));
+    ROUTER_MEM_CACHE.delete('whitelist');
+    return true;
+  } catch (err) {
+    console.error('[EmailRouter] Failed to save whitelist to KV:', err);
+    return false;
+  }
+}
+
+export async function appendWhitelist(
+  kv: any,
+  newItems: string[],
+  defaultEmail?: string
+): Promise<{ success: boolean; totalCount: number; addedCount: number; allItems: string[] }> {
+  const current = await getWhitelist(kv, defaultEmail);
+  const currentLower = new Set(current.map((k) => k.toLowerCase().trim()));
+  const toAdd: string[] = [];
+
+  for (const item of newItems) {
+    const trimmed = item.trim().toLowerCase();
+    if (trimmed && !trimmed.startsWith('#') && !currentLower.has(trimmed)) {
+      toAdd.push(trimmed);
+      currentLower.add(trimmed);
+    }
+  }
+
+  if (toAdd.length === 0) {
+    return {
+      success: true,
+      totalCount: current.length,
+      addedCount: 0,
+      allItems: current,
+    };
+  }
+
+  const merged = [...current, ...toAdd];
+  const success = await setWhitelist(kv, merged);
+  return {
+    success,
+    totalCount: merged.length,
+    addedCount: toAdd.length,
+    allItems: merged,
+  };
+}
+
+export async function resetWhitelist(kv: any): Promise<boolean> {
+  if (!kv || typeof kv.delete !== 'function') return false;
+  try {
+    await kv.delete(WHITELIST_KV_KEY);
+    ROUTER_MEM_CACHE.delete('whitelist');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isSenderWhitelisted(sender: string, whitelist: string[]): boolean {
+  if (!sender || !whitelist || whitelist.length === 0) return false;
+  const cleanSender = extractCleanEmail(sender).toLowerCase().trim();
+  if (!cleanSender) return false;
+  const senderDomain = cleanSender.includes('@') ? cleanSender.split('@')[1] : '';
+
+  for (const item of whitelist) {
+    const cleanItem = item.toLowerCase().trim().replace(/^['"]|['"]$/g, '');
+    if (!cleanItem) continue;
+    // Exact email match
+    if (cleanItem === cleanSender) return true;
+    // Domain match: e.g. "@gmail.com" or "gmail.com" (strictly require @ prefix or valid dot-domain to prevent single-word wildcards)
+    let domainPattern = '';
+    if (cleanItem.startsWith('@')) {
+      domainPattern = cleanItem.slice(1);
+    } else if (cleanItem.includes('.') && !cleanItem.includes('@')) {
+      domainPattern = cleanItem;
+    }
+    if (domainPattern && senderDomain && domainPattern === senderDomain) return true;
+  }
+  return false;
+}
+
+export async function getRecentInboundSenders(kv: any): Promise<string[]> {
+  if (!kv || typeof kv.get !== 'function') return [];
+  try {
+    const raw = await kv.get(RECENT_INBOUND_KV_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    return Array.isArray(list) ? list.filter((e) => typeof e === 'string' && isValidEmail(e)) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function recordRecentInboundSender(kv: any, sender: string): Promise<boolean> {
+  if (!kv || typeof kv.put !== 'function' || !sender) return false;
+  const clean = extractCleanEmail(sender).trim().toLowerCase();
+  if (!isValidEmail(clean)) return false;
+  try {
+    const current = await getRecentInboundSenders(kv);
+    if (current[0]?.toLowerCase() === clean) return true;
+    const filtered = current.filter((s) => s.toLowerCase() !== clean);
+    const updated = [clean, ...filtered].slice(0, 5);
+    await kv.put(RECENT_INBOUND_KV_KEY, JSON.stringify(updated), { expirationTtl: 30 * 86400 });
+    return true;
+  } catch (err) {
+    console.warn('[EmailRouter] Failed to record recent inbound sender:', err);
+    return false;
+  }
+}
+
+export async function getRecentOutboundRecipients(kv: any): Promise<string[]> {
+  if (!kv || typeof kv.get !== 'function') return [];
+  try {
+    const raw = await kv.get(RECENT_OUTBOUND_KV_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw);
+    return Array.isArray(list) ? list.filter((e) => typeof e === 'string' && isValidEmail(e)) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function recordRecentOutboundRecipient(kv: any, recipient: string): Promise<boolean> {
+  if (!kv || typeof kv.put !== 'function' || !recipient) return false;
+  const clean = extractCleanEmail(recipient).trim().toLowerCase();
+  if (!isValidEmail(clean)) return false;
+  try {
+    const current = await getRecentOutboundRecipients(kv);
+    if (current[0]?.toLowerCase() === clean) return true;
+    const filtered = current.filter((s) => s.toLowerCase() !== clean);
+    const updated = [clean, ...filtered].slice(0, 5);
+    await kv.put(RECENT_OUTBOUND_KV_KEY, JSON.stringify(updated), { expirationTtl: 30 * 86400 });
+    return true;
+  } catch (err) {
+    console.warn('[EmailRouter] Failed to record recent outbound recipient:', err);
+    return false;
+  }
+}
+
+export interface SuggestedRecipient {
+  address: string;
+  source: 'whitelist' | 'outbound' | 'inbound';
+  label: string;
+}
+
+export async function getSuggestedRecipients(
+  kv: any,
+  defaultEmail?: string
+): Promise<SuggestedRecipient[]> {
+  const result: SuggestedRecipient[] = [];
+  const seen = new Set<string>();
+
+  // 1. Whitelist contacts (valid specific email addresses only)
+  const whitelist = await getWhitelist(kv, defaultEmail);
+  for (const item of whitelist) {
+    const clean = item.trim().toLowerCase();
+    if (isValidEmail(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      result.push({
+        address: clean,
+        source: 'whitelist',
+        label: `⭐ 白名单: ${clean}`,
+      });
+    }
+  }
+
+  // 2. Recent outbound recipients (up to 2)
+  const outbound = await getRecentOutboundRecipients(kv);
+  let outCount = 0;
+  for (const item of outbound) {
+    if (outCount >= 2) break;
+    const clean = item.trim().toLowerCase();
+    if (isValidEmail(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      outCount++;
+      result.push({
+        address: clean,
+        source: 'outbound',
+        label: `📤 最近发给: ${clean}`,
+      });
+    }
+  }
+
+  // 3. Recent inbound senders (up to 2)
+  const inbound = await getRecentInboundSenders(kv);
+  let inCount = 0;
+  for (const item of inbound) {
+    if (inCount >= 2) break;
+    const clean = item.trim().toLowerCase();
+    if (isValidEmail(clean) && !seen.has(clean)) {
+      seen.add(clean);
+      inCount++;
+      result.push({
+        address: clean,
+        source: 'inbound',
+        label: `📥 最近来信: ${clean}`,
+      });
+    }
+  }
+
+  return result;
+}
+
 // ======================== KV Dynamic Custom Category Tags ========================
 
 export const CUSTOM_TAGS_KV_KEY = 'config:sys:custom_tags';
@@ -535,11 +800,29 @@ export interface InteractiveSession {
     | 'add_custom_tag'
     | 'set_ai_key'
     | 'add_keywords'
-    | 'set_forward_email';
+    | 'set_forward_email'
+    | 'reply_email'
+    | 'set_resend_key'
+    | 'compose_email'
+    | 'compose_custom_prefix'
+    | 'add_whitelist';
   step?: number;
   provider?: string;
   tag?: string;
   createdAt?: number;
+  // Outbound email reply session fields
+  replyId?: string;
+  fromRoute?: string;
+  targetSender?: string;
+  subject?: string;
+  messageId?: string;
+  // Outbound email compose wizard fields
+  composeStep?: 'input_to' | 'input_subject' | 'input_body' | 'confirm';
+  composeFrom?: string;
+  composeTo?: string;
+  composeSubject?: string;
+  composeBody?: string;
+  suggestedRecipients?: string[];
 }
 
 export async function getInteractiveSession(kv: any): Promise<InteractiveSession | null> {
@@ -695,3 +978,119 @@ export async function getEffectiveAiConfig(
 
 
 
+
+// ======================== Email Reply Metadata Management ========================
+
+export const EMAIL_REPLY_PREFIX = 'mail:reply:';
+
+/**
+ * Save incoming email metadata to KV with 7-day TTL so user can 1-click reply from TG
+ */
+export async function saveEmailReplyMeta(
+  kv: any,
+  meta: Omit<EmailReplyMeta, 'id' | 'createdAt'>
+): Promise<string> {
+  // Cryptographically secure 64-bit random suffix (immune to brute force enumeration)
+  const randBytes = new Uint8Array(8);
+  crypto.getRandomValues(randBytes);
+  const randHex = Array.from(randBytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const replyId = `r_${Date.now().toString(36)}_${randHex}`;
+  if (!kv || typeof kv.put !== 'function') return replyId;
+  const payload: EmailReplyMeta = {
+    ...meta,
+    id: replyId,
+    createdAt: Date.now(),
+  };
+  try {
+    // 7 days TTL (604800 seconds)
+    await kv.put(`${EMAIL_REPLY_PREFIX}${replyId}`, JSON.stringify(payload), { expirationTtl: 604800 });
+  } catch (err) {
+    console.error('[EmailRouter] Error saving email reply meta:', err);
+  }
+  return replyId;
+}
+
+/**
+ * Retrieve incoming email reply metadata from KV by replyId
+ */
+export async function getEmailReplyMeta(
+  kv: any,
+  replyId: string
+): Promise<EmailReplyMeta | null> {
+  if (!kv || typeof kv.get !== 'function') return null;
+  const cleanId = replyId.trim();
+  try {
+    const raw = await kv.get(`${EMAIL_REPLY_PREFIX}${cleanId}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as EmailReplyMeta;
+  } catch (err) {
+    console.error('[EmailRouter] Error getting email reply meta:', err);
+    return null;
+  }
+}
+
+/**
+ * Update existing email metadata in KV (e.g. for caching AI summary/translation)
+ */
+export async function updateEmailReplyMeta(
+  kv: any,
+  replyId: string,
+  updates: Partial<EmailReplyMeta>
+): Promise<boolean> {
+  if (!kv || typeof kv.put !== 'function' || !replyId) return false;
+  const meta = await getEmailReplyMeta(kv, replyId);
+  if (!meta) return false;
+  const updated: EmailReplyMeta = { ...meta, ...updates };
+  try {
+    await kv.put(`${EMAIL_REPLY_PREFIX}${replyId.trim()}`, JSON.stringify(updated), {
+      expirationTtl: 604800,
+    });
+    return true;
+  } catch (err) {
+    console.error('[EmailRouter] Error updating email reply meta:', err);
+    return false;
+  }
+}
+
+/**
+ * Retrieve effective Resend API Key (KV dynamic config takes priority over env)
+ */
+export async function getEffectiveResendKey(
+  env?: Env,
+  kv?: any
+): Promise<string | null> {
+  const dynamicKey = await getDynamicConfig(kv, 'resend_api_key');
+  if (dynamicKey && dynamicKey.trim()) {
+    return dynamicKey.trim();
+  }
+  if (env?.RESEND_API_KEY && env.RESEND_API_KEY.trim()) {
+    return env.RESEND_API_KEY.trim();
+  }
+  return null;
+}
+
+
+/**
+ * Retrieve list of available sender identities (with primary routes prioritised)
+ */
+export async function getAvailableSenderList(
+  kv: any,
+  defaultDomain = 'example.com'
+): Promise<string[]> {
+  const cleanDomain = defaultDomain.trim().replace(/^@+/, '') || 'example.com';
+  // Primary core identities specified by user
+  const corePrefixes = ['service', 'support', 'contact'];
+  const baselinePrefixes = ['support', 'sales', 'admin'];
+
+  let customPrefixes: string[] = [];
+  try {
+    const customRules = await listCustomRules(kv);
+    customPrefixes = customRules.map((r) => r.prefix.toLowerCase().trim()).filter(Boolean);
+  } catch {}
+
+  const merged = Array.from(
+    new Set([...corePrefixes, ...customPrefixes, ...baselinePrefixes])
+  );
+
+  return merged.map((prefix) => `${prefix}@${cleanDomain}`);
+}

@@ -55,3 +55,10 @@ MINIMAX_API_KEY=""
 MINIMAX_GROUP_ID=""
 MINIMAX_MODEL="MiniMax-Text-01"
 MINIMAX_API_URL="https://api.minimax.chat/v1/text/chatcompletion_v2"
+
+# [OPTIONAL] Resend API Key for sending and replying to emails (starts with re_)
+# Can also be set interactively inside Telegram via `/setkey resend re_xxxxxx`
+RESEND_API_KEY=""
+
+# [OPTIONAL] Primary verified sender domain in Resend & Cloudflare (e.g. yourdomain.com)
+EMAIL_DOMAIN="example.com"

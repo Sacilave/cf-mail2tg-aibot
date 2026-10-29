@@ -75,3 +75,48 @@ export interface ClassifyEmailResult {
   /** Call duration in milliseconds */
   latencyMs?: number;
 }
+
+
+export interface SummarizeEmailOptions {
+  provider?: AIProviderId | string;
+  apiKey?: string;
+  model?: string;
+  baseUrl?: string;
+  groupId?: string;
+  subject: string;
+  from: string;
+  bodyText: string;
+  targetLangName?: string;
+  timeoutMs?: number;
+  cfAi?: any;
+}
+
+export interface SummarizeEmailResult {
+  success: boolean;
+  summary?: string;
+  error?: string;
+  provider?: string;
+  latencyMs?: number;
+}
+
+export interface TranslateEmailOptions {
+  provider?: AIProviderId | string;
+  apiKey?: string;
+  model?: string;
+  baseUrl?: string;
+  groupId?: string;
+  subject: string;
+  bodyText: string;
+  targetLangName?: string;
+  timeoutMs?: number;
+  cfAi?: any;
+}
+
+export interface TranslateEmailResult {
+  success: boolean;
+  translatedSubject?: string;
+  translatedText?: string;
+  error?: string;
+  provider?: string;
+  latencyMs?: number;
+}

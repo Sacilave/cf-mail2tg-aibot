@@ -50,6 +50,7 @@ export const enUS: TranslationDict = {
     btnSetForward: '📬 Update Forward Email',
     btnResetForward: '🗑️ Clear Forward Email',
     btnSetup: '⚡ Setup Wizard',
+    btnNewEmail: '✉️ Compose Email',
     btnCancel: '❌ Cancel',
     routesTitle: '📂 <b>【 Email Routing Rules 】</b>',
     routesSelectTagPrompt: 'Select a <b>business category tag</b> for this new route (tap button):',
@@ -335,6 +336,42 @@ export const enUS: TranslationDict = {
       `Restored system default <b>${count}</b> standard bilingual marketing keywords.`,
   },
 
+  whitelistCommand: {
+    title: '⭐ <b>【 Trusted Senders Whitelist 】</b>',
+    countDesc: (count: number) => `Active whitelist entries: <b>${count}</b>.`,
+    instructions:
+      '💡 <b>How to edit (Copy, modify, and [Reply to this message]):</b>\n' +
+      '1. Tap the code block below to copy all entries;\n' +
+      '2. Select <b>Reply to this message</b> (or send <code>setwhitelist ...</code>), paste and edit (<b>one address or @domain per line</b>);\n' +
+      '3. Whitelisted senders will <b>never be classified as marketing</b> and short-circuit AI to save quota!',
+    emptyError:
+      '❌ <b>Update Failed:</b> No valid whitelist entries detected.\nPlease enter at least one address or domain.',
+    kvError: '❌ <b>System Error:</b> MAIL_ROUTES_KV database is not bound.',
+    successUpdate: (count: number, preview: string, moreCount: string) =>
+      `✅ <b>【Whitelist Successfully Updated!】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `Updated <b>${count}</b> whitelist entries.\n\n` +
+      `📝 <b>Current Whitelist Preview:</b>\n` +
+      `<code>${preview}${moreCount}</code>\n\n` +
+      `⭐ <i>Incoming emails from whitelisted senders will always trigger loud notifications without calling AI.</i>`,
+    updateError: '❌ <b>Update Failed:</b> Failed to save to database.',
+    addHelpTitle: '💡 <b>【 Add Whitelist Help 】</b>',
+    addHelpUsage: '<b>Usage:</b> <code>/addwhitelist email1\nemail2</code> or <code>/addwhitelist @domain.com</code>',
+    addHelpDesc: 'Entries will be deduplicated and safely merged into the whitelist <b>without overwriting</b>.',
+    successAppend: (addedCount: number, totalCount: number, preview: string) =>
+      `✅ <b>【Whitelist Entries Added Successfully】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• Added: <b>${addedCount}</b> entries\n` +
+      `• Total entries: <b>${totalCount}</b>\n\n` +
+      `📝 <b>Newly Added:</b>\n` +
+      `<code>${preview}</code>`,
+    appendError: '❌ <b>Add Failed:</b> Failed to save to database.',
+    resetSuccess: (count: number) =>
+      `🔄 <b>【Whitelist Reset to Default Baseline】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `Restored system default, admin email is preserved in baseline.`,
+  },
+
   routesCommand: {
     title: '📋 <b>【 Active Routing Rules 】</b>',
     presetBaselineTitle: '🔹 <b>System Preset Baseline Personas:</b>',
@@ -524,6 +561,7 @@ export const enUS: TranslationDict = {
     backupFailed: (error: string) => `<code>⚠️ Forward failed (${error})</code>`,
     backupPureTG: '<code>No backup inbox configured (Pure TG mode)</code>',
     replyContactLabel: 'Reply To',
+    btnReply: '↩️ Reply Email',
   },
 
   securityAlerts: {
@@ -550,6 +588,43 @@ export const enUS: TranslationDict = {
     rateLimitStatusFailed: (error: string) => `⚠️ Forward failed: ${error}`,
     rateLimitStatusPureTG: 'Pure TG notification mode (No backup inbox)',
     rateLimitTip: 'Telegram push notifications temporarily silenced for this sender to prevent spam & TG 429.',
+  },
+
+  replyCard: {
+    promptTitle: '✉️ <b>【 Compose Email Reply 】</b>',
+    successTitle: '✅ <b>【 Email Reply Dispatched 】</b>',
+    errorTitle: '❌ <b>【 Failed to Send Reply 】</b>',
+    labelFrom: 'From Identity',
+    labelTo: 'Reply To',
+    labelSubject: 'Subject',
+    labelCert: 'Message-ID',
+    labelSummary: 'Summary',
+    inputPrompt: '💬 <i>Please send the reply message content directly in chat:</i>',
+    cancelTip: '<i>(Send /cancel or tap Cancel below to abort)</i>',
+    footerNote: '🚀 <i>Dispatched via Resend with verified DKIM/SPF signatures.</i>',
+  },
+
+  composeCard: {
+    selectSenderTitle: '✉️ <b>【 Compose Email · Select Sender Identity 】</b>',
+    selectSenderPrompt: 'Please select which routing identity to send from:\n• <b>Core identities:</b> <code>service@example.com</code> & <code>support@example.com</code>\n• Or choose any active route or input a custom prefix.',
+    stepToTitle: '✉️ <b>【 Compose Email (1/3) · Recipient 】</b>',
+    stepToPrompt: '💬 <i>Please enter the recipient full email address (e.g. alice@example.com):</i>\n<i>(Send /cancel or tap Cancel below to abort)</i>',
+    stepSubjectTitle: '✉️ <b>【 Compose Email (2/3) · Subject 】</b>',
+    stepSubjectPrompt: '💬 <i>Please enter the email subject:</i>\n<i>(Send /cancel or tap Cancel below to abort)</i>',
+    stepBodyTitle: '✉️ <b>【 Compose Email (3/3) · Body Content 】</b>',
+    stepBodyPrompt: '💬 <i>Please enter the email body content (multiline supported):</i>\n<i>(Send /cancel or tap Cancel below to abort)</i>',
+    confirmTitle: '🚀 <b>【 Compose Email · Final Review & Confirmation 】</b>',
+    confirmPrompt: '⚠️ <i>Please review the details carefully and tap Confirm to dispatch.</i>',
+    successTitle: '✅ <b>【 Email Successfully Dispatched 】</b>',
+    errorTitle: '❌ <b>【 Failed to Send Email 】</b>',
+    btnConfirmSend: '🚀 Confirm & Send Now',
+    btnCancel: '❌ Cancel & Discard',
+    btnCustomPrefix: '✍️ Custom Prefix',
+    customPrefixTitle: '✍️ <b>【 Compose Email · Custom Sender Prefix 】</b>',
+    customPrefixPrompt: '💬 <i>Please enter your custom sender prefix (e.g. hello or dev):\nThe sender will be formatted as <code>&lt;prefix&gt;@domain</code></i>',
+    invalidEmailAlert: '❌ Invalid email address format. Please try again (e.g. alice@example.com) or send /cancel to abort.',
+    invalidPrefixAlert: '❌ Invalid prefix format (letters, digits, dots, dashes, underscores only). Please try again or send /cancel.',
+    noApiKeyAlert: '⚠️ Resend API Key is not configured yet. Cannot send outbound emails.',
   },
 
   sources: {

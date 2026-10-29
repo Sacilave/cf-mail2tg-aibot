@@ -91,6 +91,7 @@ export interface TranslationDict {
     btnSetForward?: string;
     btnResetForward?: string;
     btnSetup: string;
+    btnNewEmail?: string;
     btnCancel: string;
     routesTitle: string;
     routesSelectTagPrompt: string;
@@ -300,6 +301,23 @@ export interface TranslationDict {
     resetSuccess: (count: number) => string;
   };
 
+  // /whitelist & /setwhitelist & /addwhitelist & /resetwhitelist commands
+  whitelistCommand?: {
+    title: string;
+    countDesc: (count: number) => string;
+    instructions: string;
+    emptyError: string;
+    kvError: string;
+    successUpdate: (count: number, preview: string, moreCount: string) => string;
+    updateError: string;
+    addHelpTitle: string;
+    addHelpUsage: string;
+    addHelpDesc: string;
+    successAppend: (addedCount: number, totalCount: number, preview: string) => string;
+    appendError: string;
+    resetSuccess: (count: number) => string;
+  };
+
   // /routes, /add, /del commands
   routesCommand: {
     title: string;
@@ -385,6 +403,7 @@ export interface TranslationDict {
     backupFailed: (error: string) => string;
     backupPureTG: string;
     replyContactLabel: string;
+    btnReply?: string;
   };
 
   // Security & Circuit Breaker Alerts
@@ -408,6 +427,43 @@ export interface TranslationDict {
     rateLimitStatusFailed: (error: string) => string;
     rateLimitStatusPureTG: string;
     rateLimitTip: string;
+  };
+
+  replyCard?: {
+    promptTitle?: string;
+    successTitle?: string;
+    errorTitle?: string;
+    labelFrom?: string;
+    labelTo?: string;
+    labelSubject?: string;
+    labelCert?: string;
+    labelSummary?: string;
+    inputPrompt?: string;
+    cancelTip?: string;
+    footerNote?: string;
+  };
+
+  composeCard?: {
+    selectSenderTitle?: string;
+    selectSenderPrompt?: string;
+    stepToTitle?: string;
+    stepToPrompt?: string;
+    stepSubjectTitle?: string;
+    stepSubjectPrompt?: string;
+    stepBodyTitle?: string;
+    stepBodyPrompt?: string;
+    confirmTitle?: string;
+    confirmPrompt?: string;
+    successTitle?: string;
+    errorTitle?: string;
+    btnConfirmSend?: string;
+    btnCancel?: string;
+    btnCustomPrefix?: string;
+    customPrefixTitle?: string;
+    customPrefixPrompt?: string;
+    invalidEmailAlert?: string;
+    invalidPrefixAlert?: string;
+    noApiKeyAlert?: string;
   };
 
   sources: {

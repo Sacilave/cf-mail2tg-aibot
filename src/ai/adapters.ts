@@ -21,7 +21,8 @@ export async function callWorkersAI(
   cfAi: any,
   model: string,
   prompt: string,
-  _timeoutMs: number = 4500
+  _timeoutMs: number = 4500,
+  maxTokens: number = 120
 ): Promise<CallerResult> {
   if (!cfAi || typeof cfAi.run !== 'function') {
     return {
@@ -33,7 +34,7 @@ export async function callWorkersAI(
   try {
     const result: any = await cfAi.run(model, {
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 120,
+      max_tokens: maxTokens,
       temperature: 0.1,
     });
 
@@ -58,7 +59,9 @@ export async function callOpenAICompatible(
   model: string,
   prompt: string,
   timeoutMs: number = 4500,
-  extraHeaders?: Record<string, string>
+  extraHeaders?: Record<string, string>,
+  maxTokens: number = 120,
+  jsonMode: boolean = true
 ): Promise<CallerResult> {
   if (!apiKey || !apiKey.trim()) {
     return { ok: false, error: '未配置 API Key' };
@@ -82,9 +85,11 @@ export async function callOpenAICompatible(
     model,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
-    max_tokens: 120,
-    response_format: { type: 'json_object' },
+    max_tokens: maxTokens,
   };
+  if (jsonMode) {
+    payload.response_format = { type: 'json_object' };
+  }
 
   try {
     let res = await fetch(endpoint, {
@@ -139,7 +144,8 @@ export async function callClaude(
   model: string,
   prompt: string,
   timeoutMs: number = 4500,
-  baseUrl?: string
+  baseUrl?: string,
+  maxTokens: number = 150
 ): Promise<CallerResult> {
   if (!apiKey || !apiKey.trim()) {
     return { ok: false, error: '未配置 ANTHROPIC_API_KEY' };
@@ -159,7 +165,7 @@ export async function callClaude(
 
   const payload = {
     model,
-    max_tokens: 150,
+    max_tokens: maxTokens,
     temperature: 0.1,
     messages: [{ role: 'user', content: prompt }],
   };
@@ -201,7 +207,8 @@ export async function callMiniMax(
   model: string,
   apiUrl: string,
   prompt: string,
-  timeoutMs: number = 4500
+  timeoutMs: number = 4500,
+  maxTokens: number = 120
 ): Promise<CallerResult> {
   if (!apiKey || !apiKey.trim()) {
     return { ok: false, error: '未配置 MINIMAX_API_KEY' };
@@ -219,7 +226,7 @@ export async function callMiniMax(
     model,
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
-    max_tokens: 100,
+    max_tokens: maxTokens,
   };
 
   try {

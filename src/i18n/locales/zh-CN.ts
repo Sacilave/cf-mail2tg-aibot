@@ -50,6 +50,7 @@ export const zhCN: TranslationDict = {
     btnSetForward: '📬 修改备份邮箱',
     btnResetForward: '🗑️ 清除备份邮箱',
     btnSetup: '⚡ 配置向导',
+    btnNewEmail: '✉️ 发起新邮件',
     btnCancel: '❌ 取消',
     routesTitle: '📂 <b>【 邮件分流规则 】</b>',
     routesSelectTagPrompt: '请为新规则选择<b>业务分类标签</b>（轻触按钮选择）：',
@@ -337,6 +338,43 @@ export const zhCN: TranslationDict = {
       `已恢复系统预设的 <b>${count}</b> 个中英文标准营销关键词。`,
   },
 
+  whitelistCommand: {
+    title: '⭐ <b>【 邮件信任白名单库 】</b>',
+    countDesc: (count: number) => `当前生效白名单条目共 <b>${count}</b> 条。`,
+    instructions:
+      '💡 <b>修改方式（复制修改后【直接回复本条消息】）：</b>\n' +
+      '1. 单击下方灰色代码块，在手机或电脑上一键复制全部内容；\n' +
+      '2. 选择<b>「回复 (Reply)」本条消息</b>（或发送 <code>setwhitelist ...</code>），粘贴并按需增删邮箱或域名（<b>一行一个邮箱或@域名</b>）；\n' +
+      '3. 白名单中的发件人将<b>永远不被判定为营销邮件</b>，且享有 0 额度消耗特免短路！',
+    emptyError:
+      '❌ <b>更新失败:</b> 未检测到任何有效白名单条目。\n请输入至少一个邮箱或域名（每行一个）。',
+    kvError: '❌ <b>系统错误:</b> 未绑定 MAIL_ROUTES_KV 数据库。',
+    successUpdate: (count: number, preview: string, moreCount: string) =>
+      `✅ <b>【信任白名单库已成功更新！】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `已全量更新 <b>${count}</b> 条信任白名单，边缘网关即刻生效。\n\n` +
+      `📝 <b>当前白名单预览:</b>\n` +
+      `<code>${preview}${moreCount}</code>\n\n` +
+      `⭐ <i>后续来自白名单内邮箱或域名的所有来信，将无条件正常推送且免调 AI。</i>`,
+    updateError: '❌ <b>更新失败:</b> 保存至数据库时出现异常。',
+    addHelpTitle: '💡 <b>【 添加白名单说明 】</b>',
+    addHelpUsage: '<b>格式:</b> <code>/addwhitelist 邮箱1\n邮箱2</code> 或 <code>/addwhitelist @domain.com</code>',
+    addHelpDesc: '系统将自动去重并安全合并至现有白名单，<b>绝不会覆盖原有条目</b>。',
+    successAppend: (addedCount: number, totalCount: number, preview: string) =>
+      `✅ <b>【增量白名单添加成功 (安全合并)】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `• 本次成功新增: <b>${addedCount}</b> 条（已过滤重复项）\n` +
+      `• 现有生效总条数: <b>${totalCount}</b> 条\n` +
+      `• 原有白名单已安全保留，未发生覆盖。\n\n` +
+      `📝 <b>本次新增项:</b>\n` +
+      `<code>${preview}</code>`,
+    appendError: '❌ <b>添加失败:</b> 保存至数据库时出现异常。',
+    resetSuccess: (count: number) =>
+      `🔄 <b>【信任白名单已重置为默认基线】</b>\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `已恢复默认预设，管理员邮箱已自动作为安全基线予以信任。`,
+  },
+
   routesCommand: {
     title: '📋 <b>【 当前分流规则库 】</b>',
     presetBaselineTitle: '🔹 <b>系统预设基线画像:</b>',
@@ -525,6 +563,7 @@ export const zhCN: TranslationDict = {
     backupFailed: (error: string) => `<code>⚠️ 转发失败 (${error})</code>`,
     backupPureTG: '<code>未配置转存邮箱 (纯TG通知模式)</code>',
     replyContactLabel: '回复联系',
+    btnReply: '↩️ 回复邮件',
   },
 
   securityAlerts: {
@@ -549,6 +588,43 @@ export const zhCN: TranslationDict = {
     rateLimitStatusFailed: (error: string) => `⚠️ 转寄失败: ${error}`,
     rateLimitStatusPureTG: '纯TG通知模式 (无转存邮箱)',
     rateLimitTip: '为免打扰与防 TG 429 频控，本周期内已暂停该来源的推送，后续信件请移步备份邮箱查阅。',
+  },
+
+  replyCard: {
+    promptTitle: '✉️ <b>【 准备回复邮件 】</b>',
+    successTitle: '✅ <b>【 邮件回复已投递 】</b>',
+    errorTitle: '❌ <b>【 邮件回复发送失败 】</b>',
+    labelFrom: '发件身份',
+    labelTo: '回复对象',
+    labelSubject: '邮件主题',
+    labelCert: '发信凭证',
+    labelSummary: '回复内容摘要',
+    inputPrompt: '💬 <i>请直接在输入框发送您想要回复的正文内容：</i>',
+    cancelTip: '<i>（发送 /cancel 或点击下方按钮可随时取消）</i>',
+    footerNote: '🚀 <i>已通过 Resend 安全通道极速送达对方收件箱。</i>',
+  },
+
+  composeCard: {
+    selectSenderTitle: '✉️ <b>【 发起新邮件 · 请选择发信路由身份 】</b>',
+    selectSenderPrompt: '请选择本次发信所使用的发信身份（From 路由地址）：\\n• 可直接点击下方预设身份按键\\n• 亦可选择已配置的路由或点击【自定义前缀】输入任意地址。',
+    stepToTitle: '✉️ <b>【 发送新邮件 (1/3) · 收件人 】</b>',
+    stepToPrompt: '💬 <i>请输入收件人的完整电子邮箱地址（例如：alice@example.com）：</i>\n<i>（发送 /cancel 或点击下方按钮可随时取消）</i>',
+    stepSubjectTitle: '✉️ <b>【 发送新邮件 (2/3) · 邮件主题 】</b>',
+    stepSubjectPrompt: '💬 <i>请输入邮件的主题 (Subject)：</i>\n<i>（发送 /cancel 或点击下方按钮可随时取消）</i>',
+    stepBodyTitle: '✉️ <b>【 发送新邮件 (3/3) · 正文内容 】</b>',
+    stepBodyPrompt: '💬 <i>请直接输入邮件正文内容（支持多行文本）：</i>\n<i>（发送 /cancel 或点击下方按钮可随时取消）</i>',
+    confirmTitle: '🚀 <b>【 发送邮件 · 最终核验确认 】</b>',
+    confirmPrompt: '⚠️ <i>请仔细核对以上信息无误后，点击下方按钮确认发送。</i>',
+    successTitle: '✅ <b>【 邮件已成功投递 】</b>',
+    errorTitle: '❌ <b>【 邮件发送失败 】</b>',
+    btnConfirmSend: '🚀 确认立即发送',
+    btnCancel: '❌ 放弃并取消',
+    btnCustomPrefix: '✍️ 自定义前缀',
+    customPrefixTitle: '✍️ <b>【 发送新邮件 · 输入自定义发信前缀 】</b>',
+    customPrefixPrompt: '💬 <i>请输入您希望使用的发件人前缀（例如：hello 或 dev）：\n发信地址将自动组合为 <code>&lt;前缀&gt;@domain</code></i>',
+    invalidEmailAlert: '❌ 邮箱地址格式无效，请重新输入（如 alice@example.com），或发送 /cancel 取消发信。',
+    invalidPrefixAlert: '❌ 前缀格式无效（仅支持英文字母、数字及点减下划线），请重新输入，或发送 /cancel 取消。',
+    noApiKeyAlert: '⚠️ 尚未配置 Resend API Key，无法主动外发邮件。',
   },
 
   sources: {
